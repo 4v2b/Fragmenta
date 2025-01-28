@@ -1,0 +1,6 @@
+@Fragmenta.Api_HostAddress = http://localhost:5125
+
+GET {{Fragmenta.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
