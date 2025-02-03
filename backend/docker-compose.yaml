@@ -1,0 +1,26 @@
+version: '1'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: Password1234
+    ports:
+      - "1433:1433"
+    volumes:
+      - fragmenta-db-data:/var/lib/mssql
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: attachments
+    hostname: azurite
+    command: 'azurite --loose --blobHost 0.0.0.0 --blobPort 10000 --location /blobs --debug /blobs/debug.log'
+    ports:
+      - 10000:10000
+    volumes:
+      - fragmenta-blob-data:/blobs
+
+volumes:
+  fragmenta-db-data:
+  fragmenta-blob-data:
