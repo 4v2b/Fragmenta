@@ -11,8 +11,8 @@ namespace Fragmenta.Dal.Configuration
             builder.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
-            builder.Property(e => e.Token)
-                .HasMaxLength(120);
+            builder.Property(e => e.TokenHash)
+                .HasMaxLength(256);
         }
     }
 }

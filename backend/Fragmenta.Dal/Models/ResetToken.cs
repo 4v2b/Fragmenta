@@ -6,7 +6,7 @@ namespace Fragmenta.Dal.Models
     [EntityTypeConfiguration(typeof(ResetTokenEntityTypeConfiguration))]
     public class ResetToken : EntityBase
     {
-        public string Token { get; set; } = null!;
+        public byte[] TokenHash { get; set; } = null!;
 
         public DateTime ExpiresAt { get; set; }
 

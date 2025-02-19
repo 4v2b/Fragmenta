@@ -15,7 +15,10 @@ namespace Fragmenta.Dal.Configuration
                 .HasMaxLength(100);
 
             builder.Property(e => e.PasswordHash)
-                .HasMaxLength(1024);
+                .HasMaxLength(256);
+
+            builder.Property(e => e.PasswordSalt)
+                .HasMaxLength(48);
 
             builder.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
