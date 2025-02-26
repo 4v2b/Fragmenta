@@ -104,6 +104,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
+builder.Services.AddScoped<IWorkspaceAccessService, WorkspaceAccessService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
 
@@ -137,6 +139,16 @@ app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    var token = context.Request.Cookies["accessToken"];
+    if (token != null)
+    {
+        context.Request.Headers.Authorization = $"Bearer {token}";
+    }
+    await next();
+});
 
 app.MapControllers();
 

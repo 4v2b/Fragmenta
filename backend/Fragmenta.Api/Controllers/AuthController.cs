@@ -32,7 +32,7 @@ namespace Fragmenta.Api.Controllers
 
             return refreshService.VerifyToken(model.RefreshToken, user.Id) switch
             {
-                Enums.RefreshTokenStatus.Valid or Enums.RefreshTokenStatus.Expired
+                Enums.RefreshTokenStatus.Valid
                     => Ok(jwtService.GenerateToken(new UserDto() { Email = user.Email, Id = user.Id })),
                 _ => Unauthorized()
             };
@@ -43,7 +43,6 @@ namespace Fragmenta.Api.Controllers
         /// </summary>
         /// <response code="200">Returns new access and refresh tokens</response>
         /// <response code="400">If an error happened during request</response>
-        /// <response code="401">If user was not found or could not generate a refresh token</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,7 +58,8 @@ namespace Fragmenta.Api.Controllers
             try
             {
                 var user = userService.Authorize(model);
-                if (user == null) return Unauthorized();
+                if (user == null)
+                    return BadRequest();
 
                 refreshService.RevokeTokens(user.Id);
 

@@ -13,5 +13,12 @@ namespace Fragmenta.Api.Contracts
         bool Delete(string password, long userId);
 
         UserDto? Authorize(LoginRequest model);
+
+        UserFullDto? GetUserInfo(long userId);
+
+        List<UserDto> FindManyByEmails(string[] emails);
+
+        List<UserDto> FindByEmail(string email);
+
     }
 }

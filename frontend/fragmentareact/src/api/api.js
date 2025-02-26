@@ -12,16 +12,19 @@ export async function login(email, password) {
                 "password": password
             }),
         });
-        const data = await response.json();
 
-        console.log('Response on login:', data);
+        console.log('Response on login:', response.status);
+
+        const data = await response.json();
 
         if (response.status == 400) {
             return { status: response.status, errors: data.errors }
         }
 
         if (response.ok) {
-            return { status: response.status, data };
+            localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("refreshToken", data.refreshToken);
+            return { status: response.status };
         }
 
         return { status: response.status }
@@ -30,9 +33,20 @@ export async function login(email, password) {
     }
 }
 
+export function logout(){
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    window.location.href = "/login"; // Redirect to login page
+}
+
 export async function register(name, email, password) {
     const baseUrl = import.meta.env.VITE_API_URL;
     const url = `${baseUrl}/register`;
+    console.log({
+        "email": email,
+        "password": password,
+        "name": name
+    })
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -45,47 +59,24 @@ export async function register(name, email, password) {
                 "name": name
             }),
         });
+
+
         const data = await response.json();
 
         console.log('Response on registration:', data);
-
-        if (response.ok) {
-            return { status: response.status, data };
-        }
-
-        return { status: response.status, errors: data.errors }
-
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-export async function refresh() {
-    const baseUrl = import.meta.env.VITE_API_URL;
-    const url = `${baseUrl}/refresh`;
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                "refreshToken": "string"
-              }),
-        });
-        const data = await response.json();
-
-        console.log('Response on refresh:', data);
 
         if (response.status == 400) {
             return { status: response.status, errors: data.errors }
         }
 
         if (response.ok) {
-            return { status: response.status, data };
+            localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("refreshToken", data.refreshToken);
+            return { status: response.status };
         }
 
-        return { status: response.status }
+        return { status: response.status}
+
     } catch (error) {
         console.error('Error:', error);
     }

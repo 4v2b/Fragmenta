@@ -1,0 +1,10 @@
+.register-content{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.register-content * {
+    margin: 0.5em;
+}

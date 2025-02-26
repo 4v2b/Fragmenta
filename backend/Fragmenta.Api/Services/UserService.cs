@@ -69,6 +69,34 @@ namespace Fragmenta.Api.Services
             return false;
         }
 
+        public List<UserDto> FindManyByEmails(string[] emails)
+        {
+            return _context.Users
+                .Where(e => emails.Contains(e.Email))
+                .Select(e => new UserDto() { Email = e.Email, Id = e.Id})
+                .ToList();
+        }
+
+        public List<UserDto> FindByEmail(string email)
+        {
+            return _context.Users
+                .Where(e => e.Email.Contains(email))
+                .Select(e => new UserDto() { Email = e.Email, Id = e.Id })
+                .ToList();
+        }
+
+        public UserFullDto? GetUserInfo(long userId)
+        {
+            var user = _context.Users.Find(userId);
+
+            if(user == null)
+            {
+                return null;
+            }
+
+            return new UserFullDto() { Email = user.Email, Id = user.Id, Name = user.Name };
+        }
+
         public UserDto? Register(RegisterRequest model)
         {
             if (_context.Users.Any(e => e.Email == model.Email))
