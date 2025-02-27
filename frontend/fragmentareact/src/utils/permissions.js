@@ -6,6 +6,10 @@ export function canEditBoard(role) {
     return role === "Owner" || role === "Admin";
 }
 
+export function canCreateBoard(role) {
+    return role === "Owner" || role === "Admin";
+}
+
 export function canEditWorkspace(role) {
     return role === "Owner";
 }

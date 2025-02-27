@@ -16,6 +16,9 @@ namespace Fragmenta.Api.Utils
             return false;
         }
 
+        public static bool CanCreateBoard(Role actorRole) =>
+            actorRole == Role.Owner || actorRole == Role.Admin;
+
         public static bool CanAddMember(Role actorRole) =>
             actorRole == Role.Owner || actorRole == Role.Admin;
 

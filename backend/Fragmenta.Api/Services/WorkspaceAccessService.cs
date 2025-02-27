@@ -82,6 +82,16 @@ namespace Fragmenta.Api.Services
                 return false;
             }
 
+            if (access.RoleId == (long)Role.Guest)
+            {
+                var boardAccesses = _context.BoardAccesses
+                    .Include(e => e.Board)
+                    .Where(e => e.UserId == userId && e.Board.WorkspaceId == workspaceId);
+
+                _context.RemoveRange(boardAccesses);
+                _context.SaveChanges();
+            }
+
             _context.Remove(access);
             _context.SaveChanges();
 

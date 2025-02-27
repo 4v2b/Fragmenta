@@ -45,7 +45,7 @@ export function Members({ workspaceId }) {
     return (<Stack>
         <Autocomplete addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} />
         <Wrap>
-            {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton /></Badge>)}
+            {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton onClick={() => {setChosenUsers(prev => prev.filter(i => i.id != e.id))}} /></Badge>)}
             {chosenUsers.length > 0 && <Button onClick={() => addMembers()}>{t("fields.addMembers")}</Button>}
         </Wrap>
         <Table.Root size="md">

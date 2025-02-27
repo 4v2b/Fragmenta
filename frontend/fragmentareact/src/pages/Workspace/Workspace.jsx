@@ -9,10 +9,10 @@ import { LuFolder, LuCheck, LuPencilLine, LuX, LuUser } from "react-icons/lu"
 import { Editable, IconButton, } from "@chakra-ui/react"
 import { useWorkspaceRole } from "../../utils/WorkspaceContext"
 import { canEditWorkspace } from "../../utils/permissions"
-import { Autocomplete } from "@/components/Autocomplete"
+import { WorkspaceGeneral } from "@/components/WorkspaceGeneral"
 
 export function Workspace({ name, id }) {
-    const [ role ] = useWorkspaceRole()
+    const role = useWorkspaceRole()
     const { t } = useTranslation()
 
     async function handleTitleUpdate(name) {
@@ -61,26 +61,8 @@ export function Workspace({ name, id }) {
                 <Tabs.Content value="members">
                     <Members workspaceId={id}/>
                 </Tabs.Content>
-                <Tabs.Content value="general">Manage your projects</Tabs.Content>
+                <Tabs.Content value="general"><WorkspaceGeneral id={id}/></Tabs.Content>
             </Tabs.Root>
 
         </Stack>)
-
-
-    return switchMain
-        ? <>{name} </>
-        : <div className="members-list">
-            {canAdd &&
-                <div>
-                    <Input placeholder={t("fields.email")} type="email" onInput={() => { }} />
-                    <Button content={t("fields.addMember")} />
-                </div>}
-            {
-                members.map(e =>
-                    <ListItem key={e.id}
-                        data={{ id: e.id, name: e.name, email: e.email, role: e.role }}
-                        onDelete={canDelete(role, e.role) ? deleteMember : null}
-                    />)
-            }
-        </div>
 }

@@ -107,6 +107,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
 builder.Services.AddScoped<IWorkspaceAccessService, WorkspaceAccessService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddScoped<IBoardService, BoardService>();
+
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");

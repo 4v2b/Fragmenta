@@ -27,6 +27,7 @@ namespace Fragmenta.Dal
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Status> Statuses { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<BoardAccess> BoardAccesses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
