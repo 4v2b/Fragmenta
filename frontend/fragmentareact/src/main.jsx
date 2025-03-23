@@ -10,6 +10,10 @@ import { AuthLayout } from './components/AuthLayout/AuthLayout.jsx'
 import { Main } from './pages/Main/Main.jsx'
 import { ChakraProvider } from "@chakra-ui/react"
 import { system } from "@chakra-ui/react/preset";
+import { Workspace } from './pages/Workspace/Workspace';
+import { Board } from './pages/Board';
+import { MainLayout } from './components/MainLayout';
+import { TagsProvider } from './utils/TagContext';
 
 
 createRoot(document.getElementById('root')).render(
@@ -23,8 +27,22 @@ createRoot(document.getElementById('root')).render(
           </Route>
 
           <Route element={<AuthLayout />}>
-            <Route index element={<Main />} />
+            <Route element={<MainLayout />}>
+              <Route index element={<Main />}></Route>
+
+              <Route path="workspaces/:workspaceId" element={<Workspace />}>
+
+              </Route>
+              <Route path="workspaces/:workspaceId/boards/:boardId" element={
+                <TagsProvider>
+                  <Board />
+                </TagsProvider>
+              }>
+              </Route>
+
+            </Route>
           </Route>
+
         </Routes>
       </BrowserRouter>
     </ChakraProvider>

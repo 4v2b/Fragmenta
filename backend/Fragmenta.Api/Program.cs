@@ -10,6 +10,7 @@ using Serilog.Events;
 using Serilog;
 using System.Reflection;
 using System.Text;
+using Fragmenta.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,12 +103,17 @@ builder.Services.AddCors(options =>
                           .AllowCredentials());
 });
 
+builder.Services.AddScoped<WorkspaceFilter>();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
 builder.Services.AddScoped<IWorkspaceAccessService, WorkspaceAccessService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<IStatusService, StatusService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITagService, TagService>();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
 

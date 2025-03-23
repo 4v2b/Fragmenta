@@ -4,25 +4,27 @@ import { Button, Input, Stack, Wrap } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LiaDoorOpenSolid } from "react-icons/lia";
 import { Table, DataListRoot, DataListItem, Badge, CloseButton } from "@chakra-ui/react";
-import { Field } from "./ui/field";
+import { Field } from "@/components/ui/field";
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog";
-import { useWorkspaceRole } from "@/utils/WorkspaceContext";
+import { useWorkspace } from "@/utils/WorkspaceContext";
 import { Autocomplete } from "./Autocomplete";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 export function WorkspaceGeneral({ id }) {
+    const navigate = useNavigate()
     const [boards, setBoards] = useState([])
     const [form, setForm] = useState({ name: "" })
     const [chosenUsers, setChosenUsers] = useState([])
-    const role = useWorkspaceRole()
+    const { role } = useWorkspace()
     const { t } = useTranslation()
 
     useEffect(() => {
-        api.get(`/workspaces/${id}/boards`).then(res => setBoards(res))
+        api.get(`/boards`, id).then(res => setBoards(res))
     }, [id])
 
     function createBoard() {
-        api.post(`/workspaces/${id}/boards`, {
+        api.post(`/boards`, {
             name: form.name,
             guestsId: chosenUsers.map(e => e.id)
         }).then(res => setBoards(prev => [...prev, res]))
@@ -36,7 +38,7 @@ export function WorkspaceGeneral({ id }) {
             </Table.Header>
             <Table.Body>
                 {boards.map((item) => (
-                    <Table.Row key={item.id}>
+                    <Table.Row onClick={() => navigate(`/workspaces/${id}/boards/${item.id}`)} key={item.id}>
                         <Table.Cell>{item.name}</Table.Cell>
                     </Table.Row>
                 ))}

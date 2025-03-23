@@ -1,6 +1,5 @@
 ﻿using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Dtos;
-using Fragmenta.Api.Enums;
 using Fragmenta.Api.Middleware;
 using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -12,8 +11,8 @@ namespace Fragmenta.Api.Controllers
     [Authorize]
     [ApiController]
     [ServiceFilter(typeof(WorkspaceFilter))]
-    [Route("api/boards")]
-    public class BoardController : ControllerBase
+    [Route("api/tasks")]
+    public class TaskController : ControllerBase
     {
         private long? GetAuthenticatedUserId()
         {
@@ -28,7 +27,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetBoards([FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult GetTasks([FromQuery] long boardId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -36,24 +35,92 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null)
+                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
                     return Forbid();
                 }
 
-                if (role == Role.Guest)
-                {
-                    return Ok(boardService.GetGuestBoards(workspaceId, id.Value));
-                }
+                var result = taskService.GetTasks(boardId);
 
-                return Ok(boardService.GetBoards(workspaceId));
+                return Ok(result);
             }
 
             return Unauthorized("User was not found");
         }
 
-        [HttpGet("{boardId}")]
-        public IActionResult GetBoard(long boardId, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
+        [HttpGet("{taskId}")]
+        public IActionResult GetTask([FromQuery] long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        {
+            var id = GetAuthenticatedUserId();
+
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            {
+                var role = accessService.GetRole(workspaceId, id.Value);
+
+                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
+                {
+                    return Forbid();
+                }
+
+                var result = taskService.GetTask(taskId);
+
+                return Ok(result);
+            }
+
+            return Unauthorized("User was not found");
+        }
+
+        [HttpPost]
+        public IActionResult CreateTask([FromQuery] long statusId, [FromBody] CreateOrUpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        {
+            var id = GetAuthenticatedUserId();
+
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            {
+                var role = accessService.GetRole(workspaceId, id.Value);
+
+                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
+                {
+                    return Forbid();
+                }
+
+                var result = taskService.CreateTask(statusId, request);
+
+                if (result != null)
+                {
+                    return CreatedAtAction(nameof(CreateTask), result);
+                }
+
+                return BadRequest();
+            }
+
+            return Unauthorized("User was not found");
+        }
+
+        [HttpPost("/reorder")]
+        public IActionResult Reorder([FromBody] List<ShallowUpdateTaskRequest> request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        {
+            var id = GetAuthenticatedUserId();
+
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            {
+                var role = accessService.GetRole(workspaceId, id.Value);
+
+                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
+                {
+                    return Forbid();
+                }
+
+                taskService.ShallowUpdate(request);
+
+                return Ok();
+            }
+
+            return Unauthorized("User was not found");
+        }
+
+        [HttpPut("{taskId}")]
+        public IActionResult UpdateTask(long taskId, [FromBody] UpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -66,63 +133,11 @@ namespace Fragmenta.Api.Controllers
                     return Forbid();
                 }
 
-                var result = statusService.GetStatuses(boardId);
-                if(result == null)
+                var result = taskService.UpdateTask(taskId, request);
+
+                if (result)
                 {
-                    return BadRequest();
-                }
-
-                return Ok(result);
-            }
-
-            return Unauthorized("User was not found");
-        }
-
-        [HttpPost]
-        public IActionResult CreateBoard([FromBody] CreateBoardRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
-        {
-            var id = GetAuthenticatedUserId();
-
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
-            {
-                var role = accessService.GetRole(workspaceId, id.Value);
-
-                if (role == null || !AccessCheck.CanCreateBoard(role.Value))
-                {
-                    return Forbid();
-                }
-
-                var result = boardService.CreateBoard(workspaceId, request);
-
-                if (result != null)
-                {
-                    return CreatedAtAction(nameof(CreateBoard), result);
-                }
-
-                return BadRequest();
-            }
-            return Unauthorized("User was not found");
-        }
-
-        [HttpPut("{boardId}")]
-        public IActionResult UpdateBoard(long boardId, [FromBody] UpdateBoardRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
-        {
-            var id = GetAuthenticatedUserId();
-
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
-            {
-                var role = accessService.GetRole(workspaceId, id.Value);
-
-                if (role == null || !AccessCheck.CanUpdateBoard(role.Value))
-                {
-                    return Forbid();
-                }
-
-                var result = boardService.UpdateBoard(boardId, request);
-
-                if (result != null)
-                {
-                    return Ok(result);
+                    return Ok();
                 }
 
                 return BadRequest();
@@ -131,8 +146,8 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
 
-        [HttpPost("{boardId}/guests")]
-        public IActionResult AddGuests(long boardId, [FromBody] AddGuestsRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        [HttpDelete("{taskId}")]
+        public IActionResult DeleteTask(long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -140,46 +155,19 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageGuests(role.Value))
+                if (role == null || !AccessCheck.CanManageStatuses(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = boardService.AddGuests(boardId, request.UsersId);
-
-                if (result.Count > 0)
-                {
-                    return CreatedAtAction(nameof(CreateBoard), result);
-                }
-
-                return BadRequest();
-            }
-
-            return Unauthorized("User was not found");
-        }
-
-        [HttpDelete("{boardId}/guests/{guestId}")]
-        public IActionResult RemoveGuests(long boardId, long guestId, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
-        {
-            var id = GetAuthenticatedUserId();
-
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
-            {
-                var role = accessService.GetRole(workspaceId, id.Value);
-
-                if (role == null || !AccessCheck.CanManageGuests(role.Value))
-                {
-                    return Forbid();
-                }
-
-                var result = boardService.RemoveGuest(boardId, guestId);
+                var result = taskService.DeleteTask(taskId);
 
                 if (result)
                 {
                     return NoContent();
                 }
 
-                return BadRequest();
+                return BadRequest("Cannot delete status with dependent tasks");
             }
 
             return Unauthorized("User was not found");

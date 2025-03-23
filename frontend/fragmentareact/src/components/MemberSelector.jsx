@@ -1,0 +1,65 @@
+import { useState, useEffect } from "react";
+import { Input, Box, List, Spinner } from "@chakra-ui/react";
+import { api } from "@/api/fetchClient";
+
+export function MemberSelector({ members, onSelect }) {
+    const [selectedMembers, setSelectedMembers] = useState([])
+    const [query, setQuery] = useState("");
+    const [showSuggestions, setShowSuggestions] = useState(false)
+
+    function handleSelect(item) {
+        console.log("selected", item);
+        onSelect(item);
+        setSelectedMembers([]);
+        setQuery("")
+    }
+
+    useEffect(() => {
+        console.log("search triggered")
+        const delayDebounce = setTimeout(() => {
+            setSelectedMembers(members.filter(e => e.email.includes(query) || e.name.includes(query)))
+        }, 200);
+
+        return () => clearTimeout(delayDebounce);
+    }, [query]);
+
+    return (
+        <Box position="relative" w="full">
+            <Input
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
+                value={query}
+                onFocus={() => setShowSuggestions(true)}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search..."
+            />
+            {(selectedMembers.length > 0 && showSuggestions) && (
+                <List.Root
+                    variant="plain"
+                    position="absolute"
+                    top="100%"
+                    left="0"
+                    width="100%"
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    boxShadow="md"
+                    zIndex="10"
+                >
+                    {selectedMembers.map((item) => (
+                        <List.Item
+                            onMouseDown={(e) => {
+                                e.preventDefault(); // Prevent input from losing focus immediately
+                                handleSelect(item);
+                            }} key={item.id}
+                            p="2"
+                            _hover={{ bg: "gray.100", cursor: "pointer" }}
+                        >
+                            {item.name}
+                        </List.Item>
+                    ))}
+                </List.Root>
+            )}
+        </Box>
+    );
+}

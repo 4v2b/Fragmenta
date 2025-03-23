@@ -16,19 +16,35 @@ namespace Fragmenta.Api.Utils
             return false;
         }
 
-        public static bool CanCreateBoard(Role actorRole) =>
-            actorRole == Role.Owner || actorRole == Role.Admin;
+        public static bool CanManageGuests(Role actorRole) 
+            => actorRole == Role.Owner || actorRole == Role.Admin;
 
-        public static bool CanAddMember(Role actorRole) =>
-            actorRole == Role.Owner || actorRole == Role.Admin;
+        public static bool CanCreateBoard(Role actorRole) 
+            => actorRole == Role.Owner || actorRole == Role.Admin;
 
-        public static bool CanDeleteWorkspace(Role actorRole) => actorRole == Role.Owner;
+        public static bool CanUpdateBoard(Role actorRole) 
+            => actorRole == Role.Owner || actorRole == Role.Admin;
 
-        public static bool CanUpdateWorkspace(Role actorRole) => actorRole == Role.Owner;
+        public static bool CanManageBoardContent(Role actorRole)
+            => actorRole != Role.Guest;
 
-        public static bool CanRevokeAdminPermission(Role actorRole, Role memberRole) => actorRole == Role.Owner && memberRole == Role.Admin ;
+        public static bool CanAddMember(Role actorRole) 
+            => actorRole == Role.Owner || actorRole == Role.Admin;
 
-        public static bool CanGrantAdminPermission(Role actorRole, Role memberRole) => actorRole == Role.Owner && memberRole == Role.Member;
+        public static bool CanDeleteWorkspace(Role actorRole) 
+            => actorRole == Role.Owner;
+
+        public static bool CanUpdateWorkspace(Role actorRole) 
+            => actorRole == Role.Owner;
+
+        public static bool CanRevokeAdminPermission(Role actorRole, Role memberRole) 
+            => actorRole == Role.Owner && memberRole == Role.Admin ;
+
+        public static bool CanGrantAdminPermission(Role actorRole, Role memberRole) 
+            => actorRole == Role.Owner && memberRole == Role.Member;
+
+        public static bool CanManageStatuses(Role actorRole)
+            => actorRole != Role.Guest;
 
     }
 }

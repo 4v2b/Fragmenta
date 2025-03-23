@@ -96,17 +96,30 @@ export async function refreshToken() {
 }
 
 export const api = {
-    get: (url) => fetchWithJwtBearer(url),
-    post: (url, data) => fetchWithJwtBearer(url, {
+    get: (url, workspaceId = null) => fetchWithJwtBearer(url, {
+        headers: workspaceId ? {
+            "X-Workspace-Id": workspaceId
+        } : {}
+    }),
+    post: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
+        headers: workspaceId ? {
+            "X-Workspace-Id": workspaceId
+        } : {},
         method: 'POST',
         body: JSON.stringify(data)
     }),
-    put: (url, data) => fetchWithJwtBearer(url, {
+    put: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
+        headers: workspaceId ? {
+            "X-Workspace-Id": workspaceId
+        } : {},
         method: 'PUT',
         body: JSON.stringify(data)
     }),
     delete:
-        (url) => fetchWithJwtBearer(url, {
+        (url, workspaceId = null) => fetchWithJwtBearer(url, {
+            headers: workspaceId ? {
+                "X-Workspace-Id": workspaceId
+            } : {},
             method: 'DELETE'
         })
     // Add other methods as needed

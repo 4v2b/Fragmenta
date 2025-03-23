@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { api } from "@/api/fetchClient"
 import { useTranslation } from "react-i18next"
 import { Stack, Button, Wrap, Badge, CloseButton, Table } from "@chakra-ui/react"
-import { useWorkspaceRole } from "@/utils/WorkspaceContext"
+import { useWorkspace } from "@/utils/WorkspaceContext"
 import { Autocomplete } from "@/components/Autocomplete"
 import { canDeleteMember } from "@/utils/permissions"
 import { LiaDoorOpenSolid } from "react-icons/lia";
@@ -19,34 +19,33 @@ import {
 } from "@/components/ui/dialog"
 
 export function Members({ workspaceId }) {
+    const {role, addMembers, removeMember, members} = useWorkspace() 
     const [chosenUsers, setChosenUsers] = useState([])
-    const [members, setMembers] = useState([])
-    const role = useWorkspaceRole()
+    //const [members, setMembers] = useState([]))
     const { t } = useTranslation()
 
-    useEffect(() => {
-        api.get(`/workspaces/${workspaceId}/members`).then(res => setMembers(res))
-    }, [])
+    // useEffect(() => {
+    //     api.get(`/members`, workspaceId).then(res => setMembers(res))
+    // }, [])
 
     // function addMembers() {
     //     api.post(`/workspaces/${workspaceId}/members`, { usersId: chosenUsers.map(e => e.id) }).then(addedMembers => setMembers([addedMembers, ...members]))
     // }
 
-    function addMembers() {
-        api.post(`/workspaces/${workspaceId}/members`, { usersId: chosenUsers.map(e => e.id) })
-            .then(() => api.get(`/workspaces/${workspaceId}/members`))
-            .then(setMembers);
+    function onAddMembers() {
+        addMembers(chosenUsers.map(e => e.id))
+        setChosenUsers([])
     }
 
-    function deleteMember(id) {
-        api.delete(`/workspaces/${workspaceId}/members/${id}`).then(setMembers(members.filter(e => e.id != id))).catch(e => console.log(e))
+    function onDeleteMember(id) {
+        removeMember(id)
     }
 
     return (<Stack>
         <Autocomplete addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} />
         <Wrap>
             {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton onClick={() => {setChosenUsers(prev => prev.filter(i => i.id != e.id))}} /></Badge>)}
-            {chosenUsers.length > 0 && <Button onClick={() => addMembers()}>{t("fields.addMembers")}</Button>}
+            {chosenUsers.length > 0 && <Button onClick={() => onAddMembers()}>{t("fields.addMembers")}</Button>}
         </Wrap>
         <Table.Root size="md">
             <Table.Header>
@@ -81,7 +80,7 @@ export function Members({ workspaceId }) {
                                         <DialogActionTrigger asChild>
                                             <Button variant="outline">Cancel</Button>
                                         </DialogActionTrigger>
-                                        <Button onClick={() => deleteMember(item.id)} colorPalette="red">Delete</Button>
+                                        <Button onClick={() => onDeleteMember(item.id)} colorPalette="red">Delete</Button>
                                     </DialogFooter>
                                     <DialogCloseTrigger />
                                 </DialogContent>
