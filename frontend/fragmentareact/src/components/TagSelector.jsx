@@ -38,54 +38,6 @@ export function TagSelector({ selectedTags, onSelect }) {
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search..."
                 />
-                {/* {(showSuggestions) && (
-                    <List.Root
-                        variant="plain"
-                        position="absolute"
-                        top="100%"
-                        left="0"
-                        width="100%"
-                        bg="white"
-                        border="1px solid"
-                        borderColor="gray.200"
-                        borderRadius="md"
-                        boxShadow="md"
-                        zIndex="10"
-                    >
-                        {suggestedTags.length > 0 && query != "" ?
-                            suggestedTags.map((item) => (
-                                <List.Item
-                                    onMouseDown={(e) => {
-                                        e.preventDefault(); // Prevent input from losing focus immediately
-                                        handleSelect(item);
-                                    }} key={item.id}
-                                    p="2"
-                                    _hover={{ bg: "gray.100", cursor: "pointer" }}
-                                >
-                                    {item.name}
-                                </List.Item>
-                            )) : <>
-                                <List.Item
-                                    p="2"
-                                    fontStyle={"italic"}
-                                >
-                                    {"No tags found"}
-                                </List.Item>
-                                <List.Item
-                                    fontWeight="semibold"
-                                    onMouseDown={(e) => {
-                                        e.preventDefault(); // Prevent input from losing focus immediately
-                                        addTag(query);
-                                    }}
-                                    p="2"
-                                    _hover={{ bg: "gray.100", cursor: "pointer" }}
-                                >
-                                    {"Create a new one"}
-                                </List.Item>
-                            </>}
-
-                    </List.Root>
-                )} */}
 
                 {(showSuggestions) && (
                     <List.Root
@@ -152,9 +104,7 @@ export function TagSelector({ selectedTags, onSelect }) {
                                 </>
                         )}
                     </List.Root>
-
                 )}
-
             </Box>
             <Flex gap="4" wrap="wrap">
                 {selectedTags.map(e => <Tag.Root size="md" colorPalette="white">

@@ -17,3 +17,8 @@ body {
   margin: 0;
   height: 100vh;
 }
+
+.chakra-ignore .react-date-picker__calendar {
+  background-color: white;
+  
+}

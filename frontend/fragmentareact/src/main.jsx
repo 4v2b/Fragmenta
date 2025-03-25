@@ -18,7 +18,7 @@ import { TagsProvider } from './utils/TagContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ChakraProvider value={system}>
+    <ChakraProvider resetCSS={false} value={system}>
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>

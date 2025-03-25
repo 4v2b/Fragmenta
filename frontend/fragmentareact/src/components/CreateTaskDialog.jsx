@@ -1,63 +1,73 @@
-import { api } from "@/api/fetchClient"
-import { EditableTitle } from "@/components/EditableTitle"
-import { canEditBoard, canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
-import { HStack, Stack, Tag, Box, Text, Badge, Flex, Heading, Button, Input, Checkbox, CloseButton } from "@chakra-ui/react"
+import { HStack, Stack, Text, Button, Input, CloseButton } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router"
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog"
 import { Field } from "./ui/field"
+import { Field as InputField } from "@chakra-ui/react"
 import { NumberInputRoot, NumberInputField } from "./ui/number-input"
-import DatePicker from "react-multi-date-picker";
 import { MemberSelector } from "./MemberSelector"
 import { Avatar } from "@chakra-ui/react"
-import { useTags } from "@/utils/TagContext"
 import { TagSelector } from "./TagSelector"
+import { useTranslation } from "react-i18next"
+import { NativeSelect } from "@chakra-ui/react"
+import DatePicker from 'react-date-picker';
+import 'react-date-picker/dist/DatePicker.css';
+import { Checkbox } from "@chakra-ui/react"
 
 // BUG - Data in message box stays after exit
 
 export function CreateTaskDialog({ onAddTask }) {
+    const { t, i18n } = useTranslation()
     const { members } = useWorkspace()
+    const [error, setError] = useState(false)
     const [selectedMember, setSelectedMember] = useState(null)
+    const [selectDueDate, setSelectDueDate] = useState(false)
     const [selectedTags, setSelectedTags] = useState([])
     const [newTask, setNewTask] = useState({
         title: "",
         description: "",
-        dueDate: "2025-03-09T13:18:14.762Z",
+        dueDate: new Date(),
         statusId: null,
-        assigneeId: 0,
+        assigneeId: null,
         weight: 0,
         prioriry: 0,
     })
 
+    const priorities = [0, 1, 2, 3]
+
     console.log("selected tags", selectedTags)
 
     function handleAssigneeSelect() {
-        onAddTask({ 
-            ...newTask, 
-            assigneeId: selectedMember.id, 
-            tagsId: selectedTags.map(e => e.id) 
+        console.log(newTask)
+        onAddTask({
+            ...newTask,
+            assigneeId: selectedMember?.id,
+            tagsId: selectedTags.map(e => e.id),
+            dueDate: selectDueDate ? newTask.dueDate : null
         })
     }
 
     return <DialogRoot>
         <DialogTrigger asChild>
-            <Button colorScheme="blue">Add Task</Button>
+            <Button colorScheme="blue">{t("fields.labels.addTask")}</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Add Task</DialogTitle>
+                <DialogTitle>{t("fields.labels.addTask")}</DialogTitle>
             </DialogHeader>
             <DialogBody>
                 <Stack spacing={4}>
-                    <Field label="Title">
+
+                    <InputField.Root invalid={error}>
+                        <InputField.Label>{t("fields.labels.title")}</InputField.Label>
                         <Input
                             value={newTask.title}
-                            onChange={e => setNewTask({ ...newTask, title: e.target.value })}
+                            onChange={e => { setError(e.target.value == ""); setNewTask({ ...newTask, title: e.target.value }) }}
                         />
-                    </Field>
+                        <InputField.ErrorText>{t("fields.labels.required")}</InputField.ErrorText>
+                    </InputField.Root>
 
-                    <Field label="Description">
+                    <Field label={t("fields.labels.desc")}>
                         <Input
                             value={newTask.description}
                             placeholder="Optional"
@@ -69,23 +79,51 @@ export function CreateTaskDialog({ onAddTask }) {
                         <TagSelector selectedTags={selectedTags} onSelect={tag => { console.log("Selected ", tag); setSelectedTags([...selectedTags, tag]) }}></TagSelector>
                     </Field>
 
-                    <Field label="Priority">
-                        <NumberInputRoot min={0} max={4}>
-                            <NumberInputField
-                                value={newTask.priority || 0}
-                                onChange={e => setNewTask({ ...newTask, priority: e.target.value ? parseInt(e.target.value) : 0 })}
-                            />
-                        </NumberInputRoot>
+                    <Field label={t("fields.labels.priority")}>
+
+                        <NativeSelect.Root size="sm" width="240px">
+                            <NativeSelect.Field
+                                onChange={(e) => setNewTask(
+                                    {
+                                        ...newTask,
+                                        prioriry: Number(e.currentTarget.value) ?? 0
+                                    })}
+                                placeholder={t("fields.labels.selPriority")}>
+
+                                {priorities.map(p => (
+                                    <option value={p}>
+                                        {t(`fields.priority.priority${p}`)}
+                                    </option>
+                                ))}
+
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                        </NativeSelect.Root>
                     </Field>
 
-                    <Field label="Due date">
-                        {/* <DatePicker
-                            format="YYYY/M/D"
-                            onChange={e => setNewTask({ ...newTask, dueDate: e.target.value ? new Date(e.target.value) : null })}
-                        /> */}
+                    <Field label={t("fields.labels.dueDate")}>
+
+                        <Checkbox.Root>
+                            <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label />
+                        </Checkbox.Root>
+                        <DatePicker
+                            locale={i18n.language}
+                            className={"chakra-ignore"}
+                            disabled={selectDueDate ? false : true}
+                            onChange={value => setNewTask({ ...newTask, dueDate: value })}
+                            value={new Date(newTask.dueDate)}
+                            minDate={new Date(Date.now())}
+                        />
+
+
+
                     </Field>
 
-                    <Field label="Assignee">
+                    <Field label={t("fields.labels.assignee")}>
                         {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
                             :
                             <HStack key={selectedMember.email} gap="4">
@@ -104,12 +142,18 @@ export function CreateTaskDialog({ onAddTask }) {
                 </Stack>
             </DialogBody>
             <DialogFooter>
-                <DialogActionTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
-                </DialogActionTrigger>
-                <DialogActionTrigger asChild>
-                    <Button onClick={() => handleAssigneeSelect()} colorScheme="blue">Save</Button>
-                </DialogActionTrigger>
+
+                <DialogTrigger asChild>
+                    <Button variant="outline">{t("fields.actions.cancel")}</Button>
+                </DialogTrigger>
+                {
+                    newTask?.title != "" ?
+                        (<DialogTrigger asChild>
+                            <Button onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} colorScheme="blue">{t("fields.actions.save")}</Button>
+                        </DialogTrigger>) :
+                        (<Button onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} colorScheme="blue">{t("fields.actions.save")}</Button>)
+                }
+
             </DialogFooter>
             <DialogCloseTrigger />
         </DialogContent>
