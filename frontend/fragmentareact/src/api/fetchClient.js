@@ -45,6 +45,8 @@ async function fetchWithJwtBearer(url, options = {}) {
 
     options.headers["Authorization"] = `Bearer ${accessToken}`;
 
+    console.log("fetching data from ", url, "with data ", options)
+
     let response = await fetch(BASE_URL + url, options);
 
     if (response.status === 401) {

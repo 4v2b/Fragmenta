@@ -16,8 +16,6 @@ export function TagSelector({ selectedTags, onSelect }) {
         setShowSuggestions(false);
     }
 
-    console.log("selected tag", selectedTags);
-
     useEffect(() => {
         console.log("search triggered")
         const delayDebounce = setTimeout(() => {

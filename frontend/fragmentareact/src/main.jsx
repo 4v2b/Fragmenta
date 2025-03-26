@@ -14,6 +14,7 @@ import { Workspace } from './pages/Workspace/Workspace';
 import { Board } from './pages/Board';
 import { MainLayout } from './components/MainLayout';
 import { TagsProvider } from './utils/TagContext';
+import { TasksProvider } from './utils/TaskContext';
 
 
 createRoot(document.getElementById('root')).render(
@@ -34,9 +35,11 @@ createRoot(document.getElementById('root')).render(
 
               </Route>
               <Route path="workspaces/:workspaceId/boards/:boardId" element={
-                <TagsProvider>
-                  <Board />
-                </TagsProvider>
+                <TasksProvider>
+                  <TagsProvider>
+                    <Board />
+                  </TagsProvider>
+                </TasksProvider>
               }>
               </Route>
 

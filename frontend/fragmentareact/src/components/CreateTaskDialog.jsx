@@ -13,6 +13,7 @@ import { NativeSelect } from "@chakra-ui/react"
 import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import { Checkbox } from "@chakra-ui/react"
+import { useTasks } from "@/utils/TaskContext"
 
 // BUG - Data in message box stays after exit
 
@@ -27,21 +28,23 @@ export function CreateTaskDialog({ onAddTask }) {
         title: "",
         description: "",
         dueDate: new Date(),
-        statusId: null,
         assigneeId: null,
         weight: 0,
-        prioriry: 0,
+        priority: 0,
     })
 
     const priorities = [0, 1, 2, 3]
 
-    console.log("selected tags", selectedTags)
-
     function handleAssigneeSelect() {
-        console.log(newTask)
+        // console.log({
+        //     ...newTask,
+        //     assigneeId: selectedMember?.id,
+        //     tagsId: selectedTags.map(e => e.id),
+        //     dueDate: selectDueDate ? newTask.dueDate : null
+        // })
         onAddTask({
             ...newTask,
-            assigneeId: selectedMember?.id,
+            assigneeId: selectedMember?.id ?? null,
             tagsId: selectedTags.map(e => e.id),
             dueDate: selectDueDate ? newTask.dueDate : null
         })
@@ -86,7 +89,7 @@ export function CreateTaskDialog({ onAddTask }) {
                                 onChange={(e) => setNewTask(
                                     {
                                         ...newTask,
-                                        prioriry: Number(e.currentTarget.value) ?? 0
+                                        priority: Number(e.currentTarget.value) ?? 0
                                     })}
                                 placeholder={t("fields.labels.selPriority")}>
 

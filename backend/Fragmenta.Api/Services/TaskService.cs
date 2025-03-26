@@ -20,9 +20,16 @@ namespace Fragmenta.Api.Services
 
         public TaskPreviewDto? CreateTask(long statusId, CreateOrUpdateTaskRequest request)
         {
-            var assigeee = request.AssigneeId == null ? _context.Users.Find(request.AssigneeId) : null;
+            _logger.LogInformation("Creating task for status with id: {StatusId}", statusId);
+            var assigeee = request.AssigneeId != null ? _context.Users.Find(request.AssigneeId) : null;
+
+            _logger.LogInformation("Found assignee for requested id {Id} : {Name} {Email}", request.AssigneeId, assigeee?.Name, assigeee?.Email);
+
+            _logger.LogInformation("Existing statuses with id's: {StatusId}", string.Join(", ", _context.Statuses.Select(e => e.Id.ToString())));
 
             var status = _context.Statuses.Find(statusId);
+
+            _logger.LogInformation("Status id: {StatusId}", status?.Id);
 
             List<Tag> tags = new();
 
@@ -55,6 +62,8 @@ namespace Fragmenta.Api.Services
 
             _context.Add(task);
             _context.SaveChanges();
+
+            _logger.LogInformation("Created task with id: {TaskId}", task.Id);
 
             return new TaskPreviewDto()
             {

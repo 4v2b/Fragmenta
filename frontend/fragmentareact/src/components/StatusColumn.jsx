@@ -6,14 +6,16 @@ import { EditStatusDialog } from "./EditStatusDialog";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 import { AlertDialog } from "./AlertDialog";
 import { canManageBoardContent } from "@/utils/permissions";
+import { useTasks } from "@/utils/TaskContext";
 
 export function StatusColumn({ status, tasks, tags }) {
     const { role } = useWorkspace();
     const { workspaceId, boardId } = useParams();
+    const { addTask } = useTasks()
 
-    async function handleAddTask(task) {
-        task.statusId = status.id;
-        console.log(status);
+    function handleAddTask(task) {
+        console.log('creating task',task);
+        addTask(task, status.id)
     }
 
     return (
@@ -66,7 +68,7 @@ export function StatusColumn({ status, tasks, tags }) {
                                 </Menu.Item>
                                 <Menu.Item>
                                     <AlertDialog
-                                        onConfirm={() => {}}
+                                        onConfirm={() => { }}
                                         base={<HStack as="div" color="red.500"><BiTrash /> <span>Delete</span></HStack>}
                                         message="Are you sure you want to delete this status?"
                                         title="Confirm Deletion"

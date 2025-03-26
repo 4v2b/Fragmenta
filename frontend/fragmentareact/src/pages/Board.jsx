@@ -12,14 +12,18 @@ import { StatusColumn } from "@/components/StatusColumn"
 import { CreateStatusDialog } from "@/components/CreateStatusDialog"
 import { Menu, Portal, Show } from "@chakra-ui/react"
 import { Tooltip } from "@/components/ui/tooltip"
+import { useTags } from "@/utils/TagContext"
+import { useTasks } from "@/utils/TaskContext"
 
 
 export function Board() {
     const { role } = useWorkspace()
     const { workspaceId, boardId } = useParams()
     const [board, setBoard] = useState(null)
-    const [tasks, setTasks] = useState([])
-    const [tags, setTags] = useState([])
+    const { tasks, addTask } = useTasks()
+    const { tags } = useTags()
+
+    console.log("tasks:", tasks)
 
     useEffect(() => {
         api.get(`/boards/${boardId}`, workspaceId).then(res => setBoard(res))
