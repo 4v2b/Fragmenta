@@ -3,6 +3,7 @@ using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Utils;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Fragmenta.Api.Services
@@ -12,26 +13,57 @@ namespace Fragmenta.Api.Services
         private readonly ApplicationContext _context;
         private readonly ILogger<UserService> _logger;
         private readonly IHashingService _hasher;
+        private readonly IMemoryCache _cache;
+        private readonly TimeSpan LockoutTime = TimeSpan.FromMinutes(10);
+        private const int MaxAttempts = 3;
 
-        public UserService(ApplicationContext context, ILogger<UserService> logger, IHashingService hasher)
+        public UserService(ApplicationContext context, ILogger<UserService> logger, IHashingService hasher, IMemoryCache cache)
         {
             _context = context;
             _logger = logger;
             _hasher = hasher;
+            _cache = cache;
         }
 
-        public UserDto? Authorize(LoginRequest model)
+        public AuthResult Authorize(LoginRequest model)
         {
-            var entity = _context.Users.FirstOrDefault(e => e.Email == model.Email);
+            var key = $"failed_attempts_{model.Email}";
 
-            if(entity != null && _hasher.Verify(model.Password, entity.PasswordHash, entity.PasswordSalt))
+            // Перевірка, чи користувач заблокований
+            if (_cache.TryGetValue<(int Attempts, DateTime? LockedUntil)>(key, out var entry))
             {
-                return new UserDto() { Email = entity.Email, Id = entity.Id };
+                if (entry.LockedUntil.HasValue && entry.LockedUntil > DateTime.UtcNow)
+                {
+                    return AuthResult.Locked(entry.LockedUntil.Value);
+                }
+            }
+            else
+            {
+                entry = (0, null);
             }
 
-            _logger.LogWarning("Cannot authorise a user with email {Email}", model.Email);
+            var entity = _context.Users.FirstOrDefault(e => e.Email == model.Email);
 
-            return null;
+            if (entity != null && _hasher.Verify(model.Password, entity.PasswordHash, entity.PasswordSalt))
+            {
+                _cache.Remove(key); // Видаляємо інформацію про спроби при успішному вході
+                return AuthResult.Success(new UserDto { Email = entity.Email, Id = entity.Id });
+            }
+
+            // Збільшуємо кількість спроб
+            entry = (entry.Attempts + 1, entry.Attempts + 1 >= MaxAttempts ? DateTime.UtcNow.Add(LockoutTime) : null);
+            _cache.Set(key, entry, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = entry.LockedUntil.HasValue ? LockoutTime : TimeSpan.FromMinutes(15)
+            });
+
+            if(entity == null)
+            {
+                return AuthResult.Failed(Enums.ErrorType.UserNonExistent);
+            }
+
+            _logger.LogWarning("Cannot authorise user with email {Email}", model.Email);
+            return entry.LockedUntil.HasValue ? AuthResult.Locked(entry.LockedUntil.Value) : AuthResult.Failed(Enums.ErrorType.PasswordInvalid);
         }
 
         public bool ChangePassword(string newPassword, string oldPassword, long userId)
@@ -97,11 +129,11 @@ namespace Fragmenta.Api.Services
             return new UserFullDto() { Email = user.Email, Id = user.Id, Name = user.Name };
         }
 
-        public UserDto? Register(RegisterRequest model)
+        public AuthResult Register(RegisterRequest model)
         {
             if (_context.Users.Any(e => e.Email == model.Email))
             {
-                return null;
+                return AuthResult.Failed(Enums.ErrorType.UserExists);
             }
 
             var salt = SaltGenerator.GenerateSalt();
@@ -118,7 +150,7 @@ namespace Fragmenta.Api.Services
             _context.Add(entity);
             _context.SaveChanges();
 
-            return new UserDto() { Email = entity.Email, Id = entity.Id };
+            return AuthResult.Success(new UserDto() { Email = entity.Email, Id = entity.Id });
         }
 
         public bool VerifyPassword(string password, long userId)

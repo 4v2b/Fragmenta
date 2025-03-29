@@ -4,7 +4,7 @@ namespace Fragmenta.Api.Contracts
 {
     public interface IUserService
     {
-        UserDto? Register(RegisterRequest model);
+        AuthResult Register(RegisterRequest model);
 
         bool ChangePassword(string newPassword, string oldPassword, long userId);
 
@@ -12,7 +12,7 @@ namespace Fragmenta.Api.Contracts
 
         bool Delete(string password, long userId);
 
-        UserDto? Authorize(LoginRequest model);
+        AuthResult Authorize(LoginRequest model);
 
         UserFullDto? GetUserInfo(long userId);
 

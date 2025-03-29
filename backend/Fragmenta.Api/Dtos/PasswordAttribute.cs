@@ -8,11 +8,7 @@ namespace Fragmenta.Api.Dtos
         /// <summary>
         /// 
         /// </summary>
-        public PasswordAttribute() 
-        {
-            ErrorMessageResourceType = typeof(Resources.ValidationMessages);
-            ErrorMessageResourceName = "PasswordTooWeak";
-        }
+        public string ErrorMessage { get; set; }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {

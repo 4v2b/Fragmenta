@@ -114,6 +114,7 @@ builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
 

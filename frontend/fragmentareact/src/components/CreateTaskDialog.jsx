@@ -36,12 +36,6 @@ export function CreateTaskDialog({ onAddTask }) {
     const priorities = [0, 1, 2, 3]
 
     function handleAssigneeSelect() {
-        // console.log({
-        //     ...newTask,
-        //     assigneeId: selectedMember?.id,
-        //     tagsId: selectedTags.map(e => e.id),
-        //     dueDate: selectDueDate ? newTask.dueDate : null
-        // })
         onAddTask({
             ...newTask,
             assigneeId: selectedMember?.id ?? null,

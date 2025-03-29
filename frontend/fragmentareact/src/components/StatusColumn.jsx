@@ -8,12 +8,19 @@ import { AlertDialog } from "./AlertDialog";
 import { canManageBoardContent } from "@/utils/permissions";
 import { useTasks } from "@/utils/TaskContext";
 
-export function StatusColumn({ status, tasks, tags }) {
+export function StatusColumn({ status, tasks }) {
     const { role } = useWorkspace();
     const { workspaceId, boardId } = useParams();
     const { addTask } = useTasks()
 
     function handleAddTask(task) {
+
+        const weightToAdd = tasks.length > 0
+        ? tasks[tasks.length - 1].weight + 500
+        : 0
+
+        task.weight = weightToAdd;
+
         console.log('creating task',task);
         addTask(task, status.id)
     }

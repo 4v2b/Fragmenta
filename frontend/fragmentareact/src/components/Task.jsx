@@ -1,4 +1,4 @@
-export function Task({ item, columnId }) {
+export function Task({ item }) {
     return (
       <div
         ref={setRef}

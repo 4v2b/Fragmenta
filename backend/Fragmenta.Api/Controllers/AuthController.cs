@@ -57,18 +57,27 @@ namespace Fragmenta.Api.Controllers
         {
             try
             {
-                var user = userService.Authorize(model);
-                if (user == null)
-                    return BadRequest();
+                var result = userService.Authorize(model);
 
-                refreshService.RevokeTokens(user.Id);
+                if (result.IsLocked)
+                    return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });
 
-                var refreshToken = refreshService.GenerateToken(user.Id);
+                if (!result.IsSuccess || result.User is null)
+                    return BadRequest(new { message = result.Error switch { 
+                        Enums.ErrorType.PasswordInvalid => "auth.errors.passwordInvalid", 
+                        Enums.ErrorType.UserNonExistent => "auth.errors.userDoesntExist", 
+                        _ => "auth.errors.unknown" } 
+                    });
+
+                refreshService.RevokeTokens(result.User.Id);
+
+                var refreshToken = refreshService.GenerateToken(result.User.Id);
+
                 if (refreshToken == null) return BadRequest("Failed to generate refresh token");
 
                 return Ok(new TokenResponse
                 {
-                    AccessToken = jwtService.GenerateToken(user),
+                    AccessToken = jwtService.GenerateToken(result.User),
                     RefreshToken = refreshToken
                 });
             }
@@ -95,17 +104,17 @@ namespace Fragmenta.Api.Controllers
         {
             try
             {
-                var user = userService.Register(model);
+                var result = userService.Register(model);
 
-                if (user != null)
+                if (result.IsSuccess && result.User is not null)
                 {
-                    var refreshToken = refreshService.GenerateToken(user.Id);
+                    var refreshToken = refreshService.GenerateToken(result.User.Id);
 
                     if (refreshToken != null)
                     {
                         var response = new TokenResponse()
                         {
-                            AccessToken = jwtService.GenerateToken(user),
+                            AccessToken = jwtService.GenerateToken(result.User),
                             RefreshToken = refreshToken
                         };
 
@@ -113,7 +122,14 @@ namespace Fragmenta.Api.Controllers
                     }
                 }
 
-                return BadRequest();
+                return BadRequest(new
+                {
+                    message = result.Error switch
+                    {
+                        Enums.ErrorType.UserExists => "auth.errors.userExists",
+                        _ => "auth.errors.unknown"
+                    }
+                });
             }
             catch (Exception ex)
             {

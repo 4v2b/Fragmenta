@@ -77,9 +77,26 @@ i18n
                         }
                     },
                     auth: {
+                        login: "Log in",
+                        register: "Sign up",
+                        stub: "Невірний логін або пароль",
+                        errors: {
+                            passwordMismatch: "Passwords don't match",
+                            userExists: "User with such email already exists",
+                            passwordTooShort: "Password is too short",
+                            passwordTooWeak: "Password is too weak",
+                            passwordInvalid: "Invalid password",
+                            emailInvalid: "Wrong format of email",
+                            emailDoesntExist: "No user with this email",
+                            lockout: "Too many unsuccessful inputs. Try again later",
+                            timeLeft: "{{time}} left to next try",
+                        },
                         prompts: {
-                            toLogin: "Already have an account?",
-                            toRegister: "Do not have any account?"
+                            register: "Sign Up",
+                            login: "Login",
+                            haveAccount: "Already have an account?",
+                            noAccount: "Do not have any account?",
+                            forgotPassword: "Forgot password?",
                         }
                     }
                 }
@@ -113,7 +130,7 @@ i18n
                             selPriority: "Оберіть приоритет",
                             title: "Назва",
                             desc: "Опис",
-                            tags: "Tags",
+                            tags: "Теги",
                             dueDate: "Дедлайн",
                             assignee: "Виконавець",
                             priority: "Приоритет",
@@ -135,9 +152,26 @@ i18n
                         }
                     },
                     auth: {
+                        login: "Вхід",
+                        register: "Реєстрація",
+                        stub: "Невірний логін або пароль",
+                        errors: {
+                            passwordMismatch: "Паролі не співпадають",
+                            userExists: "Користувач з такою ел. поштою вже існує",
+                            passwordTooShort: "Пароль закороткий",
+                            passwordTooWeak: "Пароль занадто слабкий",
+                            passwordInvalid: "Невірний пароль",
+                            emailInvalid: "Невірний формат ел. пошти",
+                            userDoesntExist: "Користувача з даною ел. поштою не існує",
+                            lockout: "Забагато невдалих введень. Спробуйте пізніше",
+                            timeLeft: "Залишилось {{time}} до наступної спроби",
+                        },
                         prompts: {
-                            toLogin: "Вже маєте обліковий запис?",
-                            toRegister: "Не маєте облікового запису?"
+                            login: "Увійти",
+                            register: "Створіть новий",
+                            haveAccount: "Вже маєте обліковий запис?",
+                            noAccount: "Не маєте облікового запису?",
+                            forgotPassword: "Забули пароль?",
                         }
                     }
                 }
