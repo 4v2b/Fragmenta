@@ -8,9 +8,9 @@ namespace Fragmenta.Api.Dtos
         public UserDto? User { get; }
         public bool IsLocked { get; }
         public DateTime? LockedUntil { get; }
-        public ErrorType? Error { get; set; }
+        public AuthErrorType? Error { get; set; }
 
-        private AuthResult(bool isSuccess, UserDto? user, bool isLocked, DateTime? lockedUntil, ErrorType? error)
+        private AuthResult(bool isSuccess, UserDto? user, bool isLocked, DateTime? lockedUntil, AuthErrorType? error)
         {
             IsSuccess = isSuccess;
             User = user;
@@ -20,7 +20,7 @@ namespace Fragmenta.Api.Dtos
         }
 
         public static AuthResult Success(UserDto user) => new(true, user, false, null, null);
-        public static AuthResult Failed(ErrorType error) => new(false, null, false, null, error);
-        public static AuthResult Locked(DateTime until) => new(false, null, true, until, ErrorType.AccessLocked);
+        public static AuthResult Failed(AuthErrorType error) => new(false, null, false, null, error);
+        public static AuthResult Locked(DateTime until) => new(false, null, true, until, AuthErrorType.AccessLocked);
     }
 }

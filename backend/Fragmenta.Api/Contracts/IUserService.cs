@@ -8,6 +8,8 @@ namespace Fragmenta.Api.Contracts
 
         bool ChangePassword(string newPassword, string oldPassword, long userId);
 
+        bool ResetPassword(string newPassword, long userId);
+
         bool VerifyPassword(string password, long userId);
 
         bool Delete(string password, long userId);
@@ -20,5 +22,6 @@ namespace Fragmenta.Api.Contracts
 
         List<UserDto> FindByEmail(string email);
 
+        long? FindSingleByEmail(string email);
     }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
-import { login } from "../../api/api";
+import { login } from "@/api/api";
 import { Navigate, Link } from "react-router";
 import {
   Box,
@@ -11,6 +11,7 @@ import {
   Input,
   Stack,
 } from "@chakra-ui/react";
+import { Toaster, toaster } from "@/components/ui/toaster"
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -38,6 +39,7 @@ export function Login() {
   }, [lockoutUntil]);
 
   async function handleLogin() {
+
     const response = await login(email, password);
     if (response.status == 200) {
       setSkip(true);
@@ -53,46 +55,47 @@ export function Login() {
   }
 
   return !skip ? (
-    <Box maxW="md" mx="auto" mt={10} p={8} borderWidth={1} borderRadius="lg" boxShadow="lg">
+    <Box bg="bg.subtle" maxW="md" mx="auto" mt={10} p={8} borderWidth={1} borderRadius="lg" boxShadow="lg">
       <VStack spacing={6} align="stretch">
         <Heading size="lg" textAlign="center" mb={2}>
           {t("auth.login")}
         </Heading>
-        
+
         <Stack spacing={4}>
           <Box>
             <Text mb={2} fontWeight="medium">{t("fields.labels.email")}</Text>
-            <Input 
-              type="email" 
+            <Input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your.email@example.com"
               size="md"
             />
           </Box>
-          
+
           <Box>
             <Text mb={2} fontWeight="medium">{t("fields.labels.password")}</Text>
-            <Input 
-              type="password" 
+            <Input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               size="md"
             />
           </Box>
+          <Link to={"/forgot-password"} color="blue">{t("auth.prompts.forgotPassword")}</Link>
         </Stack>
-        
+
         {error && <Text color="red.500" fontSize="sm">{error}</Text>}
-        
+
         {lockoutUntil && (
           <Text color="red.500" fontSize="sm">
             {t("auth.errors.timeLeft", { time: timeLeft })}
           </Text>
         )}
-        
+
         <Button
           onClick={handleLogin}
-          colorScheme="blue"
+          bg="primary"
           type="submit"
           width="full"
           size="lg"
@@ -101,11 +104,12 @@ export function Login() {
         >
           {t("fields.actions.login")}
         </Button>
-        
+
         <Text fontSize="sm" textAlign="center" mt={2}>
           {t("auth.prompts.noAccount")} <Link to={"/register"} color="blue.500">{t("auth.prompts.register")}</Link>
         </Text>
       </VStack>
+      <Toaster/>
     </Box>
   ) : (
     <Navigate to="/" replace />

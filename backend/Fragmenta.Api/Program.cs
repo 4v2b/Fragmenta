@@ -70,6 +70,10 @@ var jwtOptionsSection = builder.Configuration.GetRequiredSection("Jwt");
 
 builder.Services.Configure<JwtOptions>(jwtOptionsSection);
 
+var smtpOptionsSection = builder.Configuration.GetRequiredSection("Smtp");
+
+builder.Services.Configure<SmtpOptions>(smtpOptionsSection);
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -114,6 +118,8 @@ builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IResetTokenService, ResetTokenService>();
+builder.Services.AddScoped<IMailingService, MailingService>();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();

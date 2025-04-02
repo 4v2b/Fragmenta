@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { register } from "../../api/api";
+import { register } from "@/api/api";
 import { Link, useNavigate } from "react-router";
 import {
     Box,
@@ -11,7 +11,6 @@ import {
     Input,
     Stack,
 } from "@chakra-ui/react";
-import { object } from "motion/react-client";
 
 export function Register() {
     const [email, setEmail] = useState("");
@@ -20,7 +19,7 @@ export function Register() {
     const [name, setName] = useState("");
     const [error, setError] = useState("");
     const { t } = useTranslation();
-    const { navigate } = useNavigate()
+    const navigate = useNavigate()
 
     async function handleRegister() {
         if (password !== passwordCopy) {
@@ -30,8 +29,6 @@ export function Register() {
 
         try {
             const response = await register(name, email, password);
-            //console.log(response);
-
             if (response.status == 200) {
                 navigate("/");
             }
@@ -43,7 +40,7 @@ export function Register() {
     }
 
     return (
-        <Box maxW="md" mx="auto" mt={10} p={8} borderWidth={1} borderRadius="lg" boxShadow="lg">
+        <Box bg="bg.subtle" maxW="md" mx="auto" mt={10} p={8} borderWidth={1} borderRadius="lg" boxShadow="lg">
             <VStack spacing={6} align="stretch">
                 <Heading size="lg" textAlign="center" mb={2}>
                     {t("auth.register")}

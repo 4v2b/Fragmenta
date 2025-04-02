@@ -59,11 +59,11 @@ namespace Fragmenta.Api.Services
 
             if(entity == null)
             {
-                return AuthResult.Failed(Enums.ErrorType.UserNonExistent);
+                return AuthResult.Failed(Enums.AuthErrorType.UserNonExistent);
             }
 
             _logger.LogWarning("Cannot authorise user with email {Email}", model.Email);
-            return entry.LockedUntil.HasValue ? AuthResult.Locked(entry.LockedUntil.Value) : AuthResult.Failed(Enums.ErrorType.PasswordInvalid);
+            return entry.LockedUntil.HasValue ? AuthResult.Locked(entry.LockedUntil.Value) : AuthResult.Failed(Enums.AuthErrorType.PasswordInvalid);
         }
 
         public bool ChangePassword(string newPassword, string oldPassword, long userId)
@@ -133,7 +133,7 @@ namespace Fragmenta.Api.Services
         {
             if (_context.Users.Any(e => e.Email == model.Email))
             {
-                return AuthResult.Failed(Enums.ErrorType.UserExists);
+                return AuthResult.Failed(Enums.AuthErrorType.UserExists);
             }
 
             var salt = SaltGenerator.GenerateSalt();
@@ -160,5 +160,27 @@ namespace Fragmenta.Api.Services
 
             return _hasher.Verify(password, user.PasswordHash, user.PasswordSalt);
         }
+
+        public bool ResetPassword(string newPassword, long userId)
+        {
+            var user = _context.Users.Find(userId);
+        
+            if (user != null)
+            {
+                var salt = SaltGenerator.GenerateSalt();
+
+                var passwordHash = _hasher.Hash(newPassword, salt);
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = salt;
+
+                _context.SaveChanges();
+
+                return true;
+            }
+
+            return false;         
+        }
+
+        public long? FindSingleByEmail(string email) => _context.Users.FirstOrDefault(e => e.Email == email)?.Id ?? null;
     }
 }

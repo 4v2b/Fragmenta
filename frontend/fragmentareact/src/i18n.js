@@ -50,6 +50,7 @@ i18n
                             priority3: "Low",  
                         },
                         labels: {
+                            newPassword: "New password",
                             required: "This field is required",
                             addTask: "Add task",
                             selPriority: "Select prioirty",
@@ -77,10 +78,18 @@ i18n
                         }
                     },
                     auth: {
+                        success:{
+                            resetPassword: "Password was successfully reset",
+                            loginRedirect: "Redirecting to login page",
+                        },
+                        resetPassword: "Creating a new password",
                         login: "Log in",
+                        sendLetter: "Send a letter for password reset",
                         register: "Sign up",
+                        forgotPassword: "Password reset",
                         stub: "Невірний логін або пароль",
                         errors: {
+                            invalidResetToken: "The link is invalid or outdated",
                             passwordMismatch: "Passwords don't match",
                             userExists: "User with such email already exists",
                             passwordTooShort: "Password is too short",
@@ -92,6 +101,8 @@ i18n
                             timeLeft: "{{time}} left to next try",
                         },
                         prompts: {
+                            backToLogin: "Don't want to reset password",
+                            changePassword: "Change password",
                             register: "Sign Up",
                             login: "Login",
                             haveAccount: "Already have an account?",
@@ -137,6 +148,7 @@ i18n
                             name: "Ім'я",
                             email: "Ел. пошта",
                             password: "Пароль",
+                            newPassword: "Новий пароль",
                             repeatPassword: "Повторіть пароль"
                         },
                         actions: {
@@ -152,10 +164,18 @@ i18n
                         }
                     },
                     auth: {
+                        success:{
+                            resetPassword: "Пароль успішно змінено",
+                            loginRedirect: "Вас буде перенаправлено на сторінку входу",
+                        },
+                        forgotPassword: "Скидання паролю",
+                        resetPassword: "Створення нового паролю",
+                        sendLetter: "Надіслати лист",
                         login: "Вхід",
                         register: "Реєстрація",
                         stub: "Невірний логін або пароль",
                         errors: {
+                            invalidResetToken: "Посилання невірне або час на нього вичерпався",
                             passwordMismatch: "Паролі не співпадають",
                             userExists: "Користувач з такою ел. поштою вже існує",
                             passwordTooShort: "Пароль закороткий",
@@ -167,6 +187,8 @@ i18n
                             timeLeft: "Залишилось {{time}} до наступної спроби",
                         },
                         prompts: {
+                            backToLogin: "Не хочу відновлювати пароль",
+                            changePassword: "Змінити пароль",
                             login: "Увійти",
                             register: "Створіть новий",
                             haveAccount: "Вже маєте обліковий запис?",

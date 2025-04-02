@@ -1,7 +1,10 @@
 ﻿using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Dtos;
+using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Security.Claims;
 
 namespace Fragmenta.Api.Controllers
@@ -9,7 +12,7 @@ namespace Fragmenta.Api.Controllers
     // TODO Make refresh token renew instead of generating one every time
 
     [ApiController]
-    [Route("/api/[action]")]
+    [Route("/api")]
     [Produces("application/json")]
     public class AuthController : ControllerBase
     {
@@ -18,7 +21,7 @@ namespace Fragmenta.Api.Controllers
         /// </summary>
         /// <response code="200">Returns new access token</response>
         /// <response code="401">If access token is invalid or expired</response>
-        [HttpPost]
+        [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Refresh([FromBody] RefreshRequest model, [FromServices] IRefreshTokenService refreshService, [FromServices] IJwtService jwtService)
@@ -43,7 +46,7 @@ namespace Fragmenta.Api.Controllers
         /// </summary>
         /// <response code="200">Returns new access and refresh tokens</response>
         /// <response code="400">If an error happened during request</response>
-        [HttpPost]
+        [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -63,10 +66,14 @@ namespace Fragmenta.Api.Controllers
                     return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });
 
                 if (!result.IsSuccess || result.User is null)
-                    return BadRequest(new { message = result.Error switch { 
-                        Enums.ErrorType.PasswordInvalid => "auth.errors.passwordInvalid", 
-                        Enums.ErrorType.UserNonExistent => "auth.errors.userDoesntExist", 
-                        _ => "auth.errors.unknown" } 
+                    return BadRequest(new
+                    {
+                        message = result.Error switch
+                        {
+                            Enums.AuthErrorType.PasswordInvalid => "auth.errors.passwordInvalid",
+                            Enums.AuthErrorType.UserNonExistent => "auth.errors.userDoesntExist",
+                            _ => "auth.errors.unknown"
+                        }
                     });
 
                 refreshService.RevokeTokens(result.User.Id);
@@ -83,7 +90,7 @@ namespace Fragmenta.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -92,7 +99,7 @@ namespace Fragmenta.Api.Controllers
         /// </summary>
         /// <response code="200">Returns new access and refresh tokens</response>
         /// <response code="400">If an error happened during adding a user to database</response>
-        [HttpPost]
+        [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Register(
@@ -126,15 +133,105 @@ namespace Fragmenta.Api.Controllers
                 {
                     message = result.Error switch
                     {
-                        Enums.ErrorType.UserExists => "auth.errors.userExists",
+                        Enums.AuthErrorType.UserExists => "auth.errors.userExists",
                         _ => "auth.errors.unknown"
                     }
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost("forgot-password")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> ForgotPassword(
+            [FromQuery][EmailAddress(ErrorMessage = "auth.errors.emailInvalid")] string email,
+            [FromServices] IUserService userService,
+            [FromServices] IResetTokenService resetService,
+            [FromServices] IMailingService mailingService
+        )
+        {
+            try
+            {
+                var userId = userService.FindSingleByEmail(email);
+
+                if (userId.HasValue)
+                {
+                    var token = resetService.GenerateToken(userId.Value);
+
+                    var content = MailBodyFormer.CreateResetPasswordTextBody("http://localhost:5173", token, userId.Value);
+
+                    var result = await mailingService.SendEmailAsync(email, content);
+
+                    if (result.IsLocked)
+                        return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });
+
+                    if (!result.IsSuccess)
+                        return BadRequest(new
+                        {
+                            message = result.ErrorType switch
+                            {
+                                Enums.EmailSendErrorType.SendingError => "auth.errors.cannotSendEmail",
+                                _ => "auth.errors.unknown"
+                            }
+                        });
+
+                    if (result.IsSuccess)
+                        return Ok();
+
+                }
+
+                return BadRequest(new
+                {
+                    message = "auth.errors.userDoesntExist"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> ResetPassword(
+            [FromBody] ResetPasswordRequest request,
+            [FromServices] IUserService userService,
+            [FromServices] IResetTokenService resetService
+        )
+        {
+            try
+            {
+                //var decodedToken = WebUtility.UrlDecode(request.Token);
+
+                if (!resetService.VerifyAndDestroyToken(request.Token, request.UserId))
+                {
+                    return BadRequest(new
+                    {
+                        message = "auth.errors.invalidResetToken"
+                    });
+                }
+
+                if (!userService.ResetPassword(request.NewPassword, request.UserId))
+                {
+                    return BadRequest(new
+                    {
+                        message = "auth.errors.userDoesntExist"
+                    });
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

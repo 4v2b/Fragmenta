@@ -5,27 +5,22 @@ namespace Fragmenta.Api.Dtos
 {
     public class PasswordAttribute : ValidationAttribute
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; set; } = "Password does not meet complexity requirements.";
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            var request = (RegisterRequest)validationContext.ObjectInstance;
-
-            int count = 0;
-            if (Regex.IsMatch(request.Password, "[a-z]")) count++;
-            if (Regex.IsMatch(request.Password, "[A-Z]")) count++;
-            if (Regex.IsMatch(request.Password, "[0-9]")) count++;
-            if (Regex.IsMatch(request.Password, "[@#$%^&*!?]")) count++;
-
-            if(count >= 3)
+            if (value is not string password)
             {
-                return ValidationResult.Success;
+                return new ValidationResult("Invalid password format.");
             }
 
-            return new ValidationResult(ErrorMessage);
+            int count = 0;
+            if (Regex.IsMatch(password, "[a-z]")) count++;
+            if (Regex.IsMatch(password, "[A-Z]")) count++;
+            if (Regex.IsMatch(password, "[0-9]")) count++;
+            if (Regex.IsMatch(password, "[@#$%^&*!?]")) count++;
+
+            return count >= 3 ? ValidationResult.Success : new ValidationResult(ErrorMessage);
         }
     }
 }
