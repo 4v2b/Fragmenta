@@ -29,10 +29,13 @@ namespace Fragmenta.Api.Services
                 return null;
             }
 
+            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Exists(i => i == e.Id)).ToList();
+
             var board = new Board()
             {
                 Name = request.Name,
-                Workspace = workspace
+                Workspace = workspace,
+                AttachmentTypes = attachmentTypes,
             };
 
             _context.Boards.Add(board);
@@ -73,6 +76,8 @@ namespace Fragmenta.Api.Services
         {
             var board = _context.Boards.Include(e => e.AccessList).Single(e => e.Id == boardId);
 
+            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Exists(i => i == e.Id)).ToList();
+
             if (board == null)
             {
                 return null;
@@ -80,6 +85,8 @@ namespace Fragmenta.Api.Services
 
             board.Name = request.Name;
             board.ArchivedAt = request.ArchivedAt;
+
+            board.AttachmentTypes = attachmentTypes;
 
             _context.SaveChanges();
 

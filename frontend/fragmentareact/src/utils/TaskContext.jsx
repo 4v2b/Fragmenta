@@ -7,6 +7,7 @@ const TasksContext = createContext();
 export function TasksProvider({ children }) {
   const [tasks, setTasks] = useState([]);
   const { workspaceId, boardId } = useParams()
+  const [allowedAttachmentTypes, setAllowedAttachmentTypes] = useState([]);
 
   function addTask(task, statusId){
     api.post(`/tasks?statusId=${statusId}`, task , workspaceId).then(res => setTasks(res));
@@ -14,10 +15,11 @@ export function TasksProvider({ children }) {
 
   useEffect(() => {
     api.get(`/tasks?boardId=${boardId}`, workspaceId).then(res => setTasks(res));
+    //api.get(`/allowedTypes?boardId=${boardId}`, workspaceId).then(res => setAllowedAttachmentTypes(res));
   }, [boardId]);
 
   return (
-    <TasksContext.Provider value={{ tasks, addTask }}>
+    <TasksContext.Provider value={{ tasks, addTask, allowedAttachmentTypes }}>
       {children}
     </TasksContext.Provider>
   );

@@ -14,12 +14,14 @@ import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import { Checkbox } from "@chakra-ui/react"
 import { useTasks } from "@/utils/TaskContext"
+import { FileManager } from "./FileManager"
 
 // BUG - Data in message box stays after exit
 
 export function CreateTaskDialog({ onAddTask }) {
     const { t, i18n } = useTranslation()
     const { members } = useWorkspace()
+    const {allowedAttachmentTypes} = useTasks()
     const [error, setError] = useState(false)
     const [selectedMember, setSelectedMember] = useState(null)
     const [selectDueDate, setSelectDueDate] = useState(false)
@@ -135,6 +137,10 @@ export function CreateTaskDialog({ onAddTask }) {
                                 </Stack>
                                 <CloseButton onClick={() => setSelectedMember(null)} />
                             </HStack>}
+                    </Field>
+
+                    <Field label={t("fields.labels.attachments")}>
+                        <FileManager></FileManager>
                     </Field>
                 </Stack>
             </DialogBody>

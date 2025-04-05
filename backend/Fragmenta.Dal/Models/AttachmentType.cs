@@ -8,7 +8,7 @@ namespace Fragmenta.Dal.Models
     {
         public string Value { get; set; } = null!;
 
-        public long ParentId { get; set; }
+        public long? ParentId { get; set; }
         public AttachmentType? Parent { get; set; }
 
         public List<AttachmentType> Children { get; set; } = [];

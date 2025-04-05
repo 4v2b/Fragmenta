@@ -8,7 +8,10 @@ namespace Fragmenta.Dal.Configuration
     {
         public void Configure(EntityTypeBuilder<Attachment> builder)
         {
-            builder.Property(e => e.Value)
+            builder.Property(e => e.OriginalName)
+                .HasMaxLength(200);
+
+            builder.Property(e => e.FileName)
                 .HasMaxLength(200);
 
             builder.HasOne(e => e.User)

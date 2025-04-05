@@ -6,7 +6,8 @@ namespace Fragmenta.Dal.Models
     [EntityTypeConfiguration(typeof(AttachmentEntityTypeConfiguration))]
     public class Attachment : EntityBase
     {
-        public string Value { get; set; } = null!;
+        public string OriginalName { get; set; } = null!;
+        public string FileName { get; set; } = null!;
 
         public long TypeId { get; set; }
         public AttachmentType Type { get; set; } = null!;

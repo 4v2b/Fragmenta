@@ -34,6 +34,10 @@ i18n
                         member: "Member",
                         guest: "Guest"
                     },
+                    errors: {
+                        fileTooLarge: "File '{{filename}}' is too large",
+                        forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
+                    },
                     common: {
                         greeting: "Welcome on the main page 🤗",
                         createWorkspace: "Create workspace",
@@ -50,6 +54,9 @@ i18n
                             priority3: "Low",  
                         },
                         labels: {
+                            attachments: "Attachments",
+                            dragFile: "Drag and drop files here",
+                            fileConstraint: "for files up to 10MB",
                             newPassword: "New password",
                             required: "This field is required",
                             addTask: "Add task",
@@ -120,6 +127,10 @@ i18n
                         member: "Учасник",
                         guest: "Гість"
                     },
+                    errors: {
+                        fileTooLarge: "Файл '{{filename}}' завеликий",
+                        forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
+                    },
                     common: {
                         greeting: "Вітаємо на головній сторінці 🤗",
                         createWorkspace: "Новий робочий простір",
@@ -136,6 +147,9 @@ i18n
                             priority3: "Низький",  
                         },
                         labels: {
+                            attachments: "Вкладені файли",
+                            dragFile: "Перетяніть файли сюди",
+                            fileConstraint: "для файлів розміром до 10МБ",
                             required: "Це поле є обов'язковим",
                             addTask: "Додати завдання",
                             selPriority: "Оберіть приоритет",

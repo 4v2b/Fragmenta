@@ -3,5 +3,7 @@
     public class CreateBoardRequest
     {
         public required string Name { get; set; }
+
+        public required List<long> AllowedTypeIds { get; set; } = [];
     }
 }

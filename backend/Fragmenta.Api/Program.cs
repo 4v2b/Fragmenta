@@ -11,6 +11,7 @@ using Serilog;
 using System.Reflection;
 using System.Text;
 using Fragmenta.Api.Middleware;
+using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,9 +71,8 @@ var jwtOptionsSection = builder.Configuration.GetRequiredSection("Jwt");
 
 builder.Services.Configure<JwtOptions>(jwtOptionsSection);
 
-var smtpOptionsSection = builder.Configuration.GetRequiredSection("Smtp");
-
-builder.Services.Configure<SmtpOptions>(smtpOptionsSection);
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -120,6 +120,8 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IResetTokenService, ResetTokenService>();
 builder.Services.AddScoped<IMailingService, MailingService>();
+builder.Services.AddScoped<IAttachmentTypeService, AttachmentTypeService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
