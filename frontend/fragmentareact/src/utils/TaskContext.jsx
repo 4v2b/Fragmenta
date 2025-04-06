@@ -13,13 +13,17 @@ export function TasksProvider({ children }) {
     api.post(`/tasks?statusId=${statusId}`, task , workspaceId).then(res => setTasks(res));
   }
 
+  function shallowUpdateTask(task){
+    api.post(`/tasks/reorder`, [task], workspaceId);
+  }
+
   useEffect(() => {
     api.get(`/tasks?boardId=${boardId}`, workspaceId).then(res => setTasks(res));
     //api.get(`/allowedTypes?boardId=${boardId}`, workspaceId).then(res => setAllowedAttachmentTypes(res));
   }, [boardId]);
 
   return (
-    <TasksContext.Provider value={{ tasks, addTask, allowedAttachmentTypes }}>
+    <TasksContext.Provider value={{ tasks, setTasks, addTask, allowedAttachmentTypes, shallowUpdateTask }}>
       {children}
     </TasksContext.Provider>
   );

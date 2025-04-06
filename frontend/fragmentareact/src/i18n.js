@@ -39,6 +39,8 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        emptyBoard: "The board is empty",
+                        noTasksYet: "No tasks yet",
                         greeting: "Welcome on the main page 🤗",
                         createWorkspace: "Create workspace",
                         workspaceStub: "None",
@@ -54,6 +56,7 @@ i18n
                             priority3: "Low",  
                         },
                         labels: {
+                            assignedTo: "Assignee: {{name}}", 
                             attachments: "Attachments",
                             dragFile: "Drag and drop files here",
                             fileConstraint: "for files up to 10MB",
@@ -132,6 +135,8 @@ i18n
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
                     common: {
+                        noTasksYet: "Поки що немає завдань",
+                        emptyBoard: "Ця дошка поки що порожня",
                         greeting: "Вітаємо на головній сторінці 🤗",
                         createWorkspace: "Новий робочий простір",
                         workspaceStub: "Не обрано",
@@ -147,6 +152,7 @@ i18n
                             priority3: "Низький",  
                         },
                         labels: {
+                            assignedTo: "Виконавець: {{name}}", 
                             attachments: "Вкладені файли",
                             dragFile: "Перетяніть файли сюди",
                             fileConstraint: "для файлів розміром до 10МБ",

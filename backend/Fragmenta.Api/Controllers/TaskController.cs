@@ -97,7 +97,7 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
 
-        [HttpPost("/reorder")]
+        [HttpPost("reorder")]
         public IActionResult Reorder([FromBody] List<ShallowUpdateTaskRequest> request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
@@ -113,13 +113,13 @@ namespace Fragmenta.Api.Controllers
 
                 taskService.ShallowUpdate(request);
 
-                return Ok();
+                return NoContent();
             }
 
             return Unauthorized("User was not found");
         }
 
-        [HttpPut("{taskId}")]
+        [HttpPut("{taskId:long}")]
         public IActionResult UpdateTask(long taskId, [FromBody] UpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
@@ -137,7 +137,7 @@ namespace Fragmenta.Api.Controllers
 
                 if (result)
                 {
-                    return Ok();
+                    return NoContent();
                 }
 
                 return BadRequest();
@@ -146,7 +146,7 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
 
-        [HttpDelete("{taskId}")]
+        [HttpDelete("{taskId:long}")]
         public IActionResult DeleteTask(long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();

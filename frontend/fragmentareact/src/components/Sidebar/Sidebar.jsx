@@ -21,7 +21,7 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect }) {
         defaultValue=""
       >
         <option disabled value="">
-          {t("workspaceStub")}
+          {t("common.workspaceStub")}
         </option>
         {workspaces.map((e) => (
           <option key={e.id} value={e.id}>
@@ -29,7 +29,7 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect }) {
           </option>
         ))}
       </select>
-      <Button content={t('createWorkspace')} />
+      <Button content={t('common.createWorkspace')} />
     </div>
   )
 }

@@ -18,37 +18,32 @@ import { FileManager } from "./FileManager"
 
 // BUG - Data in message box stays after exit
 
-export function CreateTaskDialog({ onAddTask }) {
+export function FullTaskDialog({ task, onUpdateTask }) {
     const { t, i18n } = useTranslation()
     const { members } = useWorkspace()
     const {allowedAttachmentTypes} = useTasks()
     const [error, setError] = useState(false)
-    const [selectedMember, setSelectedMember] = useState(null)
+    const [selectedMember, setSelectedMember] = useState(members.find(e => e.id == task.assigneeId) ?? null)
     const [selectDueDate, setSelectDueDate] = useState(false)
     const [selectedTags, setSelectedTags] = useState([])
-    const [newTask, setNewTask] = useState({
-        title: "",
-        description: "",
-        dueDate: new Date(),
-        assigneeId: null,
-        weight: 0,
-        priority: 0,
-    })
+    const [updatedTask, setUpdatedTask] = useState(task)
+
+    Array(0)
 
     const priorities = [0, 1, 2, 3]
 
-    function handleAssigneeSelect() {
-        onAddTask({
-            ...newTask,
+    function handleUpdateTask() {
+        onUpdateTask({
+            ...updatedTask,
             assigneeId: selectedMember?.id ?? null,
             tagsId: selectedTags.map(e => e.id),
-            dueDate: selectDueDate ? newTask.dueDate : null
+            dueDate: selectDueDate ? updatedTask.dueDate : null
         })
     }
 
     return <DialogRoot>
         <DialogTrigger asChild>
-            <Button bg="primary">{t("fields.labels.addTask")}</Button>
+            <Button colorScheme="blue">{t("fields.labels.addTask")}</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
@@ -60,8 +55,8 @@ export function CreateTaskDialog({ onAddTask }) {
                     <InputField.Root invalid={error}>
                         <InputField.Label>{t("fields.labels.title")}</InputField.Label>
                         <Input
-                            value={newTask.title}
-                            onChange={e => { setError(e.target.value == ""); setNewTask({ ...newTask, title: e.target.value }) }}
+                            value={updatedTask.title}
+                            onChange={e => { setError(e.target.value == ""); setUpdatedTask({ ...updatedTask, title: e.target.value }) }}
                         />
                         <InputField.ErrorText>{t("fields.labels.required")}</InputField.ErrorText>
                     </InputField.Root>
@@ -70,9 +65,9 @@ export function CreateTaskDialog({ onAddTask }) {
                     <Textarea
                     autoresize
                     maxH="5lh"
-                            value={newTask.description}
+                            value={updatedTask.description}
                             placeholder="Optional"
-                            onChange={e => setNewTask({ ...newTask, description: e.target.value == "" ? null : e.target.value })}
+                            onChange={e => setUpdatedTask({ ...updatedTask, description: e.target.value == "" ? null : e.target.value })}
                         />
                     </Field>
 
@@ -84,15 +79,15 @@ export function CreateTaskDialog({ onAddTask }) {
 
                         <NativeSelect.Root size="sm" width="240px">
                             <NativeSelect.Field
-                                onChange={(e) => setNewTask(
+                                onChange={(e) => setUpdatedTask(
                                     {
-                                        ...newTask,
+                                        ...updatedTask,
                                         priority: Number(e.currentTarget.value) ?? 0
                                     })}
                                >
 
                                 {priorities.map(p => (
-                                    <option key={p} value={p}>
+                                    <option value={p}>
                                         {t(`fields.priority.priority${p}`)}
                                     </option>
                                 ))}
@@ -115,8 +110,8 @@ export function CreateTaskDialog({ onAddTask }) {
                             locale={i18n.language}
                             className={"chakra-ignore"}
                             disabled={selectDueDate ? false : true}
-                            onChange={value => setNewTask({ ...newTask, dueDate: value })}
-                            value={new Date(newTask.dueDate)}
+                            onChange={value => setUpdatedTask({ ...updatedTask, dueDate: value })}
+                            value={new Date(updatedTask.dueDate)}
                             minDate={new Date(Date.now())}
                         />
 
@@ -140,6 +135,10 @@ export function CreateTaskDialog({ onAddTask }) {
                                 <CloseButton onClick={() => setSelectedMember(null)} />
                             </HStack>}
                     </Field>
+
+                    <Field label={t("fields.labels.attachments")}>
+                        <FileManager></FileManager>
+                    </Field>
                 </Stack>
             </DialogBody>
             <DialogFooter>
@@ -148,11 +147,11 @@ export function CreateTaskDialog({ onAddTask }) {
                     <Button color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
                 </DialogTrigger>
                 {
-                    newTask?.title != "" ?
+                    updatedTask?.title != "" ?
                         (<DialogTrigger asChild>
-                            <Button onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>
+                            <Button onClick={() => { setError(updatedTask.title == ""); handleUpdateTask(); }} color="primary">{t("fields.actions.save")}</Button>
                         </DialogTrigger>) :
-                        (<Button onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>)
+                        (<Button onClick={() => { setError(updatedTask.title == ""); handleUpdateTask(); }} color="primary">{t("fields.actions.save")}</Button>)
                 }
 
             </DialogFooter>

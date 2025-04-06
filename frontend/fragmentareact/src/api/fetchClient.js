@@ -70,6 +70,7 @@ async function fetchWithJwtBearer(url, options = {}) {
     if (response.status == 204) {
         return { status: response.status }
     }
+    
     return await response.json()
 };
 

@@ -37,7 +37,7 @@ export function CreateStatusDialog({ onStatusCreate }) {
 
     return (<DialogRoot>
         <DialogTrigger asChild>
-            <Button colorScheme="blue">Add Status</Button>
+            <Button bg="primary">Add Status</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
@@ -72,10 +72,10 @@ export function CreateStatusDialog({ onStatusCreate }) {
             </DialogBody>
             <DialogFooter>
                 <DialogActionTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
+                    <Button color="primary" variant="outline">Cancel</Button>
                 </DialogActionTrigger>
                 <DialogActionTrigger asChild>
-                    <Button onClick={() => onStatusCreate(newStatus)} colorScheme="blue">Create</Button>
+                    <Button onClick={() => onStatusCreate(newStatus)} bg="primary">Create</Button>
                 </DialogActionTrigger>
             </DialogFooter>
             <DialogCloseTrigger />

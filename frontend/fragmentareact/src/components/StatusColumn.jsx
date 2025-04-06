@@ -7,11 +7,21 @@ import { CreateTaskDialog } from "./CreateTaskDialog";
 import { AlertDialog } from "./AlertDialog";
 import { canManageBoardContent } from "@/utils/permissions";
 import { useTasks } from "@/utils/TaskContext";
+import { SortableTask } from "@/components/SortableTask"
+import { 
+    DndContext, closestCenter, KeyboardSensor, 
+    PointerSensor, useSensor, useSensors,
+    DragOverlay 
+  } from '@dnd-kit/core';
+  import { arrayMove, SortableContext, horizontalListSortingStrategy, 
+    verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+  import { CSS } from '@dnd-kit/utilities';
+  import { useId, useState } from 'react';
 
 export function StatusColumn({ status, tasks }) {
     const { role } = useWorkspace();
     const { workspaceId, boardId } = useParams();
-    const { addTask } = useTasks()
+    const { addTask,  } = useTasks()
 
     function handleAddTask(task) {
 
@@ -24,6 +34,8 @@ export function StatusColumn({ status, tasks }) {
         console.log('creating task',task);
         addTask(task, status.id)
     }
+
+    
 
     return (
         <Box
@@ -90,9 +102,9 @@ export function StatusColumn({ status, tasks }) {
             </Flex>
 
             {/* Task List */}
-            <Box p={3} minHeight="6em" maxHeight="300px" overflowY="auto">
+            <Box p={3} minHeight="6em" maxHeight="36em" h="fit-content" overflowY="auto">
                 {tasks?.length > 0 ? (
-                    tasks?.map((task) => <Box key={task.id} p={2} borderBottom="1px solid #ddd">{task.name}</Box>)
+                    tasks?.map((task) => <SortableTask key={task.id} task={task}/>)
                 ) : (
                     <Box textAlign="center" color="gray.500">No tasks yet</Box>
                 )}
