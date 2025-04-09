@@ -16,19 +16,17 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { useBoard } from "@/utils/BoardContext"
 
-export function Members({ workspaceId }) {
-    const { role, addMembers, removeMember, members } = useWorkspace() 
+export function Guests({ workspaceId }) {
+    const { role, members } = useWorkspace() 
     const [chosenUsers, setChosenUsers] = useState([])
     const { t } = useTranslation()
+    const {guests, addGuests, deleteGuest} = useBoard()
 
-    function onAddMembers() {
-        addMembers(chosenUsers.map(e => e.id))
+    function onAddGuests() {
+        addGuests(chosenUsers.map(e => e.id))
         setChosenUsers([])
-    }
-
-    function onDeleteMember(id) {
-        removeMember(id)
     }
 
     return (
@@ -45,7 +43,7 @@ export function Members({ workspaceId }) {
                     </Badge>
                 ))}
                 {chosenUsers.length > 0 && (
-                    <Button onClick={onAddMembers} bg="primary">{t("fields.actions.addMembers")}</Button>
+                    <Button onClick={onAddGuests} bg="primary">{t("fields.actions.addMembers")}</Button>
                 )}
             </Wrap>
             <Table.Root variant="simple">
@@ -53,23 +51,19 @@ export function Members({ workspaceId }) {
                     <Table.Row>
                         <Table.ColumnHeader>{t("fields.labels.username")}</Table.ColumnHeader>
                         <Table.ColumnHeader>{t("fields.labels.email")}</Table.ColumnHeader>
-                        <Table.ColumnHeader textAlign="center">{t("fields.labels.role")}</Table.ColumnHeader>
                         <Table.ColumnHeader textAlign="center">{t("fields.labels.kick")}</Table.ColumnHeader>
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                    {members.map((item) => (
+                    {guests?.map((item) => (
                         <Table.Row key={item.id} _hover={{ bg: "gray.50" }}>
                             <Table.Cell>{item.name}</Table.Cell>
                             <Table.Cell>{item.email}</Table.Cell>
                             <Table.Cell textAlign="center">
-                                {item.role ? t(`roles.${item.role.toLowerCase()}`) : "Unknown"}
-                            </Table.Cell>
-                            <Table.Cell textAlign="center">
                                 <DialogRoot role="alertdialog">
                                     <DialogTrigger asChild>
                                         <Button 
-                                            disabled={!canDeleteMember(role, item.role)} 
+                                            disabled={!canDeleteMember(role, "Guest")} 
                                             colorScheme="red" 
                                             size="sm"
                                         >
@@ -87,7 +81,7 @@ export function Members({ workspaceId }) {
                                             <DialogActionTrigger asChild>
                                                 <Button variant="outline">{t("fields.actions.cancel")}</Button>
                                             </DialogActionTrigger>
-                                            <Button onClick={() => onDeleteMember(item.id)} colorScheme="red">{t("fields.actions.delete")}</Button>
+                                            <Button onClick={() => deleteGuest(item.id)} colorScheme="red">{t("fields.actions.delete")}</Button>
                                         </DialogFooter>
                                         <DialogCloseTrigger />
                                     </DialogContent>

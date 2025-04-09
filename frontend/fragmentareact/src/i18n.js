@@ -35,6 +35,7 @@ i18n
                         guest: "Guest"
                     },
                     errors: {
+                        userNotFound: "Users not found",
                         fileTooLarge: "File '{{filename}}' is too large",
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
@@ -46,6 +47,7 @@ i18n
                         workspaceStub: "None",
                         boards: "Boards",
                         members: "Members",
+                        guests: "Guests list",
                         general: "General"
                     },
                     fields: {
@@ -71,11 +73,16 @@ i18n
                             dueDate: "Due date",
                             assignee: "Assignee",
                             name: "Name",
+                            username: "Name",
+                            role: "Role",
+                            kick: "Kick",
                             email: "Email",
                             password: "Password",
                             repeatPassword: "Repeat password"
                         },
                         actions: {
+                            areYouSure: "Are you sure?",
+                            cannotUndone: "This action cannot be undone",
                             cancel: "Cancel",
                             save: "Save",
                             create: "Create",
@@ -131,6 +138,7 @@ i18n
                         guest: "Гість"
                     },
                     errors: {
+                        userNotFound: "Користувачів не знайдено",
                         fileTooLarge: "Файл '{{filename}}' завеликий",
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
@@ -141,8 +149,10 @@ i18n
                         createWorkspace: "Новий робочий простір",
                         workspaceStub: "Не обрано",
                         boards: "Дошки",
+                        guests: "Список гостей",
                         members: "Учасники",
-                        general: "Загальне"
+                        general: "Загальне",
+
                     },
                     fields: {
                         priority: {
@@ -166,12 +176,17 @@ i18n
                             assignee: "Виконавець",
                             priority: "Приоритет",
                             name: "Ім'я",
+                            username: "Ім'я",
+                            role: "Роль",
+                            kick: "Вигнати",
                             email: "Ел. пошта",
                             password: "Пароль",
                             newPassword: "Новий пароль",
                             repeatPassword: "Повторіть пароль"
                         },
                         actions: {
+                            areYouSure: "Ви впевнені?",
+                            cannotUndone: "Цю дію не можна скасувати",
                             cancel: "Відмінити",
                             save: "Зберегти",
                             create: "Створити",

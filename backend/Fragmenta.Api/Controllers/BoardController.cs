@@ -53,7 +53,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet("{boardId}")]
-        public IActionResult GetBoard(long boardId, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult GetBoard(long boardId,[FromServices] IBoardService boardService, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -61,12 +61,13 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageStatuses(role.Value))
+                if (role == null || !boardService.CanViewBoard(boardId, id.Value))
                 {
                     return Forbid();
                 }
 
                 var result = statusService.GetStatuses(boardId);
+                
                 if(result == null)
                 {
                     return BadRequest();
@@ -153,6 +154,28 @@ namespace Fragmenta.Api.Controllers
                 }
 
                 return BadRequest();
+            }
+
+            return Unauthorized("User was not found");
+        }
+        
+        [HttpGet("{boardId}/guests")]
+        public IActionResult GetGuests(long boardId, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        {
+            var id = GetAuthenticatedUserId();
+
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            {
+                var role = accessService.GetRole(workspaceId, id.Value);
+
+                if (role == null || !boardService.CanViewBoard(boardId, id.Value))
+                {
+                    return Forbid();
+                }
+
+                var guests = boardService.GetGuests(boardId);
+
+                return Ok(guests);
             }
 
             return Unauthorized("User was not found");

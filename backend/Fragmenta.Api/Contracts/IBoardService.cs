@@ -6,6 +6,8 @@ namespace Fragmenta.Api.Contracts
     {
         List<BoardDto> GetBoards(long workspaceId);
 
+        bool CanViewBoard(long boardId, long userId);
+
         List<BoardDto> GetGuestBoards(long workspaceId, long guestId);
 
         BoardDto? CreateBoard(long workspaceId, CreateBoardRequest request);
@@ -15,5 +17,7 @@ namespace Fragmenta.Api.Contracts
         bool RemoveGuest(long boardId, long guestId);
 
         List<MemberDto> AddGuests(long boardId, long[] usersId);
+
+        List<GuestDto> GetGuests(long boardId);
     }
 }

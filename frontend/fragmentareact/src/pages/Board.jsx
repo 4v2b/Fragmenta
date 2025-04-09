@@ -4,8 +4,9 @@ import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
-    Input
+    Input, Portal
 } from "@chakra-ui/react"
+import { Wrap, CloseButton, Table } from "@chakra-ui/react"
 import { CreateStatusDialog } from "@/components/CreateStatusDialog"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
@@ -20,6 +21,12 @@ import {
     arrayMove, SortableContext, horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableStatusColumn } from "@/components/SortableStatusColumn"
+import { Drawer } from "@chakra-ui/react"
+import { MemberSelector } from "@/components/MemberSelector"
+import { useTransition } from "react"
+import { useTranslation } from "react-i18next"
+import { Guests } from "@/components/Guests"
+import { BoardProvider } from "@/utils/BoardContext"
 
 export function Board() {
     const { role } = useWorkspace()
@@ -27,6 +34,7 @@ export function Board() {
     const [board, setBoard] = useState(null)
     const { tasks, setTasks, addTask, shallowUpdateTask } = useTasks()
     const { tags } = useTags()
+    const { t } = useTranslation()
 
     const [activeId, setActiveId] = useState(null);
     const [activeType, setActiveType] = useState(null);
@@ -97,7 +105,7 @@ export function Board() {
                     // Update only the moved column's weight
                     // const movedColumn = newStatuses[newIndex];
                     // let newWeight = 0;
-                    
+
                     // if (newIndex === 0) {
                     //     // Moved to beginning
                     //     newWeight = newStatuses[1] ? newStatuses[1].weight / 2 : 500;
@@ -108,15 +116,15 @@ export function Board() {
                     //     // Moved between columns
                     //     newWeight = (newStatuses[newIndex - 1].weight + newStatuses[newIndex + 1].weight) / 2;
                     // }
-                    
+
                     // movedColumn.weight = newWeight;
-                    
+
                     // // Update in backend
                     // api.put(`/statuses/${movedColumn.id}`, {
                     //     ...movedColumn,
                     //     weight: newWeight
                     // }, workspaceId);
-                    
+
                     // return { ...board, statuses: newStatuses };
 
                     // Update weights
@@ -174,11 +182,11 @@ export function Board() {
                 //     // Dropped on a task
                 //     const overTaskId = over.id.replace('task-', '');
                 //     const overTask = tasksInDestination.find(t => t.id.toString() === overTaskId);
-                    
+
                 //     // Sort tasks by weight
                 //     const sortedTasks = [...tasksInDestination].sort((a, b) => a.weight - b.weight);
                 //     const overTaskIndex = sortedTasks.findIndex(t => t.id.toString() === overTaskId);
-                    
+
                 //     if (overTaskIndex === 0) {
                 //         // Dropped before first task
                 //         newWeight = overTask.weight / 2;
@@ -251,6 +259,32 @@ export function Board() {
                     />
 
                     {canManageBoardContent(role) && <CreateStatusDialog onStatusCreate={handleAddStatus} />}
+                    <BoardProvider>
+                        <Drawer.Root size={"lg"}>
+                            <Drawer.Trigger asChild>
+                                <Button variant="outline" size="sm">
+                                    {t("common.guests")}
+                                </Button>
+                            </Drawer.Trigger>
+                            <Portal>
+                                <Drawer.Backdrop />
+                                <Drawer.Positioner>
+                                    <Drawer.Content>
+                                        <Drawer.Header>
+                                            <Drawer.Title>{t("common.guests")}</Drawer.Title>
+                                        </Drawer.Header>
+                                        <Drawer.Body>
+                                            <Guests />
+                                        </Drawer.Body>
+                                        <Drawer.CloseTrigger asChild>
+                                            <CloseButton size="sm" />
+                                        </Drawer.CloseTrigger>
+                                    </Drawer.Content>
+                                </Drawer.Positioner>
+                            </Portal>
+                        </Drawer.Root>
+                    </BoardProvider>
+
                 </Flex>
             )}
 
