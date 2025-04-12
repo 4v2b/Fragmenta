@@ -35,8 +35,6 @@ export function FileManager({ allowedTypes }) {
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
 
-        console.log([...formData.entries()]);
-
         // try {
         //     const response = await fetch("/upload", {
         //         method: "POST",

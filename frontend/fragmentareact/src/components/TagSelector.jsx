@@ -17,7 +17,6 @@ export function TagSelector({ selectedTags, onSelect }) {
     }
 
     useEffect(() => {
-        console.log("search triggered")
         const delayDebounce = setTimeout(() => {
             setSuggestedTags(tags.filter(e => e.name?.includes(query) && !selectedTags?.some(i => i.id == e.id)))
         }, 200);

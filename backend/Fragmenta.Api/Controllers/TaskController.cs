@@ -5,6 +5,7 @@ using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Fragmenta.Api.Controllers
 {
@@ -12,7 +13,7 @@ namespace Fragmenta.Api.Controllers
     [ApiController]
     [ServiceFilter(typeof(WorkspaceFilter))]
     [Route("api/tasks")]
-    public class TaskController : ControllerBase
+    public class TaskController(IHubContext<BoardHub> hubContext) : ControllerBase
     {
         private long? GetAuthenticatedUserId()
         {
@@ -98,11 +99,11 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost("reorder")]
-        public IActionResult Reorder([FromBody] List<ShallowUpdateTaskRequest> request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> Reorder([FromBody] ShallowUpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out var workspaceId) && id != null)
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
@@ -111,7 +112,11 @@ namespace Fragmenta.Api.Controllers
                     return Forbid();
                 }
 
-                taskService.ShallowUpdate(request);
+                await taskService.ShallowUpdateAsync(request);
+                
+                await hubContext.Clients
+                    .Group(request.BoardId.ToString())
+                    .SendAsync("TaskMoved", request);
 
                 return NoContent();
             }
@@ -124,7 +129,7 @@ namespace Fragmenta.Api.Controllers
         {
             var id = GetAuthenticatedUserId();
 
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out var workspaceId) && id != null)
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
@@ -151,7 +156,7 @@ namespace Fragmenta.Api.Controllers
         {
             var id = GetAuthenticatedUserId();
 
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out var workspaceId) && id != null)
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 

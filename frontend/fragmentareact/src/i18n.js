@@ -40,6 +40,11 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        workspaces: "Workspaces",
+                        home: "Home",
+                        archiveBoards: "Active boards",
+                        activeBoards: "Archived boards",
+                        settings: "Settings",
                         emptyBoard: "The board is empty",
                         noTasksYet: "No tasks yet",
                         greeting: "Welcome on the main page 🤗",
@@ -143,12 +148,17 @@ i18n
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
                     common: {
+                        home: "Домашня сторінка",
                         noTasksYet: "Поки що немає завдань",
                         emptyBoard: "Ця дошка поки що порожня",
                         greeting: "Вітаємо на головній сторінці 🤗",
                         createWorkspace: "Новий робочий простір",
                         workspaceStub: "Не обрано",
+                        workspaces: "Робочі простори",
                         boards: "Дошки",
+                        archiveBoards: "Активні дошки",
+                        activeBoards: "Архівовані дошки",
+                        settings: "Налаштування",
                         guests: "Список гостей",
                         members: "Учасники",
                         general: "Загальне",

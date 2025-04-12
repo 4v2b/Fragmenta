@@ -11,7 +11,6 @@ using Serilog;
 using System.Reflection;
 using System.Text;
 using Fragmenta.Api.Middleware;
-using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,7 +54,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            []
         }
     });
 
@@ -98,6 +97,8 @@ builder.Services.AddAuthentication(options =>
 
 var origin = builder.Configuration["AllowedCorsOrigin"]!;
 
+builder.WebHost.UseUrls("http://192.168.0.104:7241");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -123,6 +124,7 @@ builder.Services.AddScoped<IMailingService, MailingService>();
 builder.Services.AddScoped<IAttachmentTypeService, AttachmentTypeService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
 
@@ -153,7 +155,7 @@ app.UseRequestLocalization(localizationOptions);
 
 app.UseCors("AllowReactApp");
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -168,5 +170,6 @@ app.Use(async (context, next) =>
 });
 
 app.MapControllers();
+app.MapHub<BoardHub>("/hub/board");
 
 app.Run();

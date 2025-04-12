@@ -14,6 +14,6 @@ namespace Fragmenta.Api.Contracts
 
         TaskPreviewDto? CreateTask(long statusId, CreateOrUpdateTaskRequest request);
 
-        void ShallowUpdate(List<ShallowUpdateTaskRequest> request);
+        Task ShallowUpdateAsync(ShallowUpdateTaskRequest request);
     }
 }

@@ -15,7 +15,6 @@ export function MemberSelector({ members, onSelect }) {
     }
 
     useEffect(() => {
-        console.log("search triggered")
         const delayDebounce = setTimeout(() => {
             setSelectedMembers(members.filter(e => e.email.includes(query) || e.name.includes(query)))
         }, 200);

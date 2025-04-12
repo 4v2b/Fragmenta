@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-import "./Workspace.css"
-import { api } from "../../api/fetchClient"
+import { api } from "../api/fetchClient"
 import { Members } from "@/components/Members"
 import { useTranslation } from "react-i18next"
 import { Box, Spinner, HStack, Stack, Tabs, Input, Button, Wrap, Badge, CloseButton } from "@chakra-ui/react"
@@ -19,7 +18,6 @@ export function Workspace() {
 
     async function handleTitleUpdate(name) {
         const res = await api.put(`/workspaces/${workspaceId}`, { name })
-        console.log("Put result", res)
     }
 
     return (

@@ -55,8 +55,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
     addTask(task, status.id)
   }
 
-  // console.log(status.name, tasks)
-
   // Check if user can drag tasks
   const canDragTask = (task) => {
     return canManageBoardContent(role) || task.assignedUserId === currentUser.id;

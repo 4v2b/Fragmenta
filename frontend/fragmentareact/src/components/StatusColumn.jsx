@@ -31,7 +31,6 @@ export function StatusColumn({ status, tasks }) {
 
         task.weight = weightToAdd;
 
-        console.log('creating task',task);
         addTask(task, status.id)
     }
 

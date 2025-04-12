@@ -4,6 +4,7 @@
     {
         public required long Id { get; set; }
         public required long StatusId { get; set; }
+        public required long BoardId { get; set; }
         public required float Weight { get; set; }
     }
 }

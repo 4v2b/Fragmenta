@@ -1,6 +1,7 @@
 import { api } from '@/api/fetchClient';
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
+import { HubConnectionBuilder } from '@microsoft/signalr';
 
 const TasksContext = createContext();
 
@@ -8,18 +9,51 @@ export function TasksProvider({ children }) {
   const [tasks, setTasks] = useState([]);
   const { workspaceId, boardId } = useParams()
   const [allowedAttachmentTypes, setAllowedAttachmentTypes] = useState([]);
+  const connectionRef = useRef(null);
 
-  function addTask(task, statusId){
-    api.post(`/tasks?statusId=${statusId}`, task , workspaceId).then(res => setTasks(res));
+  useEffect(() => {
+    if (!connectionRef.current) {
+      const connection = new HubConnectionBuilder()
+        .withUrl(`http://192.168.0.104:7241/hub/board?boardId=${boardId}`)
+        .withAutomaticReconnect()
+        .build();
+
+      connection.start()
+        .then(() => {
+          console.log('Connected to SignalR');
+          connection.on('TaskMoved', updatedTask => {
+            console.log("sync triggered")
+            setTasks(prevTasks =>
+              prevTasks.map(task =>
+                task.id === updatedTask.id ? { ...task, ...updatedTask } : task
+              )
+            );
+          });
+        })
+        .catch(err => console.error('SignalR Connection Error: ', err));
+
+      connectionRef.current = connection;
+    }
+  }, []);
+
+  function addTask(task, statusId) {
+    api.post(`/tasks?statusId=${statusId}`, task, workspaceId).then(res => setTasks(res));
   }
 
-  function shallowUpdateTask(task){
-    api.post(`/tasks/reorder`, [task], workspaceId);
+  function shallowUpdateTask(task) {
+    api.post(`/tasks/reorder`, { ...task, boardId: boardId }, workspaceId).then(e => {
+      setTasks(current =>
+        current.map(t =>
+          t.id === task.id
+            ? { ...t, statusId: task.statusId, weight: task.weight }
+            : t
+        )
+      );
+    });
   }
 
   useEffect(() => {
     api.get(`/tasks?boardId=${boardId}`, workspaceId).then(res => setTasks(res));
-    //api.get(`/allowedTypes?boardId=${boardId}`, workspaceId).then(res => setAllowedAttachmentTypes(res));
   }, [boardId]);
 
   return (

@@ -44,7 +44,7 @@ export function Board() {
         useSensor(KeyboardSensor)
     );
 
-    console.log(tasks);
+    //console.log(tasks);
 
     useEffect(() => {
         api.get(`/boards/${boardId}`, workspaceId).then(res => setBoard(res))
@@ -93,41 +93,15 @@ export function Board() {
 
         if (!over) return;
 
+        console.log(activeType, " dragEnd, active:", active.id, " , over:" ,over.id)
+
         // Handle column reordering
         if (activeType === 'column') {
             if (active.id !== over.id) {
                 setBoard(board => {
                     const oldIndex = board.statuses.findIndex(s => `column-${s.id}` === active.id);
                     const newIndex = board.statuses.findIndex(s => `column-${s.id}` === over.id);
-
                     const newStatuses = arrayMove(board.statuses, oldIndex, newIndex);
-
-                    // Update only the moved column's weight
-                    // const movedColumn = newStatuses[newIndex];
-                    // let newWeight = 0;
-
-                    // if (newIndex === 0) {
-                    //     // Moved to beginning
-                    //     newWeight = newStatuses[1] ? newStatuses[1].weight / 2 : 500;
-                    // } else if (newIndex === newStatuses.length - 1) {
-                    //     // Moved to end
-                    //     newWeight = newStatuses[newIndex - 1].weight + 500;
-                    // } else {
-                    //     // Moved between columns
-                    //     newWeight = (newStatuses[newIndex - 1].weight + newStatuses[newIndex + 1].weight) / 2;
-                    // }
-
-                    // movedColumn.weight = newWeight;
-
-                    // // Update in backend
-                    // api.put(`/statuses/${movedColumn.id}`, {
-                    //     ...movedColumn,
-                    //     weight: newWeight
-                    // }, workspaceId);
-
-                    // return { ...board, statuses: newStatuses };
-
-                    // Update weights
                     newStatuses.forEach((status, index) => {
                         status.weight = index * 200;
 
@@ -142,12 +116,11 @@ export function Board() {
                 });
             }
         }
-        // Handle task reordering
+
         else if (activeType === 'task') {
-            const taskId = active.id.replace('task-', '');
             const targetStatusId = over.id.startsWith('task-')
                 ? tasks.find(t => `task-${t.id}` === over.id).statusId
-                : over.id.replace('column-', '');
+                : Number(over.id.replace('column-', ''));
 
             const sourceStatusId = tasks.find(t => `task-${t.id}` === active.id).statusId;
 
@@ -157,7 +130,7 @@ export function Board() {
 
             if (!canMove) return;
 
-            if (sourceStatusId !== targetStatusId || active.id !== over.id) {
+            if (active.id !== over.id) {
 
                 // Update task in the state
                 const updatedTasks = [...tasks];
@@ -172,47 +145,13 @@ export function Board() {
                         ? Math.max(...tasksInDestination.map(t => t.weight)) + 500
                         : 0);
 
-                // if (tasksInDestination.length === 0) {
-                //     // If column is empty, use standard increment
-                //     newWeight = 500;
-                // } else if (over.id.startsWith('column-')) {
-                //     // Dropped directly on column - place at end
-                //     newWeight = Math.max(...tasksInDestination.map(t => t.weight)) + 500;
-                // } else {
-                //     // Dropped on a task
-                //     const overTaskId = over.id.replace('task-', '');
-                //     const overTask = tasksInDestination.find(t => t.id.toString() === overTaskId);
-
-                //     // Sort tasks by weight
-                //     const sortedTasks = [...tasksInDestination].sort((a, b) => a.weight - b.weight);
-                //     const overTaskIndex = sortedTasks.findIndex(t => t.id.toString() === overTaskId);
-
-                //     if (overTaskIndex === 0) {
-                //         // Dropped before first task
-                //         newWeight = overTask.weight / 2;
-                //     } else if (overTaskIndex === sortedTasks.length - 1) {
-                //         // Dropped after last task
-                //         newWeight = overTask.weight + 500;
-                //     } else {
-                //         // Dropped between tasks
-                //         const nextTask = sortedTasks[overTaskIndex + 1];
-                //         newWeight = (overTask.weight + nextTask.weight) / 2;
-                //     }
-                // }
-
-                // Update task properties
-                movedTask.statusId = Number(targetStatusId);
-                movedTask.weight = newWeight;
-
-                // Update the context
-                // Use your task context to update tasks state
-
                 // Update in backend
                 shallowUpdateTask({
                     id: movedTask.id,
-                    statusId: targetStatusId,
+                    statusId: Number(targetStatusId),
                     weight: newWeight
                 })
+
             }
         }
 
@@ -244,6 +183,8 @@ export function Board() {
                     )
                 );
             }
+
+            console.log("task ", task.title, " dragOver, active:", active.id, " , over:" ,over.id)
         }
     }
 

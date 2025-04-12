@@ -8,11 +8,8 @@ export function BoardProvider({ children }) {
     const { workspaceId, boardId } = useParams()
     const [guests, setGuests] = useState([]);
 
-    console.log("board provider works")
-
     useEffect(() => {
         api.get(`/boards/${boardId}/guests`, workspaceId).then(res => setGuests(res));
-        console.log("fetching guests", guests)
     }, [boardId]);
 
     function deleteGuest(userId) {

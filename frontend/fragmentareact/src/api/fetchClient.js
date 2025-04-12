@@ -31,6 +31,7 @@ async function fetchWithCookies(url, options = {}) {
 };
 
 function logout() {
+    console.log("You have been logged out")
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     window.location.href = "/login"; // Redirect to login page
@@ -54,16 +55,19 @@ async function fetchWithJwtBearer(url, options = {}) {
             console.log("Try to refresh token")
             await refreshToken();
             options.headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
-            response = await fetch(url, options);
+            response = await fetch(BASE_URL + url, options);
 
             if (!response.ok) {
                 console.log("Cannot refresh token")
                 throw Error()
             }
+            console.log(response, "from url ", url)
             return await response.json();
 
         } catch (error) {
+            console.log(error)
             logout();
+            return;
         }
     }
 

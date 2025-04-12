@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input, Box, List, Spinner } from "@chakra-ui/react";
 import { api } from "@/api/fetchClient";
-import { ListItem } from "./ListItem/ListItem";
 import { useTranslation } from "react-i18next";
 
 export function Autocomplete({ addItem, membersBlacklist = [] }) {

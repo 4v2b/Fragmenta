@@ -3,7 +3,8 @@ using Fragmenta.Api.Dtos;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
 using Microsoft.EntityFrameworkCore;
-using Task = Fragmenta.Dal.Models.Task;
+using TaskEntity = Fragmenta.Dal.Models.Task;
+using Task = System.Threading.Tasks.Task;
 
 namespace Fragmenta.Api.Services
 {
@@ -21,11 +22,13 @@ namespace Fragmenta.Api.Services
         public TaskPreviewDto? CreateTask(long statusId, CreateOrUpdateTaskRequest request)
         {
             _logger.LogInformation("Creating task for status with id: {StatusId}", statusId);
-            var assigeee = request.AssigneeId != null ? _context.Users.Find(request.AssigneeId) : null;
+            var assignee = request.AssigneeId != null ? _context.Users.Find(request.AssigneeId) : null;
 
-            _logger.LogInformation("Found assignee for requested id {Id} : {Name} {Email}", request.AssigneeId, assigeee?.Name, assigeee?.Email);
+            _logger.LogInformation("Found assignee for requested id {Id} : {Name} {Email}", request.AssigneeId,
+                assignee?.Name, assignee?.Email);
 
-            _logger.LogInformation("Existing statuses with id's: {StatusId}", string.Join(", ", _context.Statuses.Select(e => e.Id.ToString())));
+            _logger.LogInformation("Existing statuses with id's: {StatusId}",
+                string.Join(", ", _context.Statuses.Select(e => e.Id.ToString())));
 
             var status = _context.Statuses.Find(statusId);
 
@@ -48,9 +51,9 @@ namespace Fragmenta.Api.Services
                 return null;
             }
 
-            var task = new Task()
+            var task = new TaskEntity()
             {
-                Assignee = assigeee,
+                Assignee = assignee,
                 Description = request.Description,
                 DueDate = request.DueDate,
                 Priority = request.Priority,
@@ -74,8 +77,8 @@ namespace Fragmenta.Api.Services
                 Priority = task.Priority,
                 StatusId = task.StatusId,
                 TagsId = tags
-                        .Select(i => i.Id)
-                        .ToList(),
+                    .Select(i => i.Id)
+                    .ToList(),
                 Title = task.Title,
                 Weight = task.Weight
             };
@@ -123,38 +126,29 @@ namespace Fragmenta.Api.Services
                 .ToList();
         }
 
-        public void ShallowUpdate(List<ShallowUpdateTaskRequest> request)
+        public async Task ShallowUpdateAsync(ShallowUpdateTaskRequest request)
         {
-            List<Task> tasks = new();
-            foreach (var update in request)
-            {
-                var task = _context.Tasks.Find(update.Id);
+            var task = await _context.Tasks.FindAsync(request.Id);
 
-                if (task == null)
-                {
-                    continue;
-                }
+            if (task == null)
+                return;
+            
+            task.Weight = request.Weight;
+            task.StatusId = request.StatusId;
 
-                task.Weight = update.Weight;
-                task.StatusId = update.StatusId;
-                tasks.Add(task);
-            }
+            _context.Update(task);
 
-            _context.UpdateRange(tasks);
-
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         public bool UpdateTask(long taskId, UpdateTaskRequest request)
         {
             var task = _context.Tasks.Find(taskId);
 
-            if(task == null)
-            {
+            if (task == null)
                 return false;
-            }
 
-            if(task.AssigneeId != request.AssigneeId)
+            if (task.AssigneeId != request.AssigneeId)
             {
                 var assignee = request.AssigneeId == null ? _context.Users.Find(request.AssigneeId) : null;
                 task.Assignee = assignee;
@@ -177,7 +171,6 @@ namespace Fragmenta.Api.Services
             }
 
             task.Tags = tags;
-
             task.Priority = request.Priority;
 
             _context.Update(task);
