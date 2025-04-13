@@ -23,7 +23,7 @@ export function WorkspaceProvider({ role, workspaceId, children }) {
 
     // Update member role
     async function updateMemberRole(memberId, newRole) {
-        const response = await fetch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
+        const response = await fetch(`/workspaces/${workspaceId}/members/${memberId}`, {
             method: "PATCH",
             body: JSON.stringify({ role: newRole }),
         });

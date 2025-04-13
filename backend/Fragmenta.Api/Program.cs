@@ -127,6 +127,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
+builder.Services.AddHostedService<ArchivedBoardCleanupService>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

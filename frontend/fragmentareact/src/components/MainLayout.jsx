@@ -10,7 +10,7 @@ import { logout } from '@/api/api'
 import { LanguageSwitch } from "@/components/LanguageSwitch/LanguageSwitch";
 import { Navbar } from "@/components/Navbar";
 import { refreshToken } from "@/api/fetchClient";
-import { Grid, GridItem, Stack, HStack, Button } from '@chakra-ui/react'
+import { Grid, GridItem, Stack, HStack, Button, Box } from '@chakra-ui/react'
 
 export function MainLayout() {
     // TODO Normal auth verification
@@ -20,6 +20,7 @@ export function MainLayout() {
     const { workspaceId } = useParams()
     const navigate = useNavigate()
 
+
     useEffect(() => {
         api.get("/workspaces").then(setWorkspaces)
     }, [])
@@ -28,7 +29,10 @@ export function MainLayout() {
         () => workspaces.find(w => w.id == workspaceId),
         [workspaceId, workspaces])
 
-    const handleWorkspaceSelect = (workspace) => navigate(`/workspaces/${workspace?.id}`)
+    const handleWorkspaceSelect = (workspaceId) => navigate( workspaceId == null ? "/" : `/workspaces/${workspaceId}`)
+
+    console.log("selected workspace ", selectedWorkspace)
+    console.log("workspace id ", workspaceId)
 
     useEffect(() => {
 
@@ -51,16 +55,16 @@ export function MainLayout() {
 
     return auth
         ?
-        <Stack gap={0}>
+        <Stack justify={"stretch"}  gap={0} h={"100vh"}>
             <Navbar>
                 <LanguageSwitch />
                 <Button bg="danger" onClick={() => logout()}>{t("fields.actions.logout")}</Button>
             </Navbar>
-            <Grid h={"full"} templateColumns="repeat(6, 1fr)">
+            <Grid h={"full"} templateColumns="repeat(8, 1fr)">
                 <GridItem rowSpan={1}>
                     <Sidebar workspaces={workspaces} onWorkspaceSelect={handleWorkspaceSelect} />
                 </GridItem>
-                <GridItem colSpan={5}>
+                <GridItem colSpan={7}>
                     {workspaceId ?
                         <WorkspaceProvider role={selectedWorkspace?.role} workspaceId={selectedWorkspace?.id}>
                             <Outlet context={{ name: selectedWorkspace?.name }} />

@@ -61,7 +61,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !boardService.CanViewBoard(boardId, id.Value))
+                if (role == null || (role == Role.Guest && !boardService.CanViewBoard(boardId, id.Value)))
                 {
                     return Forbid();
                 }
@@ -131,8 +131,35 @@ namespace Fragmenta.Api.Controllers
 
             return Unauthorized("User was not found");
         }
+        
+        [HttpDelete("{boardId:long}")]
+        public IActionResult DeleteBoard(long boardId,[FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        {
+            var id = GetAuthenticatedUserId();
 
-        [HttpPost("{boardId}/guests")]
+            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
+            {
+                var role = accessService.GetRole(workspaceId, id.Value);
+
+                if (role == null || !AccessCheck.CanUpdateBoard(role.Value))
+                {
+                    return Forbid();
+                }
+
+                var result = boardService.DeleteBoard(boardId);
+
+                if (result)
+                {
+                    return NoContent();
+                }
+
+                return BadRequest();
+            }
+
+            return Unauthorized("User was not found");
+        }
+
+        [HttpPost("{boardId:long}/guests")]
         public IActionResult AddGuests(long boardId, [FromBody] AddGuestsRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
@@ -159,7 +186,7 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
         
-        [HttpGet("{boardId}/guests")]
+        [HttpGet("{boardId:long}/guests")]
         public IActionResult GetGuests(long boardId, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
@@ -168,7 +195,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !boardService.CanViewBoard(boardId, id.Value))
+                if (role == null || (role == Role.Guest && !boardService.CanViewBoard(boardId, id.Value)))
                 {
                     return Forbid();
                 }
@@ -181,7 +208,7 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
 
-        [HttpDelete("{boardId}/guests/{guestId}")]
+        [HttpDelete("{boardId:long}/guests/{guestId:long}")]
         public IActionResult RemoveGuests(long boardId, long guestId, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();

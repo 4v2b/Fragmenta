@@ -4,31 +4,32 @@ import { useTranslation } from "react-i18next";
 import { useTags } from "@/utils/TagContext";
 import { HiCalendar, HiTag } from "react-icons/hi";
 import {
-    DndContext, closestCenter, KeyboardSensor,
-    PointerSensor, useSensor, useSensors,
-    DragOverlay
+  DndContext, closestCenter, KeyboardSensor,
+  PointerSensor, useSensor, useSensors,
+  DragOverlay
 } from '@dnd-kit/core';
 import {
-    arrayMove, SortableContext, horizontalListSortingStrategy,
-    verticalListSortingStrategy, useSortable
+  arrayMove, SortableContext, horizontalListSortingStrategy,
+  verticalListSortingStrategy, useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { RxDragHandleDots2 } from "react-icons/rx";
 
 export function SortableTask({ id, task, disabled }) {
   const { members } = useWorkspace();
   const { tags } = useTags();
   const { t, i18n } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id,
-        disabled
-      });
+    id,
+    disabled
+  });
 
   const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-        marginBottom: '8px'
-      };
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    marginBottom: '8px'
+  };
 
   const assignee = members.find(e => e.id == task?.assigneeId) ?? null;
   const dueDate = task.dueDate ? new Intl.DateTimeFormat(i18n.language, {
@@ -36,17 +37,31 @@ export function SortableTask({ id, task, disabled }) {
   }).format(new Date(task.dueDate)) : null;
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-    <Box
-     p={3}
-     borderWidth="1px"
-     borderRadius="md"
-     bg={isDragging ? "gray.100" : "white"}
-     boxShadow={isDragging ? "md" : "sm"}
+    <Box ref={setNodeRef} style={style} 
+    //{...attributes} {...listeners} Moved to a grabbing box
+      p={3}
+      borderWidth="1px"
+      borderRadius="md"
+      bg={isDragging ? "gray.100" : "white"}
+      boxShadow={isDragging ? "md" : "sm"}
       w="full"
     >
       <VStack align="start" spacing={2} w="full">
-        <Text fontWeight="medium" fontSize="md">{task.title}</Text>
+
+        <HStack
+          alignItems="center"
+          justify={"space-between"}
+        >
+          <Box
+            textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
+            cursor={"grab"}
+            {...attributes}
+            {...listeners}
+          ><RxDragHandleDots2 />
+          </Box>
+
+          <Text fontWeight="medium" fontSize="md">{task.title}</Text>
+        </HStack>
 
         {task.description && (
           <Text fontSize="sm" color="gray.600" noOfLines={2}>{task.description}</Text>
@@ -62,14 +77,14 @@ export function SortableTask({ id, task, disabled }) {
         }
 
         {assignee && (
-            
-            <HStack>
 
-              <Avatar.Root size="xs">
-                <Avatar.Fallback name={assignee.name} />
-              </Avatar.Root>
-              <Badge>{assignee.name}</Badge>
-            </HStack>
+          <HStack>
+
+            <Avatar.Root size="xs">
+              <Avatar.Fallback name={assignee.name} />
+            </Avatar.Root>
+            <Badge>{assignee.name}</Badge>
+          </HStack>
 
         )}
 
@@ -90,6 +105,5 @@ export function SortableTask({ id, task, disabled }) {
         )}
       </VStack>
     </Box>
-    </div>
   );
 };

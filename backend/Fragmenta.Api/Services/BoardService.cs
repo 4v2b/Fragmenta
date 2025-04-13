@@ -29,7 +29,7 @@ namespace Fragmenta.Api.Services
                 return null;
             }
 
-            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Exists(i => i == e.Id))
+            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Contains(e.Id))
                 .ToList();
 
             var board = new Board()
@@ -42,7 +42,7 @@ namespace Fragmenta.Api.Services
             _context.Boards.Add(board);
             _context.SaveChanges();
 
-            return new BoardDto() { Id = board.Id, Name = board.Name, ArchivedAt = null };
+            return new BoardDto() { Id = board.Id, Name = board.Name, ArchivedAt = null, AllowedTypeIds = board.AttachmentTypes.Select(a => a.Id).ToList() };
         }
 
         public List<BoardDto> GetBoards(long workspaceId)
@@ -54,14 +54,15 @@ namespace Fragmenta.Api.Services
                 {
                     Id = e.Id,
                     Name = e.Name,
-                    ArchivedAt = e.ArchivedAt
+                    ArchivedAt = e.ArchivedAt,
+                    AllowedTypeIds = e.AttachmentTypes.Select(a => a.Id).ToList()
                 })
                 .ToList();
         }
 
         public bool CanViewBoard(long boardId, long userId)
         {
-            return _context.BoardAccesses.Find(boardId, userId) is null;
+            return _context.BoardAccesses.Find(boardId, userId) is not null;
         }
 
         public List<BoardDto> GetGuestBoards(long workspaceId, long guestId)
@@ -73,16 +74,17 @@ namespace Fragmenta.Api.Services
                 {
                     Id = e.Id,
                     Name = e.Name,
-                    ArchivedAt = e.ArchivedAt
+                    ArchivedAt = e.ArchivedAt,
+                    AllowedTypeIds = e.AttachmentTypes.Select(a => a.Id).ToList()
                 })
                 .ToList();
         }
 
         public BoardDto? UpdateBoard(long boardId, UpdateBoardRequest request)
         {
-            var board = _context.Boards.Include(e => e.AccessList).Single(e => e.Id == boardId);
+            var board = _context.Boards.Include(e => e.AccessList).SingleOrDefault(e => e.Id == boardId);
 
-            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Exists(i => i == e.Id))
+            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Contains(e.Id))
                 .ToList();
 
             if (board == null)
@@ -97,36 +99,54 @@ namespace Fragmenta.Api.Services
 
             _context.SaveChanges();
 
-            return new BoardDto() { Id = board.Id, Name = board.Name, ArchivedAt = board.ArchivedAt };
+            return new BoardDto() { Id = board.Id, Name = board.Name, ArchivedAt = board.ArchivedAt, AllowedTypeIds = board.AttachmentTypes.Select(a => a.Id).ToList() };
+        }
+
+        public bool DeleteBoard(long boardId)
+        {
+            var board = _context.Boards.Find(boardId);
+
+            if (board == null || !board.ArchivedAt.HasValue )
+            {
+                return false;
+            }
+            
+            _context.Remove(board);
+            _context.SaveChanges();
+
+            return true;
         }
 
         public bool RemoveGuest(long boardId, long guestId)
         {
-            var board = _context.Boards.Include(e => e.AccessList).Single(e => e.Id == boardId);
+            var board = _context.Boards.Include(e => e.AccessList).SingleOrDefault(e => e.Id == boardId);
 
             var access = _context.BoardAccesses.Find(boardId, guestId);
 
             if (board == null || access == null)
             {
+                _logger.LogInformation("User with id {Id} is not a guest on board {BoardId}",guestId,boardId);
                 return false;
             }
 
             _context.Remove(access);
             _context.SaveChanges();
 
-            var existsInWorkspace = _context.BoardAccesses
+            var isStillGuest = _context.BoardAccesses
                 .Include(e => e.Board)
                 .Any(e => e.Board.WorkspaceId == board.WorkspaceId && e.UserId == guestId && e.BoardId != board.Id);
 
-            if (!existsInWorkspace)
+            if (!isStillGuest)
             {
+                _logger.LogInformation("User with id {Id} is no longer a guest in workspace {WorkspaceId}",guestId,board.WorkspaceId);
                 var userToRemove = _context.WorkspaceAccesses
-                    .Single(e =>
+                    .SingleOrDefault(e =>
                         e.RoleId == (long)Role.Guest &&
                         e.WorkspaceId == board.WorkspaceId && e.UserId == guestId);
 
                 if (userToRemove != null)
                 {
+                    _logger.LogInformation("User with id {Id} is being deleted from workspace {WorkspaceId}",guestId,board.WorkspaceId);
                     _context.WorkspaceAccesses.Remove(userToRemove);
                 }
             }
@@ -138,7 +158,7 @@ namespace Fragmenta.Api.Services
 
         public List<MemberDto> AddGuests(long boardId, long[] usersId)
         {
-            var board = _context.Boards.Include(e => e.AccessList).Single(e => e.Id == boardId);
+            var board = _context.Boards.Include(e => e.AccessList).SingleOrDefault(e => e.Id == boardId);
 
             if (board == null)
             {
@@ -159,6 +179,12 @@ namespace Fragmenta.Api.Services
                         UserId = id,
                         WorkspaceId = board.WorkspaceId
                     });
+                    
+                    _logger.LogInformation("User with id {Id} joined workspace {WorkspaceId}",id, board.WorkspaceId);
+                }
+                else
+                {
+                    _logger.LogInformation("User with id {Id} is already in workspace {WorkspaceId}",id, board.WorkspaceId);
                 }
             }
 
@@ -167,6 +193,8 @@ namespace Fragmenta.Api.Services
                 BoardId = board.Id,
                 UserId = id
             });
+            
+            _logger.LogInformation("Users with id {Ids} joined board {WorkspaceId}", string.Join(' ', usersId) , board.Id);
 
             _context.WorkspaceAccesses.AddRange(workspaceAccesses);
             _context.BoardAccesses.AddRange(accesses);

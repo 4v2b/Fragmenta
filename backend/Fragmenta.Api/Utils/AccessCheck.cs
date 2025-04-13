@@ -10,7 +10,7 @@ namespace Fragmenta.Api.Utils
             if (actorRole == Role.Owner && targetRole != Role.Owner)
                 return true;
 
-            if (actorRole == Role.Admin && (targetRole == Role.Member || targetRole == Role.Guest))
+            if (actorRole == Role.Admin && targetRole is Role.Member or Role.Guest)
                 return true;
 
             return false;

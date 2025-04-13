@@ -1,25 +1,10 @@
-import { api } from "@/api/fetchClient"
-import { EditableTitle } from "@/components/EditableTitle"
 import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
-  HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
-  Input
+  HStack, Stack, Box, Text, Badge, Flex, Heading
 } from "@chakra-ui/react"
-import { useEffect, useState, useRef } from "react"
-import { useParams } from "react-router"
-import { StatusColumn } from "@/components/StatusColumn"
-import { CreateStatusDialog } from "@/components/CreateStatusDialog"
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
-import { Menu, Portal, Show } from "@chakra-ui/react"
-import { Tooltip } from "@/components/ui/tooltip"
-import { useTags } from "@/utils/TagContext"
 import { useTasks } from "@/utils/TaskContext"
-import {
-  DndContext, closestCenter, KeyboardSensor,
-  PointerSensor, useSensor, useSensors,
-  DragOverlay
-} from '@dnd-kit/core';
 import {
   arrayMove, SortableContext, horizontalListSortingStrategy,
   verticalListSortingStrategy, useSortable
@@ -28,6 +13,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { SortableTask } from "@/components/SortableTask"
 import { useId } from 'react';
 import { useTranslation } from "react-i18next"
+import { RxDragHandleDots1, RxDragHandleDots2 } from "react-icons/rx";
 
 export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -62,28 +48,31 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
 
   return (
     <Box
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      minWidth="280px"
-      borderWidth="1px"
+      flexShrink={0}
+      w="300px"
+      height="100%" // important so children can fill vertical space
+      display="flex"
+      flexDirection="column"
       borderRadius="lg"
       bg="white"
       boxShadow={isDragging ? "xl" : "md"}
-      overflow="hidden"
+      ref={setNodeRef}
+      style={style}
+
+      overflow={"auto"}
     >
-      {/* Header */}
       <Flex
-        justifyContent="space-between"
+        
         alignItems="center"
+        // justify={"stretch"}
         bg={status.colorHex}
         p={3}
         borderTopRadius="lg"
         color="white"
         fontWeight="bold"
+        justify={"space-between"}
       >
-        <HStack spacing={3}>
+        {/* <HStack spacing={3} > */}
           <Heading size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
             {status.name}
           </Heading>
@@ -93,21 +82,26 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
               {tasks.length} / {status.maxTasks}
             </Badge>
           )}
-        </HStack>
+          <Box
+          textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
+          cursor={"grab"}
+            {...attributes}
+            {...listeners}
+          ><RxDragHandleDots2/>
+          </Box>
       </Flex>
 
-      {/* Task List */}
       <SortableContext
+        overflow="auto"
         items={tasks?.map(task => `task-${task.id}`) || []}
         strategy={verticalListSortingStrategy}
       >
         <Box
-          id={id} // This makes the column a droppable area for tasks
+          id={id}
           p={3}
-          minHeight="6em"
-          maxHeight="36em"
-          h="fit-content"
+          flex="1"
           overflowY="auto"
+          overflowX="hidden"
         >
           {tasks?.length > 0 ? (
             tasks
@@ -126,7 +120,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
         </Box>
       </SortableContext>
 
-      {/* Add Task Button */}
       {canManageBoardContent(role) && (
         <Box p={3} borderTop="1px solid #ddd">
           <CreateTaskDialog onAddTask={handleAddTask} />

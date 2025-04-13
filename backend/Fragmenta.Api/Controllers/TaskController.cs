@@ -5,6 +5,7 @@ using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Fragmenta.Api.Enums;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Fragmenta.Api.Controllers
@@ -28,7 +29,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetTasks([FromQuery] long boardId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult GetTasks([FromQuery] long boardId, [FromServices] IBoardService boardService, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -36,7 +37,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
+                if (role == null || (role == Role.Guest && !boardService.CanViewBoard(boardId, id.Value)))
                 {
                     return Forbid();
                 }
@@ -58,7 +59,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
+                if (role == null)
                 {
                     return Forbid();
                 }
@@ -133,7 +134,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageStatuses(role.Value))
+                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
                     return Forbid();
                 }

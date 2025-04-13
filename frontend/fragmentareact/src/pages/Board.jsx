@@ -15,15 +15,13 @@ import { useTasks } from "@/utils/TaskContext"
 import {
     DndContext, closestCenter, KeyboardSensor,
     PointerSensor, useSensor, useSensors,
-    DragOverlay
+    DragOverlay, MeasuringStrategy
 } from '@dnd-kit/core';
 import {
-    arrayMove, SortableContext, horizontalListSortingStrategy,
+    arrayMove, SortableContext, horizontalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { SortableStatusColumn } from "@/components/SortableStatusColumn"
 import { Drawer } from "@chakra-ui/react"
-import { MemberSelector } from "@/components/MemberSelector"
-import { useTransition } from "react"
 import { useTranslation } from "react-i18next"
 import { Guests } from "@/components/Guests"
 import { BoardProvider } from "@/utils/BoardContext"
@@ -35,6 +33,9 @@ export function Board() {
     const { tasks, setTasks, addTask, shallowUpdateTask } = useTasks()
     const { tags } = useTags()
     const { t } = useTranslation()
+    
+    // TODO Fetch actual user id (from /me endpoint)
+    const userId = 3;
 
     const [activeId, setActiveId] = useState(null);
     const [activeType, setActiveType] = useState(null);
@@ -55,6 +56,21 @@ export function Board() {
         setActiveId(active.id);
         // Determine if we're dragging a column or task based on the id format
         setActiveType(active.id.includes('column-') ? 'column' : 'task');
+
+        if (active.id.includes('task-')) {
+            const task = tasks.find(t => `task-${t.id}` === active.id);
+            const canMove = (canManageBoardContent(role) && task.assigneeId == null) || (task.assigneeId != null && task.assigneeId == userId);
+
+            //console.log("user moves the task ", task)
+
+            if (!canMove) {
+                //console.log("user cannot move the task");
+                setActiveId(null); return
+            }
+        }
+
+        //console.log("user moves the task")
+
     }
 
     function handleTitleChange(newTitle) {
@@ -75,84 +91,96 @@ export function Board() {
             weight: weightToAdd
         }
 
+        console.log(statusToAdd)
+
         api.post(`/statuses?boardId=${boardId}`, statusToAdd, workspaceId)
             .then(res => {
                 setBoard({ ...board, statuses: [...board.statuses, res] })
-                setNewStatus({
-                    name: "",
-                    maxTasks: null,
-                    colorHex: "#3182CE"
-                })
             })
     }
 
     function handleDragEnd(event) {
         const { active, over } = event;
 
-        if (active.id === over.id) return;
+        if (!active || !over || active.id === over.id) return;
 
-        if (!over) return;
-
-        console.log(activeType, " dragEnd, active:", active.id, " , over:" ,over.id)
-
-        // Handle column reordering
         if (activeType === 'column') {
-            if (active.id !== over.id) {
-                setBoard(board => {
-                    const oldIndex = board.statuses.findIndex(s => `column-${s.id}` === active.id);
-                    const newIndex = board.statuses.findIndex(s => `column-${s.id}` === over.id);
-                    const newStatuses = arrayMove(board.statuses, oldIndex, newIndex);
-                    newStatuses.forEach((status, index) => {
-                        status.weight = index * 200;
+            setBoard(board => {
+                const oldIndex = board.statuses.findIndex(s => `column-${s.id}` === active.id);
+                const newIndex = board.statuses.findIndex(s => `column-${s.id}` === over.id);
+                const newStatuses = arrayMove(board.statuses, oldIndex, newIndex);
 
-                        // Update in backend
-                        api.put(`/statuses/${status.id}`, {
-                            ...status,
-                            weight: status.weight
-                        }, workspaceId);
-                    });
-
-                    return { ...board, statuses: newStatuses };
+                // Optimize weight calculations - use larger intervals (1000)
+                newStatuses.forEach((status, index) => {
+                    status.weight = index * 1000;
+                    api.put(`/statuses/${status.id}`, {
+                        ...status,
+                        weight: status.weight
+                    }, workspaceId);
                 });
-            }
-        }
 
+                return { ...board, statuses: newStatuses };
+            });
+        }
         else if (activeType === 'task') {
+            const task = tasks.find(t => `task-${t.id}` === active.id);
             const targetStatusId = over.id.startsWith('task-')
                 ? tasks.find(t => `task-${t.id}` === over.id).statusId
                 : Number(over.id.replace('column-', ''));
 
-            const sourceStatusId = tasks.find(t => `task-${t.id}` === active.id).statusId;
+            // Check task limit
+            const targetStatus = board.statuses.find(s => s.id === targetStatusId);
+            const tasksInTargetStatus = tasks.filter(t =>
+                t.statusId === targetStatusId && `task-${t.id}` !== active.id
+            );
 
-            // Only allow move if user has permission
-            const task = tasks.find(t => `task-${t.id}` === active.id);
-            const canMove = canManageBoardContent(role) || task.assignedUserId === currentUser.id;
+            // If column has a limit and is full, prevent dropping
+            if (targetStatus.maxTasks && tasksInTargetStatus.length >= targetStatus.maxTasks) {
+                return;
+            }
 
+            // Check permission
+            const canMove = (canManageBoardContent(role) && task.assigneeId == null) ||
+                (task.assigneeId != null && task.assigneeId == userId);
             if (!canMove) return;
 
-            if (active.id !== over.id) {
+            // Calculate new weight based on position
+            let newWeight = 0;
+            const tasksInDestination = tasks.filter(t => t.statusId === targetStatusId)
+                .sort((a, b) => a.weight - b.weight);
 
-                // Update task in the state
-                const updatedTasks = [...tasks];
-                const movedTask = updatedTasks.find(t => `task-${t.id}` === active.id);
+            if (over.id.startsWith('task-')) {
+                // Task is dropped on another task
+                const overTaskIndex = tasksInDestination.findIndex(t => `task-${t.id}` === over.id);
 
-                // Calculate new weight
-                const tasksInDestination = tasks.filter(t => t.statusId === targetStatusId);
-                const overTask = tasks.find(t => `task-${t.id}` === over.id);
-                const newWeight = overTask
-                    ? overTask.weight + 1
-                    : (tasksInDestination.length > 0
-                        ? Math.max(...tasksInDestination.map(t => t.weight)) + 500
-                        : 0);
-
-                // Update in backend
-                shallowUpdateTask({
-                    id: movedTask.id,
-                    statusId: Number(targetStatusId),
-                    weight: newWeight
-                })
-
+                if (overTaskIndex === 0) {
+                    // First position - half of first task's weight
+                    newWeight = tasksInDestination[0].weight / 2;
+                } else if (overTaskIndex === tasksInDestination.length - 1) {
+                    // Last position - add 500 to last task
+                    newWeight = tasksInDestination[overTaskIndex].weight + 500;
+                } else {
+                    // Between two tasks - average weight
+                    newWeight = (tasksInDestination[overTaskIndex - 1].weight +
+                        tasksInDestination[overTaskIndex].weight) / 2;
+                }
+            } else {
+                // Task is dropped on a column
+                if (tasksInDestination.length === 0) {
+                    // Empty column
+                    newWeight = 0;
+                } else {
+                    // End of column - add 500 to last task
+                    newWeight = tasksInDestination[tasksInDestination.length - 1].weight + 500;
+                }
             }
+
+            // Update backend
+            shallowUpdateTask({
+                id: task.id,
+                statusId: Number(targetStatusId),
+                weight: newWeight
+            });
         }
 
         setActiveId(null);
@@ -172,8 +200,30 @@ export function Board() {
             const newStatusId = over.id.replace('column-', '');
             const task = tasks.find(t => t.id.toString() === taskId);
 
+            const targetStatus = board.statuses.find(s => s.id.toString() === newStatusId);
+            const tasksInTargetStatus = tasks.filter(t => t.statusId.toString() === newStatusId);
+
+            // Check if status has a maxTasks limit and if it's already reached
+            if (targetStatus.maxTasks && tasksInTargetStatus.length >= targetStatus.maxTasks) {
+                return; // Don't allow the dragover if column is full
+            }
+
+            // Add this check to prevent moving assigned tasks
+            const canMove = (canManageBoardContent(role) && task.assigneeId == null) ||
+                (task.assigneeId != null && task.assigneeId == userId);
+            if (!canMove) {
+                return; // Don't allow the dragover if user can't move this task
+            }
+
             // If task is already in a different column than its source
             if (task && task.statusId.toString() !== newStatusId) {
+                // Add backend update here
+                shallowUpdateTask({
+                    id: task.id,
+                    statusId: parseInt(newStatusId),
+                    weight: task.weight // Keep original weight or calculate new one
+                });
+
                 // Update local state temporarily during drag
                 setTasks(current =>
                     current.map(t =>
@@ -183,13 +233,11 @@ export function Board() {
                     )
                 );
             }
-
-            console.log("task ", task.title, " dragOver, active:", active.id, " , over:" ,over.id)
         }
     }
 
     return (
-        <Stack spacing={4} p={4}>
+        <Stack spacing={4} p={8} overflow={"auto"}>
             {board && (
                 <Flex justifyContent="space-between" alignItems="center">
                     <EditableTitle
@@ -199,7 +247,7 @@ export function Board() {
                         fontSize="2xl"
                     />
 
-                    {canManageBoardContent(role) && <CreateStatusDialog onStatusCreate={handleAddStatus} />}
+                    {canManageBoardContent(role) && <CreateStatusDialog statusNames={board?.statuses.map(e => e.name) || []} onStatusCreate={handleAddStatus} />}
                     <BoardProvider>
                         <Drawer.Root size={"lg"}>
                             <Drawer.Trigger asChild>
@@ -235,12 +283,31 @@ export function Board() {
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
+                // Add these props for more responsive dragging
+                modifiers={[]}
+                measuring={{
+                    droppable: {
+                        strategy: MeasuringStrategy.Always
+                    }
+                }}
+                // Reduce animation duration
+                activationConstraint={{
+                    distance: 5, // Require moving 5px before drag starts
+                    tolerance: 5
+                }}
             >
                 <SortableContext
                     items={board?.statuses.map(status => `column-${status.id}`) || []}
                     strategy={horizontalListSortingStrategy}
                 >
-                    <HStack spacing={4} alignItems="flex-start" overflowX="auto" pb={4}>
+                    <HStack
+                        spacing={4}
+                        justify="flex-start"
+                        alignItems="flex-start"
+                        overflowX="auto"
+                        overflowY="hidden"
+                        height="100%" // or a bounded height if not already
+                    >
                         {board?.statuses.map(status => (
                             <SortableStatusColumn
                                 key={`column-${status.id}`}

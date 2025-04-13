@@ -32,7 +32,7 @@ export function Guests({ workspaceId }) {
     return (
         <Stack spacing={5} p={4}>
             <Autocomplete
-                membersBlacklist={members}
+                membersBlacklist={[...members.filter(m => m.role != "Guest"), ...guests]}
                 addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} 
             />
             <Wrap spacing={3}>

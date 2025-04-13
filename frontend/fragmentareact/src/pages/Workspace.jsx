@@ -6,7 +6,7 @@ import { Box, Spinner, HStack, Stack, Tabs, Input, Button, Wrap, Badge, CloseBut
 import { LuFolder, LuCheck, LuPencilLine, LuX, LuUser } from "react-icons/lu"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import { canEditWorkspace } from "@/utils/permissions"
-import { WorkspaceGeneral } from "@/components/WorkspaceGeneral"
+import { Boards } from "@/components/Boards"
 import { useParams, useOutletContext } from "react-router"
 import { EditableTitle } from "@/components/EditableTitle"
 
@@ -21,25 +21,25 @@ export function Workspace() {
     }
 
     return (
-        <Stack>
+        <Stack p={4} gap={4}>
             <EditableTitle content={name} canEdit={canEditWorkspace(role)} onContentEdit={handleTitleUpdate} />
 
-            <Tabs.Root defaultValue="members">
+            <Tabs.Root variant={"enclosed"} defaultValue="boards">
                 <Tabs.List>
-                    <Tabs.Trigger value="general">
+                    <Tabs.Trigger value="boards">
                         <LuFolder />
-                        {t("general")}
+                        {t("common.boards")}
                     </Tabs.Trigger>
                     <Tabs.Trigger value="members">
                         <LuUser />
-                        {t("members")}
+                        {t("common.members")}
                     </Tabs.Trigger>
                 </Tabs.List>
-                <Tabs.Content value="members">
+                <Tabs.Content bg={"background"} value="members">
                     <Members workspaceId={workspaceId} />
                 </Tabs.Content>
-                <Tabs.Content value="general">
-                    <WorkspaceGeneral id={workspaceId} />
+                <Tabs.Content bg={"background"} value="boards">
+                    <Boards id={workspaceId} />
                 </Tabs.Content>
             </Tabs.Root>
 

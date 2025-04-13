@@ -13,6 +13,8 @@ namespace Fragmenta.Api.Contracts
         BoardDto? CreateBoard(long workspaceId, CreateBoardRequest request);
 
         BoardDto? UpdateBoard(long boardId, UpdateBoardRequest request);
+        
+        bool DeleteBoard(long boardId);
 
         bool RemoveGuest(long boardId, long guestId);
 

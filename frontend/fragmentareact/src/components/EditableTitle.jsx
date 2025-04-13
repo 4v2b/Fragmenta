@@ -1,11 +1,11 @@
 import { LuFolder, LuCheck, LuPencilLine, LuX, LuUser } from "react-icons/lu"
-import { Editable, IconButton, } from "@chakra-ui/react"
+import { Editable, Heading, IconButton, } from "@chakra-ui/react"
 import { useState } from "react"
 
 export function EditableTitle({ canEdit, content, onContentEdit }) {
     //const [value, setValue] = useState(content ?? "")
 
-    return <> {canEdit ? (<Editable.Root submitMode="enter" width={"fit-content"} onValueCommit={e => onContentEdit(e.value) } defaultValue={content}>
+    return <Heading> {canEdit ? (<Editable.Root  size={"xl"} submitMode="enter" width={"fit-content"} onValueCommit={e => onContentEdit(e.value) } defaultValue={content}>
         <Editable.Preview />
         <Editable.Input />
         <Editable.Control>
@@ -25,5 +25,5 @@ export function EditableTitle({ canEdit, content, onContentEdit }) {
                 </IconButton>
             </Editable.SubmitTrigger>
         </Editable.Control>
-    </Editable.Root>) : content}</>
+    </Editable.Root>) : content}</Heading>
 }

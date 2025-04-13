@@ -6,8 +6,9 @@ import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
     Input
 } from "@chakra-ui/react"
+import { NumberInput } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field";
-import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
+// import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
 import { useEffect, useState, useRef } from "react"
 import { useParams } from "react-router"
 import {
@@ -21,13 +22,19 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { Checkbox } from "@chakra-ui/react"
 import { useDebounce } from "@/utils/useDebounce"
 import { StatusColumn } from "@/components/StatusColumn"
+import { Field as InputField } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 
-export function CreateStatusDialog({ onStatusCreate }) {
+export function CreateStatusDialog({ onStatusCreate, statusNames }) {
+    const { t, i18n } = useTranslation()
+    const [selectTaskLimit, setSelectTaskLimit] = useState(false)
+    const [error, setError] = useState(null)
     const [newStatus, setNewStatus] = useState({
         name: "",
-        maxTasks: null,
+        maxTasks: 1,
         colorHex: "#3182CE"
     })
 
@@ -35,33 +42,56 @@ export function CreateStatusDialog({ onStatusCreate }) {
         setNewStatus(prev => ({ ...prev, colorHex: value }));
     }, 200);
 
+    function handleStatusCreate() {
+        if (!selectTaskLimit) newStatus.maxTasks = null;
+        onStatusCreate(newStatus)
+    }
+
     return (<DialogRoot>
         <DialogTrigger asChild>
-            <Button bg="primary">Add Status</Button>
+            <Button bg="primary">{t("fields.actions.newStatus")}</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Add Status</DialogTitle>
+                <DialogTitle>{t("fields.labels.addStatus")}</DialogTitle>
             </DialogHeader>
             <DialogBody>
                 <Stack spacing={4}>
-                    <Field label="Name">
+
+                    <InputField.Root invalid={error != null}>
+                        <InputField.Label>{t("fields.labels.name")}</InputField.Label>
                         <Input
                             value={newStatus.name}
-                            onChange={e => setNewStatus({ ...newStatus, name: e.target.value })}
-                        />
+                            onChange={e => setNewStatus({ ...newStatus, name: e.target.value })} />
+                        <InputField.ErrorText>{t(error)}</InputField.ErrorText>
+                    </InputField.Root>
+
+
+                    <Field label={t("fields.labels.taskLimit")}>
+
+                        <Checkbox.Root size={"sm"}>
+                            <Checkbox.HiddenInput onInput={() => setSelectTaskLimit(prev => !prev)} />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label >{t("fields.labels.taskLimitInfo")}</Checkbox.Label>
+                        </Checkbox.Root>
+
+                        <NumberInput.Root
+                            disabled={selectTaskLimit ? false : true}
+                            
+                            onValueChange={e =>{
+                                setNewStatus({ ...newStatus, maxTasks: e.valueAsNumber }
+                                );
+                            console.log(newStatus);}}
+                            defaultValue="0" min={1} max={50}>
+                            <NumberInput.Control />
+                            <NumberInput.Input value={newStatus?.maxTasks.toString()} />
+                        </NumberInput.Root>
+
                     </Field>
 
-                    <Field label="Max Tasks">
-                        <NumberInputRoot min={0} max={50}>
-                            <NumberInputField
-                                value={newStatus.maxTasks || 0}
-                                onChange={e => setNewStatus({ ...newStatus, maxTasks: e.target.value ? parseInt(e.target.value) : null })}
-                            />
-                        </NumberInputRoot>
-                    </Field>
-
-                    <Field label="Color">
+                    <Field label={t("fields.labels.color")}>
                         <Input
                             type="color"
                             value={newStatus.colorHex}
@@ -72,11 +102,18 @@ export function CreateStatusDialog({ onStatusCreate }) {
             </DialogBody>
             <DialogFooter>
                 <DialogActionTrigger asChild>
-                    <Button color="primary" variant="outline">Cancel</Button>
+                    <Button color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
                 </DialogActionTrigger>
-                <DialogActionTrigger asChild>
-                    <Button onClick={() => onStatusCreate(newStatus)} bg="primary">Create</Button>
-                </DialogActionTrigger>
+                {
+                    newStatus?.name == "" ?
+                        (<Button onClick={() => setError("fields.labels.required")} bg="primary">{t("fields.actions.create")}</Button>)
+                        :
+                        (statusNames.includes(newStatus?.name) ?
+                            (<Button onClick={() => setError("fields.labels.statusExists")} bg="primary">{t("fields.actions.create")}</Button>) :
+                            (<DialogActionTrigger asChild>
+                                <Button onClick={() => handleStatusCreate()} bg="primary">{t("fields.actions.create")}</Button>
+                            </DialogActionTrigger>)
+                        )}
             </DialogFooter>
             <DialogCloseTrigger />
         </DialogContent>

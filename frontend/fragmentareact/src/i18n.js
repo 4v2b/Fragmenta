@@ -40,10 +40,13 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        autoDeletion: "Will be removed in {{count}} day",
+  autoDeletion_plural: "Will be removed in {{count}} days",
+  autoDeletion_0: "Will be removed today",
                         workspaces: "Workspaces",
                         home: "Home",
-                        archiveBoards: "Active boards",
-                        activeBoards: "Archived boards",
+                        archiveBoards: "Archived boards",
+                        activeBoards: "Active boards",
                         settings: "Settings",
                         emptyBoard: "The board is empty",
                         noTasksYet: "No tasks yet",
@@ -60,16 +63,22 @@ i18n
                             priority0: "None",
                             priority1: "High",
                             priority2: "Medium",
-                            priority3: "Low",  
+                            priority3: "Low",
                         },
                         labels: {
-                            assignedTo: "Assignee: {{name}}", 
+                            taskLimit: "Tasks limit",
+                            color: "Color",
+                            archivedEmptyTitle: "There is no archived boards yet",
+                            createBoard: "Create a board",
+                            assignedTo: "Assignee: {{name}}",
                             attachments: "Attachments",
                             dragFile: "Drag and drop files here",
                             fileConstraint: "for files up to 10MB",
                             newPassword: "New password",
                             required: "This field is required",
+                            statusExists: " Status with this name alredy exists",
                             addTask: "Add task",
+                            addStatus: "Add status",
                             selPriority: "Select prioirty",
                             title: "Title",
                             desc: "Description",
@@ -83,9 +92,14 @@ i18n
                             kick: "Kick",
                             email: "Email",
                             password: "Password",
-                            repeatPassword: "Repeat password"
+                            repeatPassword: "Repeat password",
+                            taskLimitInfo: "Limit amout of simultaneous tasks in the column",
                         },
                         actions: {
+                            newStatus: "New status",
+                            newBoard: "New board",
+                            archive: "Archive",
+                            restore: "Restore",
                             areYouSure: "Are you sure?",
                             cannotUndone: "This action cannot be undone",
                             cancel: "Cancel",
@@ -100,7 +114,7 @@ i18n
                         }
                     },
                     auth: {
-                        success:{
+                        success: {
                             resetPassword: "Password was successfully reset",
                             loginRedirect: "Redirecting to login page",
                         },
@@ -148,6 +162,11 @@ i18n
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
                     common: {
+                        autoDeletion_0: "Буде видалено сьогодні",
+                        autoDeletion_one: "Буде видалено через {{count}} день",
+                        autoDeletion_few: "Буде видалено через {{count}} дні",
+                        autoDeletion_many: "Буде видалено через {{count}} днів",
+                        autoDeletion_other: "Буде видалено через {{count}} дня",
                         home: "Домашня сторінка",
                         noTasksYet: "Поки що немає завдань",
                         emptyBoard: "Ця дошка поки що порожня",
@@ -156,8 +175,8 @@ i18n
                         workspaceStub: "Не обрано",
                         workspaces: "Робочі простори",
                         boards: "Дошки",
-                        archiveBoards: "Активні дошки",
-                        activeBoards: "Архівовані дошки",
+                        activeBoards: "Активні дошки",
+                        archiveBoards: "Архівовані дошки",
                         settings: "Налаштування",
                         guests: "Список гостей",
                         members: "Учасники",
@@ -169,10 +188,12 @@ i18n
                             priority0: "Немає",
                             priority1: "Високий",
                             priority2: "Середній",
-                            priority3: "Низький",  
+                            priority3: "Низький",
                         },
                         labels: {
-                            assignedTo: "Виконавець: {{name}}", 
+                            addStatus: "Створення статусу",
+                            archivedEmptyTitle: "Немає архівованих дошок",
+                            assignedTo: "Виконавець: {{name}}",
                             attachments: "Вкладені файли",
                             dragFile: "Перетяніть файли сюди",
                             fileConstraint: "для файлів розміром до 10МБ",
@@ -192,14 +213,22 @@ i18n
                             email: "Ел. пошта",
                             password: "Пароль",
                             newPassword: "Новий пароль",
-                            repeatPassword: "Повторіть пароль"
+                            repeatPassword: "Повторіть пароль",
+                            taskLimit: "Ліміт завдань",
+                            taskLimitInfo: "Обмежити одночасну кількість завдань в колонці",
+                            color: "Колір",
+                            statusExists: "Статус з таким іменем вже існує",
                         },
                         actions: {
+                            archive: "Архівувати",
+                            restore: "Відновити",
                             areYouSure: "Ви впевнені?",
                             cannotUndone: "Цю дію не можна скасувати",
                             cancel: "Відмінити",
                             save: "Зберегти",
                             create: "Створити",
+                            newBoard: "Нова дошка",
+                            newStatus: "Новий статус",
                             login: "Увійти",
                             register: "Зареєструватися",
                             logout: "Вийти",
@@ -209,7 +238,7 @@ i18n
                         }
                     },
                     auth: {
-                        success:{
+                        success: {
                             resetPassword: "Пароль успішно змінено",
                             loginRedirect: "Вас буде перенаправлено на сторінку входу",
                         },

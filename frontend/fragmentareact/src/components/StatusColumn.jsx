@@ -81,13 +81,13 @@ export function StatusColumn({ status, tasks }) {
                                     <EditStatusDialog
                                         editStatus={status}
                                         onStatusUpdate={(updateStatus) => console.log(updateStatus)}
-                                        base={<HStack as="div"><BiPencil /> <span>Edit</span></HStack>}
+                                        base={<HStack as="div"><BiPencil />Edit</HStack>}
                                     />
                                 </Menu.Item>
                                 <Menu.Item>
                                     <AlertDialog
                                         onConfirm={() => { }}
-                                        base={<HStack as="div" color="red.500"><BiTrash /> <span>Delete</span></HStack>}
+                                        base={<HStack as="div" color="red.500"><BiTrash />Delete</HStack>}
                                         message="Are you sure you want to delete this status?"
                                         title="Confirm Deletion"
                                         confirmMessage="Delete"
