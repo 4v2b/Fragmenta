@@ -3,14 +3,14 @@ import { canCreateBoard, canEditBoard } from "@/utils/permissions";
 import { Button, HStack, Box, Input, Stack, Text, Wrap } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LiaDoorOpenSolid } from "react-icons/lia";
-import { Table, DataListRoot, DataListItem, Badge, CloseButton } from "@chakra-ui/react";
+import { Table, Checkbox, Heading, DataListRoot, DataListItem, Badge, CloseButton } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog";
 import { useWorkspace } from "@/utils/WorkspaceContext";
 import { Autocomplete } from "./Autocomplete";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Card, Heading } from "@chakra-ui/react"
+import { Card } from "@chakra-ui/react"
 import { BiSolidArchiveIn, BiSolidArchiveOut } from "react-icons/bi";
 import { EmptyState } from "@chakra-ui/react"
 import { HiMiniArchiveBox } from "react-icons/hi2";
@@ -24,6 +24,14 @@ export function Boards({ id }) {
     const [chosenUsers, setChosenUsers] = useState([])
     const { role } = useWorkspace()
     const { t } = useTranslation()
+    const [types, setTypes] = useState([])
+
+    console.log(types)
+
+    useEffect(() => {
+        api.get(`/attachment-types`, id).then(setTypes);
+
+    }, [])
 
     useEffect(() => {
         api.get(`/boards`, id).then(res => {
@@ -74,6 +82,22 @@ export function Boards({ id }) {
 
     console.log(archivedBoards)
 
+    const renderTypeTree = (types) => (
+        <Box pl={4}>
+            {types.map(type => (
+                <Box key={type.id}>
+                    <Checkbox
+                        // isChecked={selectedTypes.includes(type.id)}
+                        // onChange={(e) => handleTypeSelect(type.id, e.target.checked)}
+                    >
+                        {type.value}
+                    </Checkbox>
+                    {/* {type.children.length > 0 && renderTypeTree(type.children)} */}
+                </Box>
+            ))}
+        </Box>
+    );
+
     return <Stack>
         <Box p={4} gap={4}>
             <HStack justify={"space-between"} p={4}>
@@ -100,6 +124,10 @@ export function Boards({ id }) {
                                         {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton onClick={() => { setChosenUsers(prev => prev.filter(i => i.id != e.id)) }} /></Badge>)}
                                     </Wrap>
                                 </Field>
+                                <Stack align="start">
+                                    <Heading size="md">Дозволені типи файлів</Heading>
+                                    {renderTypeTree(types[0].children)}
+                                </Stack>
                             </Stack>
 
                         </DialogBody>

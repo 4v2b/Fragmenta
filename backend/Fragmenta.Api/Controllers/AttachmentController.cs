@@ -26,27 +26,20 @@ namespace Fragmenta.Api.Controllers
             return null;
         }
 
-        //[HttpGet]
-        //public IActionResult GetTasks([FromQuery] long boardId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
-        //{
-        //    var id = GetAuthenticatedUserId();
+        [HttpGet("attachment-types")]
+        public async Task<IActionResult> GetAttachmentTypes([FromServices] IAttachmentTypeService attachmentTypeService )
+        {
+            var id = GetAuthenticatedUserId();
 
-        //    if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
-        //    {
-        //        var role = accessService.GetRole(workspaceId, id.Value);
+            if (id != null)
+            {
+                var result = await attachmentTypeService.GetAllTypes();
 
-        //        if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
-        //        {
-        //            return Forbid();
-        //        }
+                return Ok(result);
+            }
 
-        //        var result = taskService.GetTasks(boardId);
-
-        //        return Ok(result);
-        //    }
-
-        //    return Unauthorized("User was not found");
-        //}
+            return Unauthorized("User was not found");
+        }
 
         //[HttpGet("{taskId}")]
         //public IActionResult GetTask([FromQuery] long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)

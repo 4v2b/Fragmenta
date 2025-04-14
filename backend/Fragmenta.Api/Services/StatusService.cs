@@ -3,6 +3,7 @@ using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Dtos;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fragmenta.Api.Services
 {
@@ -72,6 +73,9 @@ namespace Fragmenta.Api.Services
                 return null;
             }
 
+            var allowedTypes = _context.AttachmentTypes.Include(e => e.Boards)
+                .Where(e => e.Boards.Any(b => b.Id == boardId)).Select(a => a.Id).ToList();
+
             return new FullBoardDto()
             {
                 Id = board.Id,
@@ -87,7 +91,8 @@ namespace Fragmenta.Api.Services
                     MaxTasks = e.TaskLimit > 0 ? e.TaskLimit : null,
                     Weight = e.Weight
                 })
-                .ToList()
+                .ToList(),
+                AllowedTypeIds = allowedTypes
             };
         }
 
@@ -103,7 +108,7 @@ namespace Fragmenta.Api.Services
             status.Weight = request.Weight;
             status.Name = request.Name;
             status.ColorHex = request.ColorHex;
-            status.TaskLimit = request.MaxTasks.HasValue ? request.MaxTasks.Value : 0;
+            status.TaskLimit = request.MaxTasks ?? 0;
 
             _context.Update(status);
             _context.SaveChanges();

@@ -15,9 +15,30 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public Task<List<AttachmentTypeDto>> GetAllTypes()
+        public async Task<List<AttachmentTypeDto>> GetAllTypes()
         {
-            throw new NotImplementedException();
+            var allTypes = await _context.AttachmentTypes.ToListAsync();
+
+            var dtoMap = allTypes.ToDictionary(
+                x => x.Id,
+                x => new AttachmentTypeDto
+                {
+                    Id = x.Id,
+                    Value = x.Value,
+                    Children = []
+                });
+
+            foreach (var entity in allTypes)
+            {
+                if (entity.ParentId is not null)
+                {
+                    dtoMap[entity.ParentId.Value].Children.Add(dtoMap[entity.Id]);
+                }
+            }
+
+            return dtoMap.Values
+                .Where(dto => allTypes.First(e => e.Id == dto.Id).ParentId is null)
+                .ToList();
         }
 
         public Task UpdateBoardAllowedTypes(long boardId, List<long> typeIds)
