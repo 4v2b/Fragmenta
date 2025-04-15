@@ -3,6 +3,8 @@ import { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
 import { HubConnectionBuilder } from '@microsoft/signalr';
 
+const BASE_URL = import.meta.env.VITE_SIGNALR_URL;
+
 const TasksContext = createContext();
 
 export function TasksProvider({ children }) {
@@ -14,7 +16,7 @@ export function TasksProvider({ children }) {
   useEffect(() => {
     if (!connectionRef.current) {
       const connection = new HubConnectionBuilder()
-        .withUrl(`http://192.168.0.104:7241/hub/board?boardId=${boardId}`)
+        .withUrl(`${BASE_URL}/board?boardId=${boardId}`)
         .withAutomaticReconnect()
         .build();
 

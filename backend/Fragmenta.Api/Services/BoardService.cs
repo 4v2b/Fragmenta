@@ -82,24 +82,41 @@ namespace Fragmenta.Api.Services
 
         public BoardDto? UpdateBoard(long boardId, UpdateBoardRequest request)
         {
-            var board = _context.Boards.Include(e => e.AccessList).SingleOrDefault(e => e.Id == boardId);
-
-            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Contains(e.Id))
-                .ToList();
+            var board = _context.Boards
+                .Include(e => e.AccessList)
+                .Include(e => e.AttachmentTypes) // Include existing types
+                .SingleOrDefault(e => e.Id == boardId);
 
             if (board == null)
             {
                 return null;
             }
+            
+            var uniqueTypeIds = request.AllowedTypeIds.Distinct().ToList();
+            
+            board.AttachmentTypes.Clear();
+            
+            var attachmentTypes = _context.AttachmentTypes
+                .Where(e => uniqueTypeIds.Contains(e.Id))
+                .ToList();
+    
+            foreach (var type in attachmentTypes)
+            {
+                board.AttachmentTypes.Add(type);
+            }
 
             board.Name = request.Name;
             board.ArchivedAt = request.ArchivedAt;
 
-            board.AttachmentTypes = attachmentTypes;
-
             _context.SaveChanges();
 
-            return new BoardDto() { Id = board.Id, Name = board.Name, ArchivedAt = board.ArchivedAt, AllowedTypeIds = board.AttachmentTypes.Select(a => a.Id).ToList() };
+            return new BoardDto()
+            {
+                Id = board.Id,
+                Name = board.Name,
+                ArchivedAt = board.ArchivedAt,
+                AllowedTypeIds = board.AttachmentTypes.Select(a => a.Id).ToList()
+            };
         }
 
         public bool DeleteBoard(long boardId)

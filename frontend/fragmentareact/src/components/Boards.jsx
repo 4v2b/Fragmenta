@@ -15,6 +15,10 @@ import { BiSolidArchiveIn, BiSolidArchiveOut } from "react-icons/bi";
 import { EmptyState } from "@chakra-ui/react"
 import { HiMiniArchiveBox } from "react-icons/hi2";
 import { IoTrashBin } from "react-icons/io5";
+import { Collapsible } from "@chakra-ui/react"
+import { FaArrowTurnDown } from "react-icons/fa6";
+import { PiArrowElbowRightDown, PiArrowElbowRightDownBold, PiArrowElbowUpRight } from "react-icons/pi";
+import { ExtensionSelector } from "./ExtensionSelector";
 
 export function Boards({ id }) {
     const navigate = useNavigate()
@@ -26,10 +30,10 @@ export function Boards({ id }) {
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
 
-    console.log(types)
+    //console.log(types)
 
     useEffect(() => {
-        api.get(`/attachment-types`, id).then(setTypes);
+        api.get(`/attachment-types`, id).then(res => setTypes(res[0].children));
 
     }, [])
 
@@ -41,9 +45,13 @@ export function Boards({ id }) {
     }, [id])
 
     function createBoard() {
+
+        const allowedTypeIds = getCheckedLeafTypeIds(types);
+
         api.post(`/boards`, {
             name: form.name,
-            guestsId: chosenUsers.map(e => e.id)
+            guestsId: chosenUsers.map(e => e.id),
+            allowedTypeIds : allowedTypeIds
         }, id).then(res => setBoards(prev => [...prev, res]))
     }
 
@@ -80,23 +88,22 @@ export function Boards({ id }) {
         return Math.max(0, daysLeft);
     };
 
-    console.log(archivedBoards)
+    function getCheckedLeafTypeIds(nodes) {
+        let selectedIds = [];
 
-    const renderTypeTree = (types) => (
-        <Box pl={4}>
-            {types.map(type => (
-                <Box key={type.id}>
-                    <Checkbox
-                        // isChecked={selectedTypes.includes(type.id)}
-                        // onChange={(e) => handleTypeSelect(type.id, e.target.checked)}
-                    >
-                        {type.value}
-                    </Checkbox>
-                    {/* {type.children.length > 0 && renderTypeTree(type.children)} */}
-                </Box>
-            ))}
-        </Box>
-    );
+        nodes.forEach(node => {
+
+            if (node.children?.length > 0) {
+                const childIds = getCheckedLeafTypeIds(node.children);
+                selectedIds = [...selectedIds, ...childIds];
+            } else if (node.checked) {
+                selectedIds.push(node.id);
+            }
+
+        });
+
+        return selectedIds;
+    }
 
     return <Stack>
         <Box p={4} gap={4}>
@@ -124,10 +131,9 @@ export function Boards({ id }) {
                                         {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton onClick={() => { setChosenUsers(prev => prev.filter(i => i.id != e.id)) }} /></Badge>)}
                                     </Wrap>
                                 </Field>
-                                <Stack align="start">
-                                    <Heading size="md">Дозволені типи файлів</Heading>
-                                    {renderTypeTree(types[0].children)}
-                                </Stack>
+                                <Text fontWeight="medium"> {t("fields.labels.allowedAttachmentTypes")}</Text>
+
+                                <ExtensionSelector types={types} setTypes={setTypes}></ExtensionSelector>
                             </Stack>
 
                         </DialogBody>

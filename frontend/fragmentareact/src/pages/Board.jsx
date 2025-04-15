@@ -25,6 +25,8 @@ import { Drawer } from "@chakra-ui/react"
 import { useTranslation } from "react-i18next"
 import { Guests } from "@/components/Guests"
 import { BoardProvider } from "@/utils/BoardContext"
+import { BiCog } from "react-icons/bi"
+import { ExtensionSelector } from "@/components/ExtensionSelector"
 
 export function Board() {
     const { role } = useWorkspace()
@@ -33,7 +35,8 @@ export function Board() {
     const { tasks, setTasks, addTask, shallowUpdateTask } = useTasks()
     const { tags } = useTags()
     const { t } = useTranslation()
-    
+    const [types, setTypes] = useState([])
+
     // TODO Fetch actual user id (from /me endpoint)
     const userId = 3;
 
@@ -46,6 +49,10 @@ export function Board() {
     );
 
     //console.log(tasks);
+
+    useEffect(() => {
+        api.get(`/attachment-types`, workspaceId).then(res => setTypes(res[0].children));
+    }, [])
 
     useEffect(() => {
         api.get(`/boards/${boardId}`, workspaceId).then(res => setBoard(res))
@@ -75,8 +82,36 @@ export function Board() {
 
     function handleTitleChange(newTitle) {
         api.put(`/boards/${boardId}`, {
-            "name": newTitle,
-            "archivedAt": null
+            name: newTitle,
+            archivedAt: null,
+            allowedTypeIds: board.allowedTypeIds
+        }, workspaceId)
+            .then(res => setBoard(prev => ({ ...prev, name: res.name })))
+    }
+
+    function getCheckedLeafTypeIds(nodes) {
+        let selectedIds = [];
+
+        nodes.forEach(node => {
+
+            if (node.children?.length > 0) {
+                const childIds = getCheckedLeafTypeIds(node.children);
+                selectedIds = [...selectedIds, ...childIds];
+            } else if (node.checked) {
+                selectedIds.push(node.id);
+            }
+
+        });
+
+        return selectedIds;
+    }
+
+
+    function handleAllowedTypesChange() {
+        api.put(`/boards/${boardId}`, {
+            name: board.name,
+            archivedAt: null,
+            allowedTypeIds: getCheckedLeafTypeIds(types)
         }, workspaceId)
             .then(res => setBoard(prev => ({ ...prev, name: res.name })))
     }
@@ -273,6 +308,43 @@ export function Board() {
                             </Portal>
                         </Drawer.Root>
                     </BoardProvider>
+
+                    <Drawer.Root size={"xs"}>
+                        <Drawer.Trigger asChild>
+                            <Button variant="outline" size="sm">
+                                {t("fields.labels.allowedAttachmentTypes")}
+                                <BiCog />
+                            </Button>
+                        </Drawer.Trigger>
+                        <Portal>
+                            <Drawer.Backdrop />
+                            <Drawer.Positioner>
+                                <Drawer.Content>
+                                    <Drawer.Context>
+                                        {(store) => (
+                                            <>
+                                                <Drawer.Header>
+                                                    <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
+                                                </Drawer.Header>
+                                                <Drawer.Body>
+                                                    <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
+                                                </Drawer.Body>
+                                                <Drawer.Footer>
+                                                    <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
+                                                    <Button onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
+                                                </Drawer.Footer>
+                                            </>
+                                        )}
+                                    </Drawer.Context>
+
+
+                                    <Drawer.CloseTrigger asChild>
+                                        <CloseButton size="sm" />
+                                    </Drawer.CloseTrigger>
+                                </Drawer.Content>
+                            </Drawer.Positioner>
+                        </Portal>
+                    </Drawer.Root>
 
                 </Flex>
             )}

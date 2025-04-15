@@ -97,7 +97,7 @@ builder.Services.AddAuthentication(options =>
 
 var origin = builder.Configuration["AllowedCorsOrigin"]!;
 
-builder.WebHost.UseUrls("http://192.168.0.104:7241");
+builder.WebHost.UseUrls("http://0.0.0.0:7241");
 
 builder.Services.AddCors(options =>
 {
