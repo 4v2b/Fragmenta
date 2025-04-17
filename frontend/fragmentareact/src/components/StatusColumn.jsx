@@ -8,19 +8,10 @@ import { AlertDialog } from "./AlertDialog";
 import { canManageBoardContent } from "@/utils/permissions";
 import { useTasks } from "@/utils/TaskContext";
 import { SortableTask } from "@/components/SortableTask"
-import { 
-    DndContext, closestCenter, KeyboardSensor, 
-    PointerSensor, useSensor, useSensors,
-    DragOverlay 
-  } from '@dnd-kit/core';
-  import { arrayMove, SortableContext, horizontalListSortingStrategy, 
-    verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-  import { CSS } from '@dnd-kit/utilities';
-  import { useId, useState } from 'react';
 
 export function StatusColumn({ status, tasks }) {
     const { role } = useWorkspace();
-    const { workspaceId, boardId } = useParams();
+    // const { workspaceId, boardId } = useParams();
     const { addTask,  } = useTasks()
 
     function handleAddTask(task) {

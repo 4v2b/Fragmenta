@@ -95,14 +95,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-var origin = builder.Configuration["AllowedCorsOrigin"]!;
+var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() ?? [];
 
 builder.WebHost.UseUrls("http://0.0.0.0:7241");
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
-        builder => builder.WithOrigins(origin)
+        builder => builder.WithOrigins(origins)
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());
@@ -121,7 +121,6 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IResetTokenService, ResetTokenService>();
 builder.Services.AddScoped<IMailingService, MailingService>();
-builder.Services.AddScoped<IAttachmentTypeService, AttachmentTypeService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Toaster, toaster } from "@/components/ui/toaster";
-import { Box, Button, Code, FileUpload, Icon, InputGroup, useFileUpload } from "@chakra-ui/react"
+import { Box, Button, FileUpload, Icon,} from "@chakra-ui/react"
 import { LuUpload } from "react-icons/lu"
 
 const maxFiles = 10;

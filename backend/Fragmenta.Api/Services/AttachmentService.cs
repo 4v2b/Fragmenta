@@ -9,22 +9,20 @@ using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Fragmenta.Api.Dtos;
 
 public class AttachmentService : IAttachmentService
 {
     private readonly ApplicationContext _context;
     private readonly BlobServiceClient _blobServiceClient;
-    private readonly IAttachmentTypeService _typeService;
     private readonly AzureStorageOptions _options;
 
-    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig,
-                             IAttachmentTypeService typeService)
+    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig)
     {
         _options = blobStorageConfig.Value ?? throw new ArgumentNullException(nameof(blobStorageConfig)); 
 
         _context = context;
         _blobServiceClient = new BlobServiceClient(_options.ConnectionString);
-        _typeService = typeService;
     }
 
     public async Task<Attachment> UploadAttachment(IFormFile file, long taskId, long userId)
@@ -36,7 +34,7 @@ public class AttachmentService : IAttachmentService
                             .FirstOrDefaultAsync(e => e.Statuses.Any(i => i.Id == task.StatusId));
         if (board == null) throw new InvalidOperationException("Board not found");
 
-        bool isAllowed = await _typeService.IsFileExtensionAllowed(board.Id, file.FileName);
+        bool isAllowed = await IsFileExtensionAllowed(board.Id, file.FileName);
         if (!isAllowed) throw new InvalidOperationException("File extension is not allowed");
 
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -97,5 +95,46 @@ public class AttachmentService : IAttachmentService
     {
         var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
         return blobContainerClient.GetBlobClient(blobName);
+    }
+
+    public async Task<List<AttachmentTypeDto>> GetAllTypes()
+    {
+        var allTypes = await _context.AttachmentTypes.ToListAsync();
+
+        var dtoMap = allTypes.ToDictionary(
+            x => x.Id,
+            x => new AttachmentTypeDto
+            {
+                Id = x.Id,
+                Value = x.Value,
+                Children = []
+            });
+
+        foreach (var entity in allTypes)
+        {
+            if (entity.ParentId is not null)
+            {
+                dtoMap[entity.ParentId.Value].Children.Add(dtoMap[entity.Id]);
+            }
+        }
+
+        return dtoMap.Values
+            .Where(dto => allTypes.First(e => e.Id == dto.Id).ParentId is null)
+            .ToList();
+    }
+
+    public async Task<bool> IsFileExtensionAllowed(long boardId, string filename)
+    {
+        var extension = Path.GetExtension(filename).ToLowerInvariant();
+
+        var allowedTypeIds = _context.AttachmentTypes.Include(e => e.Boards).Where(e => e.Boards.Any(i => i.Id == boardId)).Select(e => e.Id);
+
+        var allowedTypes = await _context.AttachmentTypes
+            .Include(e => e.Children)
+            .Where(t => allowedTypeIds.Contains(t.Id) ||
+                        t.Children.Any(c => allowedTypeIds.Contains(c.Id)))
+            .ToListAsync();
+
+        return allowedTypes.Any(t => t.Value.Equals(extension, StringComparison.OrdinalIgnoreCase));
     }
 }

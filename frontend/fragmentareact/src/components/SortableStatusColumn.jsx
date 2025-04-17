@@ -1,21 +1,20 @@
 import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
-  HStack, Stack, Box, Text, Badge, Flex, Heading
+   Box, Badge, Flex, Heading
 } from "@chakra-ui/react"
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { useTasks } from "@/utils/TaskContext"
 import {
-  arrayMove, SortableContext, horizontalListSortingStrategy,
+   SortableContext,
   verticalListSortingStrategy, useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SortableTask } from "@/components/SortableTask"
-import { useId } from 'react';
 import { useTranslation } from "react-i18next"
-import { RxDragHandleDots1, RxDragHandleDots2 } from "react-icons/rx";
+import { RxDragHandleDots2 } from "react-icons/rx";
 
-export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
+export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: isDisabled

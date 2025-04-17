@@ -27,13 +27,13 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet("attachment-types")]
-        public async Task<IActionResult> GetAttachmentTypes([FromServices] IAttachmentTypeService attachmentTypeService )
+        public async Task<IActionResult> GetAttachmentTypes([FromServices] IAttachmentService attachmentService )
         {
             var id = GetAuthenticatedUserId();
 
             if (id != null)
             {
-                var result = await attachmentTypeService.GetAllTypes();
+                var result = await attachmentService.GetAllTypes();
 
                 return Ok(result);
             }

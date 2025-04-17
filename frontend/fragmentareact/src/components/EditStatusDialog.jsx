@@ -1,15 +1,10 @@
-import { api } from "@/api/fetchClient"
-import { EditableTitle } from "@/components/EditableTitle"
-import { canEditBoard, canManageBoardContent } from "@/utils/permissions"
-import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
-    HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
+    Stack, Button,
     Input
 } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field";
 import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
-import { useEffect, useState, useRef } from "react"
-import { useParams } from "react-router"
+import {  useState} from "react"
 import {
     DialogActionTrigger,
     DialogBody,

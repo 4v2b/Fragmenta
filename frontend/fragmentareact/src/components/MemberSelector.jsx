@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Box, List, Spinner } from "@chakra-ui/react";
-import { api } from "@/api/fetchClient";
+import { Input, Box, List } from "@chakra-ui/react";
 
 export function MemberSelector({ members, onSelect }) {
     const [selectedMembers, setSelectedMembers] = useState([])

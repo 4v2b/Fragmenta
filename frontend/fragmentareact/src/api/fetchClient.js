@@ -32,9 +32,9 @@ async function fetchWithCookies(url, options = {}) {
 
 function logout() {
     console.log("You have been logged out")
-    //localStorage.removeItem("accessToken");
-    //localStorage.removeItem("refreshToken");
-    //window.location.href = "/login"; // Redirect to login page
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    window.location.href = "/login"; // Redirect to login page
 }
 
 async function fetchWithJwtBearer(url, options = {}) {

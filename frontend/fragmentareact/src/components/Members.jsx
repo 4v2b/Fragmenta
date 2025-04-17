@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Stack, Button, Wrap, Badge, CloseButton, Table} from "@chakra-ui/react"
 import { useWorkspace } from "@/utils/WorkspaceContext"

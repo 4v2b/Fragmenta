@@ -4,7 +4,8 @@ import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
-    Input, Portal
+    Input, Portal,
+    Dialog
 } from "@chakra-ui/react"
 import { Wrap, CloseButton, Table } from "@chakra-ui/react"
 import { CreateStatusDialog } from "@/components/CreateStatusDialog"
@@ -27,6 +28,7 @@ import { Guests } from "@/components/Guests"
 import { BoardProvider } from "@/utils/BoardContext"
 import { BiCog } from "react-icons/bi"
 import { ExtensionSelector } from "@/components/ExtensionSelector"
+import { ViewTaskDialog } from "@/components/ViewTaskDialog"
 
 export function Board() {
     const { role } = useWorkspace()
@@ -36,6 +38,10 @@ export function Board() {
     const { tags } = useTags()
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
+    const [viewedTask, setViewedTask] = useState(null);
+    const [open, setOpen] = useState(false);
+
+    // TODO Use useMemo for allowed types extensions, extracted from tree by ids
 
     // TODO Fetch actual user id (from /me endpoint)
     const userId = 3;
@@ -113,7 +119,7 @@ export function Board() {
             archivedAt: null,
             allowedTypeIds: getCheckedLeafTypeIds(types)
         }, workspaceId)
-            .then(res => setBoard(prev => ({ ...prev, name: res.name })))
+            .then(res => setBoard(prev => ({ ...prev, allowedTypeIds: res.allowedTypeIds })))
     }
 
     function handleAddStatus(newStatus) {
@@ -422,9 +428,6 @@ export function Board() {
                                     {board?.statuses.find(s => `column-${s.id}` === activeId)?.name}
                                 </Heading>
                             </Flex>
-
-
-
                         </Box>
                     )}
                     {activeId && activeType === 'task' && (
@@ -442,6 +445,7 @@ export function Board() {
                     )}
                 </DragOverlay>
             </DndContext>
+
         </Stack>
     )
 }

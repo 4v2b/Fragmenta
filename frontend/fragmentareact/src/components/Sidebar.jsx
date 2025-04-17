@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { useState, useEffect } from "react"
 import {
   Box,
-  Stack,
   Button,
   Text,
   VStack,
@@ -11,7 +9,7 @@ import {
   Flex
 } from "@chakra-ui/react"
 import { FiHome, FiFolder, FiPlus, FiList } from "react-icons/fi"
-import { Portal, Select, createListCollection } from "@chakra-ui/react"
+import { Portal, createListCollection } from "@chakra-ui/react"
 import { api } from "@/api/fetchClient.js"
 
 export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspace }) {

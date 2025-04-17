@@ -1,19 +1,12 @@
-import { Box, Text, HStack, Badge, VStack, Avatar, Tag, Tooltip } from "@chakra-ui/react";
+import { Box, Text, HStack, Badge, VStack, Avatar, Tag, Dialog, Button, Portal } from "@chakra-ui/react";
 import { useWorkspace } from "@/utils/WorkspaceContext";
 import { useTranslation } from "react-i18next";
 import { useTags } from "@/utils/TagContext";
 import { HiCalendar, HiTag } from "react-icons/hi";
-import {
-  DndContext, closestCenter, KeyboardSensor,
-  PointerSensor, useSensor, useSensors,
-  DragOverlay
-} from '@dnd-kit/core';
-import {
-  arrayMove, SortableContext, horizontalListSortingStrategy,
-  verticalListSortingStrategy, useSortable
-} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RxDragHandleDots2 } from "react-icons/rx";
+import { ViewTaskDialog } from "./ViewTaskDialog";
 
 export function SortableTask({ id, task, disabled }) {
   const { members } = useWorkspace();
@@ -37,8 +30,8 @@ export function SortableTask({ id, task, disabled }) {
   }).format(new Date(task.dueDate)) : null;
 
   return (
-    <Box ref={setNodeRef} style={style} 
-    //{...attributes} {...listeners} Moved to a grabbing box
+    <Box ref={setNodeRef} style={style}
+      //{...attributes} {...listeners} Moved to a grabbing box
       p={3}
       borderWidth="1px"
       borderRadius="md"
@@ -46,7 +39,8 @@ export function SortableTask({ id, task, disabled }) {
       boxShadow={isDragging ? "md" : "sm"}
       w="full"
     >
-      <VStack align="start" spacing={2} w="full">
+      <VStack align="start" spacing={2} w="full"
+      >
 
         <HStack
           alignItems="center"
@@ -60,7 +54,33 @@ export function SortableTask({ id, task, disabled }) {
           ><RxDragHandleDots2 />
           </Box>
 
-          <Text fontWeight="medium" fontSize="md">{task.title}</Text>
+          <Dialog.Root>
+            <Portal>
+              <Dialog.Backdrop />
+              <Dialog.Positioner>
+                <Dialog.Content>
+                  <Dialog.Header>
+                    <Dialog.Title>{t("fields.labels.addTask")}</Dialog.Title>
+                  </Dialog.Header>
+                  <Dialog.Body>
+                    <ViewTaskDialog task={task} />
+                  </Dialog.Body>
+                  <Dialog.Footer>
+                    <Dialog.Trigger asChild>
+                      <Button color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
+                    </Dialog.Trigger>
+                  </Dialog.Footer>
+                  <Dialog.CloseTrigger />
+                </Dialog.Content>
+              </Dialog.Positioner>
+            </Portal>
+            <Dialog.Trigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                fontWeight="medium" fontSize="md">{task.title}</Button>
+            </Dialog.Trigger>
+          </Dialog.Root>
         </HStack>
 
         {task.description && (

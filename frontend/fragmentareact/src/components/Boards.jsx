@@ -3,7 +3,7 @@ import { canCreateBoard, canEditBoard } from "@/utils/permissions";
 import { Button, HStack, Box, Input, Stack, Text, Wrap } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LiaDoorOpenSolid } from "react-icons/lia";
-import { Table, Checkbox, Heading, DataListRoot, DataListItem, Badge, CloseButton } from "@chakra-ui/react";
+import { Heading,  Badge, CloseButton } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog";
 import { useWorkspace } from "@/utils/WorkspaceContext";
@@ -15,9 +15,6 @@ import { BiSolidArchiveIn, BiSolidArchiveOut } from "react-icons/bi";
 import { EmptyState } from "@chakra-ui/react"
 import { HiMiniArchiveBox } from "react-icons/hi2";
 import { IoTrashBin } from "react-icons/io5";
-import { Collapsible } from "@chakra-ui/react"
-import { FaArrowTurnDown } from "react-icons/fa6";
-import { PiArrowElbowRightDown, PiArrowElbowRightDownBold, PiArrowElbowUpRight } from "react-icons/pi";
 import { ExtensionSelector } from "./ExtensionSelector";
 
 export function Boards({ id }) {
@@ -74,7 +71,7 @@ export function Boards({ id }) {
     }
 
     function deleteBoard(id) {
-        api.delete(`/boards/${board.id}`, id).then(_ =>
+        api.delete(`/boards/${board.id}`, id).then(() =>
             setArchivedBoards(prev => prev.filter(b => b.id != id)))
     }
 

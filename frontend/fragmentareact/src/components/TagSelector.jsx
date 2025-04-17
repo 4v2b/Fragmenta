@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Tag, Box, Flex, List, Spinner } from "@chakra-ui/react";
+import { Input, Tag, Box, Flex, List } from "@chakra-ui/react";
 import { useTags } from "@/utils/TagContext"
 
 export function TagSelector({ selectedTags, onSelect }) {
@@ -56,13 +56,13 @@ export function TagSelector({ selectedTags, onSelect }) {
                                 tags.filter(tag => !selectedTags?.some(i => i.id === tag.id))
                                     .map(item => (
                                         <List.Item
+                                        key={item.id}
                                             onMouseDown={(e) => {
                                                 e.preventDefault(); // Prevent input from losing focus immediately
                                                 handleSelect(item);
                                             }}
                                             p="2"
                                             _hover={{ bg: "gray.100", cursor: "pointer" }}
-                                            key={item.id}
                                         >{item.name}</List.Item>
                                     ))
                                 : <List.Item>{"No tags available"}</List.Item>
@@ -104,7 +104,7 @@ export function TagSelector({ selectedTags, onSelect }) {
                 )}
             </Box>
             <Flex gap="4" wrap="wrap">
-                {selectedTags.map(e => <Tag.Root size="md" colorPalette="white">
+                {selectedTags.map(e => <Tag.Root key={e.id} size="md" colorPalette="white">
                     <Tag.Label>{e.name}</Tag.Label>
                     <Tag.EndElement>
                         <Tag.CloseTrigger />

@@ -1,10 +1,9 @@
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import { HStack, Stack, Text, Button, Input, CloseButton, Textarea } from "@chakra-ui/react"
-import { useEffect, useState } from "react"
-import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog"
+import { useState } from "react"
+import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogCloseTrigger } from "./ui/dialog"
 import { Field } from "./ui/field"
 import { Field as InputField } from "@chakra-ui/react"
-import { NumberInputRoot, NumberInputField } from "./ui/number-input"
 import { MemberSelector } from "./MemberSelector"
 import { Avatar } from "@chakra-ui/react"
 import { TagSelector } from "./TagSelector"
@@ -14,7 +13,6 @@ import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import { Checkbox } from "@chakra-ui/react"
 import { useTasks } from "@/utils/TaskContext"
-import { FileManager } from "./FileManager"
 
 // BUG - Data in message box stays after exit
 

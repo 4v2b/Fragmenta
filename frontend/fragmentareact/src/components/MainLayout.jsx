@@ -4,13 +4,12 @@ import { Sidebar } from '@/components/Sidebar'
 import { api } from "@/api/fetchClient.js"
 import { WorkspaceProvider } from '@/utils/WorkspaceContext'
 import { Outlet, Navigate, useNavigate, useParams } from 'react-router'
-import { useAuth } from '@/utils/useAuth'
 import { logout } from '@/api/api'
 
 import { LanguageSwitch } from "@/components/LanguageSwitch/LanguageSwitch";
 import { Navbar } from "@/components/Navbar";
 import { refreshToken } from "@/api/fetchClient";
-import { Grid, GridItem, Stack, HStack, Button, Box } from '@chakra-ui/react'
+import { Grid, GridItem, Stack, Button } from '@chakra-ui/react'
 
 export function MainLayout() {
     // TODO Normal auth verification
