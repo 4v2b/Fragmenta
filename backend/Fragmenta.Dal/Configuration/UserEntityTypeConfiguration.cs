@@ -21,7 +21,7 @@ namespace Fragmenta.Dal.Configuration
                 .HasMaxLength(48);
 
             builder.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }

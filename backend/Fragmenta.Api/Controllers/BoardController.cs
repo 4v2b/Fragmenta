@@ -53,7 +53,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet("{boardId}")]
-        public IActionResult GetBoard(long boardId,[FromServices] IBoardService boardService, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult GetBoard(long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -61,12 +61,12 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || (role == Role.Guest && !boardService.CanViewBoard(boardId, id.Value)))
+                if (role == null || (role == Role.Guest && !boardAccessService.CanViewBoard(boardId, id.Value)))
                 {
                     return Forbid();
                 }
 
-                var result = statusService.GetStatuses(boardId);
+                var result = boardService.GetBoard(boardId);
                 
                 if(result == null)
                 {
@@ -160,7 +160,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost("{boardId:long}/guests")]
-        public IActionResult AddGuests(long boardId, [FromBody] AddGuestsRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult AddGuests(long boardId, [FromBody] AddGuestsRequest request, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -173,7 +173,7 @@ namespace Fragmenta.Api.Controllers
                     return Forbid();
                 }
 
-                var result = boardService.AddGuests(boardId, request.UsersId);
+                var result = boardAccessService.AddGuests(boardId, request.UsersId);
 
                 if (result.Count > 0)
                 {
@@ -187,7 +187,7 @@ namespace Fragmenta.Api.Controllers
         }
         
         [HttpGet("{boardId:long}/guests")]
-        public IActionResult GetGuests(long boardId, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult GetGuests(long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -195,12 +195,12 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || (role == Role.Guest && !boardService.CanViewBoard(boardId, id.Value)))
+                if (role == null || (role == Role.Guest && !boardAccessService.CanViewBoard(boardId, id.Value)))
                 {
                     return Forbid();
                 }
 
-                var guests = boardService.GetGuests(boardId);
+                var guests = boardAccessService.GetGuests(boardId);
 
                 return Ok(guests);
             }
@@ -209,7 +209,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpDelete("{boardId:long}/guests/{guestId:long}")]
-        public IActionResult RemoveGuests(long boardId, long guestId, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult RemoveGuests(long boardId, long guestId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -222,7 +222,7 @@ namespace Fragmenta.Api.Controllers
                     return Forbid();
                 }
 
-                var result = boardService.RemoveGuest(boardId, guestId);
+                var result = boardAccessService.RemoveGuest(boardId, guestId);
 
                 if (result)
                 {

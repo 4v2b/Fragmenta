@@ -1,5 +1,4 @@
-﻿using System;
-namespace Fragmenta.Dal.Models
+﻿namespace Fragmenta.Dal.Models
 {
     public class AllowedType
     {

@@ -9,7 +9,7 @@ namespace Fragmenta.Dal.Configuration
         public void Configure(EntityTypeBuilder<ResetToken> builder)
         {
             builder.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("GETUTCDATE()");
 
             builder.Property(e => e.TokenHash)
                 .HasMaxLength(256);

@@ -5,8 +5,8 @@ namespace Fragmenta.Api.Contracts
     public interface IBoardService
     {
         List<BoardDto> GetBoards(long workspaceId);
-
-        bool CanViewBoard(long boardId, long userId);
+        
+        FullBoardDto? GetBoard(long boardId);
 
         List<BoardDto> GetGuestBoards(long workspaceId, long guestId);
 
@@ -15,11 +15,5 @@ namespace Fragmenta.Api.Contracts
         BoardDto? UpdateBoard(long boardId, UpdateBoardRequest request);
         
         bool DeleteBoard(long boardId);
-
-        bool RemoveGuest(long boardId, long guestId);
-
-        List<MemberDto> AddGuests(long boardId, long[] usersId);
-
-        List<GuestDto> GetGuests(long boardId);
     }
 }

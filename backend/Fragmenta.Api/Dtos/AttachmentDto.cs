@@ -4,13 +4,11 @@ namespace Fragmenta.Api.Dtos
 {
     public class AttachmentDto
     {
-        public string Value { get; set; } = null!;
-
-        public long TypeId { get; set; }
-        public AttachmentType Type { get; set; } = null!;
-
-        public long? UserId { get; set; }
-
-        public long TaskId { get; set; }
+        public long Id { get; set; }
+        public string OriginalName { get; set; } = null!;
+        public string FileName { get; set; } = null!;
+        
+        public long SizeBytes { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

@@ -13,9 +13,5 @@ namespace Fragmenta.Api.Contracts
         RefreshTokenStatus VerifyToken(string refreshToken, long userId);
 
         string? RefreshToken(string refreshToken, long userId);
-
-        UserDto? GetUserByToken(string token);
-
-        bool HasValidToken(long userId);
     }
 }

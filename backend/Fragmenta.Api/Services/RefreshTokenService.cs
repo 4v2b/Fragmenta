@@ -15,8 +15,7 @@ namespace Fragmenta.Api.Services
         // 2. User sends refresh token to renew jwt
         // 2.1. Refresh token is valid, jwt generated
         // 2.2. Refresh token is valid, but expired, new token generated
-        // 2.2. Refresh token invalid or revoked, return error, ask for relogin
-        // 3/ User
+        // 2.2. Refresh token invalid or revoked, return error, ask for re-login
 
         private readonly ILogger<RefreshTokenService> _logger;
         private readonly IHashingService _hasher;
@@ -96,25 +95,6 @@ namespace Fragmenta.Api.Services
             return tokens[0].ExpiresAt <= DateTime.UtcNow
                 ? RefreshTokenStatus.Expired
                 : RefreshTokenStatus.Valid;
-        }
-
-        public UserDto? GetUserByToken(string token)
-        {
-            var hashedToken = _hasher.Hash(token);
-
-            var user = _context.RefreshTokens.Include(e => e.User).SingleOrDefault(e => e.TokenHash.SequenceEqual(hashedToken))?.User;
-            
-            if(user == null)
-            {
-                return null;
-            }
-            _logger.LogInformation("User {Id} - {Email} retrieved", user.Id ,user.Email);
-            return new UserDto() { Email = user.Email, Id = user.Id };
-        }
-
-        public bool HasValidToken(long userId)
-        {
-            return _context.RefreshTokens.Any(e => e.UserId == userId && e.RevokedAt == null && e.ExpiresAt > DateTime.UtcNow);
         }
     }
 }

@@ -1,0 +1,40 @@
+﻿using Fragmenta.Api.Contracts;
+using Fragmenta.Api.Dtos;
+using Fragmenta.Dal;
+using Fragmenta.Dal.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Fragmenta.Api.Services;
+
+public class RefreshTokenLookupService : IRefreshTokenLookupService
+{
+    
+    private readonly ILogger<RefreshTokenLookupService> _logger;
+    private readonly IHashingService _hasher;
+    private readonly ApplicationContext _context;
+
+    public RefreshTokenLookupService(ILogger<RefreshTokenLookupService> logger, IHashingService hasher, ApplicationContext context)
+    {
+        _logger = logger;
+        _hasher = hasher;
+        _context = context;
+    }
+    public UserDto? GetUserByToken(string token)
+    {
+        var hashedToken = _hasher.Hash(token);
+
+        var user = _context.RefreshTokens.Include(e => e.User).SingleOrDefault(e => e.TokenHash.SequenceEqual(hashedToken))?.User;
+            
+        if(user == null)
+        {
+            return null;
+        }
+        _logger.LogInformation("User {Id} - {Email} retrieved", user.Id ,user.Email);
+        return new UserDto() { Email = user.Email, Id = user.Id };
+    }
+
+    public bool HasValidToken(long userId)
+    {
+        return _context.RefreshTokens.Any(e => e.UserId == userId && e.RevokedAt == null && e.ExpiresAt > DateTime.UtcNow);
+    }
+}

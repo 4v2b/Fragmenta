@@ -10,7 +10,10 @@ using Serilog.Events;
 using Serilog;
 using System.Reflection;
 using System.Text;
+using Fragmenta.Api.Controllers;
 using Fragmenta.Api.Middleware;
+using Azure.Storage.Blobs;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +36,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Task management app API", Description = "An ASP.NET Core Web API for managing workspaces, boards and tasks", Version = "v1" });
+    options.SwaggerDoc("v1",
+        new OpenApiInfo
+        {
+            Title = "Task management app API",
+            Description = "An ASP.NET Core Web API for managing workspaces, boards and tasks", Version = "v1"
+        });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -44,7 +52,8 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement{
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
         {
             new OpenApiSecurityScheme
             {
@@ -103,15 +112,23 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         builder => builder.WithOrigins(origins)
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials());
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
+
+builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
+
+builder.Services.AddSingleton<BlobServiceClient>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<AzureStorageOptions>>().Value;
+    return new BlobServiceClient(options.ConnectionString);
 });
 
 builder.Services.AddScoped<WorkspaceFilter>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
 builder.Services.AddScoped<IWorkspaceAccessService, WorkspaceAccessService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
@@ -122,6 +139,11 @@ builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IResetTokenService, ResetTokenService>();
 builder.Services.AddScoped<IMailingService, MailingService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+builder.Services.AddScoped<IBoardAccessService, BoardAccessService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserLookupService, UserLookupService>();
+builder.Services.AddScoped<IRefreshTokenLookupService, RefreshTokenLookupService>();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
@@ -166,6 +188,7 @@ app.Use(async (context, next) =>
     {
         context.Request.Headers.Authorization = $"Bearer {token}";
     }
+
     await next();
 });
 

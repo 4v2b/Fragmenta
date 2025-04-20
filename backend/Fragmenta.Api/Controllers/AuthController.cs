@@ -24,9 +24,9 @@ namespace Fragmenta.Api.Controllers
         [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Refresh([FromBody] RefreshRequest model, [FromServices] IRefreshTokenService refreshService, [FromServices] IJwtService jwtService)
+        public IActionResult Refresh([FromBody] RefreshRequest model, [FromServices] IRefreshTokenLookupService lookupService, [FromServices] IRefreshTokenService refreshService, [FromServices] IJwtService jwtService)
         {
-            var user = refreshService.GetUserByToken(model.RefreshToken);
+            var user = lookupService.GetUserByToken(model.RefreshToken);
 
             if (user == null)
             {
@@ -54,13 +54,13 @@ namespace Fragmenta.Api.Controllers
         public IActionResult Login(
             [FromBody] LoginRequest model,
             [FromServices] IJwtService jwtService,
-            [FromServices] IUserService userService,
+            [FromServices] IAuthService authService,
             [FromServices] IRefreshTokenService refreshService
         )
         {
             try
             {
-                var result = userService.Authorize(model);
+                var result = authService.Authorize(model);
 
                 if (result.IsLocked)
                     return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });
@@ -105,15 +105,15 @@ namespace Fragmenta.Api.Controllers
         public IActionResult Register(
             [FromBody] RegisterRequest model,
             [FromServices] IJwtService jwtService,
-            [FromServices] IUserService userService,
+            [FromServices] IAuthService authService,
             [FromServices] IRefreshTokenService refreshService
         )
         {
             try
             {
-                var result = userService.Register(model);
+                var result = authService.Register(model);
 
-                if (result.IsSuccess && result.User is not null)
+                if (result is { IsSuccess: true, User: not null })
                 {
                     var refreshToken = refreshService.GenerateToken(result.User.Id);
 
@@ -149,14 +149,14 @@ namespace Fragmenta.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> ForgotPassword(
             [FromQuery][EmailAddress(ErrorMessage = "auth.errors.emailInvalid")] string email,
-            [FromServices] IUserService userService,
+            [FromServices] IUserLookupService lookupService,
             [FromServices] IResetTokenService resetService,
             [FromServices] IMailingService mailingService
         )
         {
             try
             {
-                var userId = userService.FindSingleByEmail(email);
+                var userId = lookupService.FindSingleByEmail(email);
 
                 if (userId.HasValue)
                 {
@@ -200,7 +200,7 @@ namespace Fragmenta.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> ResetPassword(
             [FromBody] ResetPasswordRequest request,
-            [FromServices] IUserService userService,
+            [FromServices] IUserAccountService userService,
             [FromServices] IResetTokenService resetService
         )
         {

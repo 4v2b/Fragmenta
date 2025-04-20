@@ -10,6 +10,9 @@ namespace Fragmenta.Dal.Configuration
         {
             builder.HasKey(e => new { e.WorkspaceId, e.UserId });
 
+            builder.Property(e => e.JoinedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            
             builder.HasOne(e => e.User)
                 .WithMany(e => e.WorkspaceAccesses)
                 .HasForeignKey(e => e.UserId);

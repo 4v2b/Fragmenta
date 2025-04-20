@@ -8,15 +8,14 @@ namespace Fragmenta.Dal.Configuration
     {
         public void Configure(EntityTypeBuilder<Attachment> builder)
         {
+            builder.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            
             builder.Property(e => e.OriginalName)
                 .HasMaxLength(200);
 
             builder.Property(e => e.FileName)
                 .HasMaxLength(200);
-
-            builder.HasOne(e => e.User)
-                .WithMany()
-                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

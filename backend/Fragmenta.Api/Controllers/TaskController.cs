@@ -29,7 +29,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetTasks([FromQuery] long boardId, [FromServices] IBoardService boardService, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public IActionResult GetTasks([FromQuery] long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -37,7 +37,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = accessService.GetRole(workspaceId, id.Value);
 
-                if (role == null || (role == Role.Guest && !boardService.CanViewBoard(boardId, id.Value)))
+                if (role == null || (role == Role.Guest && !boardAccessService.CanViewBoard(boardId, id.Value)))
                 {
                     return Forbid();
                 }

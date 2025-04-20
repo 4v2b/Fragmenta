@@ -17,33 +17,44 @@ public class AttachmentService : IAttachmentService
     private readonly BlobServiceClient _blobServiceClient;
     private readonly AzureStorageOptions _options;
 
-    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig)
+    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig, BlobServiceClient blobServiceClient)
     {
-        _options = blobStorageConfig.Value ?? throw new ArgumentNullException(nameof(blobStorageConfig)); 
-
+        _options = blobStorageConfig?.Value ?? throw new ArgumentNullException(nameof(blobStorageConfig));
         _context = context;
-        _blobServiceClient = new BlobServiceClient(_options.ConnectionString);
+        _blobServiceClient = blobServiceClient;
     }
 
-    public async Task<Attachment> UploadAttachment(IFormFile file, long taskId, long userId)
+
+    public async Task<List<AttachmentDto>> GetAttachmentPreviews(long taskId)
+    {
+        return await _context.Attachments.Where(a => a.TaskId == taskId).Select(a => new AttachmentDto()
+        {
+            CreatedAt = a.CreatedAt, Id = a.Id, FileName = a.FileName, OriginalName = a.OriginalName,
+            SizeBytes = a.SizeBytes
+        }).ToListAsync();
+    }
+
+    public async Task<Attachment> UploadAttachment(IFormFile file, long taskId)
     {
         var task = await _context.Tasks.FindAsync(taskId);
         if (task == null) throw new InvalidOperationException("Task not found");
 
-        var board = await _context.Boards.Include(e => e.Statuses)
-                            .FirstOrDefaultAsync(e => e.Statuses.Any(i => i.Id == task.StatusId));
+        var board = await _context.Boards
+            .Include(b => b.Statuses)
+            .FirstOrDefaultAsync(b => b.Statuses.Any(s => s.Id == task.StatusId));
         if (board == null) throw new InvalidOperationException("Board not found");
 
-        bool isAllowed = await IsFileExtensionAllowed(board.Id, file.FileName);
-        if (!isAllowed) throw new InvalidOperationException("File extension is not allowed");
+        if (!await IsFileExtensionAllowed(board.Id, file.FileName))
+            throw new InvalidOperationException("File extension is not allowed");
 
-        string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var fileType = await _context.AttachmentTypes
             .FirstOrDefaultAsync(t => t.Value.Equals(extension, StringComparison.OrdinalIgnoreCase));
-        if (fileType == null) throw new InvalidOperationException("Unknown file type");
+        if (fileType == null)
+            throw new InvalidOperationException("Unknown file type");
 
-        string blobName = $"{Guid.NewGuid()}{extension}";
-        var blobClient = GetBlobClient(blobName);
+        var blobName = $"{Guid.NewGuid()}{extension}";
+        var blobClient = await GetBlobClientAsync(blobName);
 
         try
         {
@@ -55,7 +66,7 @@ public class AttachmentService : IAttachmentService
         }
         catch (Exception ex)
         {
-            throw new Exception("Error uploading file to blob storage", ex);
+            throw new InvalidOperationException("Error uploading file to blob storage", ex);
         }
 
         var attachment = new Attachment
@@ -64,7 +75,7 @@ public class AttachmentService : IAttachmentService
             OriginalName = file.FileName,
             TypeId = fileType.Id,
             TaskId = taskId,
-            UserId = userId
+            SizeBytes = file.Length
         };
 
         _context.Attachments.Add(attachment);
@@ -76,9 +87,10 @@ public class AttachmentService : IAttachmentService
     public async Task<Stream> DownloadAttachment(long attachmentId)
     {
         var attachment = await _context.Attachments.FindAsync(attachmentId);
-        if (attachment == null) throw new InvalidOperationException("Attachment not found");
+        if (attachment == null)
+            throw new InvalidOperationException("Attachment not found");
 
-        var blobClient = GetBlobClient(attachment.FileName);
+        var blobClient = await GetBlobClientAsync(attachment.FileName);
 
         try
         {
@@ -87,13 +99,14 @@ public class AttachmentService : IAttachmentService
         }
         catch (Exception ex)
         {
-            throw new Exception("Error downloading file from blob storage", ex);
+            throw new InvalidOperationException("Error downloading file from blob storage", ex);
         }
     }
-
-    private BlobClient GetBlobClient(string blobName)
+    
+    private async Task<BlobClient> GetBlobClientAsync(string blobName)
     {
         var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
+        await blobContainerClient.CreateIfNotExistsAsync();
         return blobContainerClient.GetBlobClient(blobName);
     }
 
@@ -127,7 +140,8 @@ public class AttachmentService : IAttachmentService
     {
         var extension = Path.GetExtension(filename).ToLowerInvariant();
 
-        var allowedTypeIds = _context.AttachmentTypes.Include(e => e.Boards).Where(e => e.Boards.Any(i => i.Id == boardId)).Select(e => e.Id);
+        var allowedTypeIds = _context.AttachmentTypes.Include(e => e.Boards)
+            .Where(e => e.Boards.Any(i => i.Id == boardId)).Select(e => e.Id);
 
         var allowedTypes = await _context.AttachmentTypes
             .Include(e => e.Children)

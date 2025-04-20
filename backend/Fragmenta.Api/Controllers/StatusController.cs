@@ -26,7 +26,7 @@ namespace Fragmenta.Api.Controllers
             return null;
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public IActionResult GetStatuses([FromQuery] long boardId, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
@@ -46,7 +46,7 @@ namespace Fragmenta.Api.Controllers
             }
 
             return Unauthorized("User was not found");
-        }
+        }*/
 
         [HttpPost]
         public IActionResult CreateStatus([FromQuery] long boardId, [FromBody] CreateOrUpdateStatusRequest request,[FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)

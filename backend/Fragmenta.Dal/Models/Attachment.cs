@@ -11,9 +11,9 @@ namespace Fragmenta.Dal.Models
 
         public long TypeId { get; set; }
         public AttachmentType Type { get; set; } = null!;
-
-        public long? UserId { get; set; }
-        public User? User { get; set; }
+        
+        public long SizeBytes { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public long TaskId { get; set; }
         public Task Task { get; set; } = null!;

@@ -64,38 +64,6 @@ namespace Fragmenta.Api.Services
             return true;
         }
 
-        public FullBoardDto? GetStatuses(long boardId)
-        {
-            var board = _context.Boards.Find(boardId);
-
-            if(board == null)
-            {
-                return null;
-            }
-
-            var allowedTypes = _context.AttachmentTypes.Include(e => e.Boards)
-                .Where(e => e.Boards.Any(b => b.Id == boardId)).Select(a => a.Id).ToList();
-
-            return new FullBoardDto()
-            {
-                Id = board.Id,
-                Name = board.Name,
-                Statuses =
-                _context.Statuses
-                .Where(e => e.BoardId == boardId)
-                .Select(e => new StatusDto()
-                {
-                    Name = e.Name,
-                    ColorHex = e.ColorHex,
-                    Id = e.Id,
-                    MaxTasks = e.TaskLimit > 0 ? e.TaskLimit : null,
-                    Weight = e.Weight
-                })
-                .ToList(),
-                AllowedTypeIds = allowedTypes
-            };
-        }
-
         public StatusDto? UpdateStatus(long statusId, CreateOrUpdateStatusRequest request)
         {
             var status = _context.Statuses.Find(statusId);

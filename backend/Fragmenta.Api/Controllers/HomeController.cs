@@ -15,7 +15,7 @@ namespace Fragmenta.Api.Controllers
         /// </summary>
         /// <response code="200">List of ids and emails of found users</response>
         [HttpGet("lookup")]
-        public IActionResult UserLookup([FromQuery]string email, [FromServices] IUserService userService)
+        public IActionResult UserLookup([FromQuery]string email, [FromServices] IUserLookupService userService)
         {
             var users = userService.FindByEmail(email);
 
