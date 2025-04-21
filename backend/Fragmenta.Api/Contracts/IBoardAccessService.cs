@@ -4,11 +4,11 @@ namespace Fragmenta.Api.Contracts;
 
 public interface IBoardAccessService
 {
-    bool CanViewBoard(long boardId, long userId);
+    Task<bool> CanViewBoardAsync(long boardId, long userId);
     
-    bool RemoveGuest(long boardId, long guestId);
+    Task<bool> RemoveGuestAsync(long boardId, long guestId);
 
-    List<MemberDto> AddGuests(long boardId, long[] usersId);
+    Task<List<MemberDto>> AddGuestsAsync(long boardId, long[] usersId);
 
-    List<GuestDto> GetGuests(long boardId);
+    Task<List<GuestDto>> GetGuestsAsync(long boardId);
 }

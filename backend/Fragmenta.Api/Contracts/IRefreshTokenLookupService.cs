@@ -4,7 +4,7 @@ namespace Fragmenta.Api.Contracts;
 
 public interface IRefreshTokenLookupService
 {
-    UserDto? GetUserByToken(string token);
+    Task<UserDto?> GetUserByTokenAsync(string token);
 
-    bool HasValidToken(long userId);
+    Task<bool> HasValidTokenAsync(long userId);
 }

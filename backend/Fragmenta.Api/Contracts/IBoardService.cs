@@ -4,16 +4,16 @@ namespace Fragmenta.Api.Contracts
 {
     public interface IBoardService
     {
-        List<BoardDto> GetBoards(long workspaceId);
+        Task<List<BoardDto>> GetBoardsAsync(long workspaceId);
         
-        FullBoardDto? GetBoard(long boardId);
+        Task<FullBoardDto?> GetBoardAsync(long boardId);
 
-        List<BoardDto> GetGuestBoards(long workspaceId, long guestId);
+        Task<List<BoardDto>> GetGuestBoardsAsync(long workspaceId, long guestId);
 
-        BoardDto? CreateBoard(long workspaceId, CreateBoardRequest request);
+        Task<BoardDto?> CreateBoardAsync(long workspaceId, CreateBoardRequest request);
 
-        BoardDto? UpdateBoard(long boardId, UpdateBoardRequest request);
+        Task<BoardDto?> UpdateBoardAsync(long boardId, UpdateBoardRequest request);
         
-        bool DeleteBoard(long boardId);
+        Task<bool> DeleteBoardAsync(long boardId);
     }
 }

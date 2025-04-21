@@ -18,37 +18,37 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public MemberDto? AddMember(long workspaceId, long userId)
+        public async Task<MemberDto?> AddMemberAsync(long workspaceId, long userId)
         {
-            var access = _context.WorkspaceAccesses.Find(workspaceId, userId);
+            var access = await _context.WorkspaceAccesses.FindAsync(workspaceId, userId);
 
             if (access != null)
             {
                 return null;
             }
 
-            var workspace = _context.Workspaces.Find(workspaceId);
+            var workspace = await _context.Workspaces.FindAsync(workspaceId);
 
-            var user = _context.Users.Find(userId);
+            var user = await _context.Users.FindAsync(userId);
 
-            var role = _context.Roles.Find((long)Role.Member);
+            var role = await _context.Roles.FindAsync((long)Role.Member);
 
             if (user == null || role == null || workspace == null)
             {
                 return null;
             }
 
-            _context.WorkspaceAccesses.Add(new WorkspaceAccess() { JoinedAt = DateTime.UtcNow, Role = role, Workspace = workspace, User = user });
-            _context.SaveChanges();
+            await _context.WorkspaceAccesses.AddAsync(new WorkspaceAccess() { JoinedAt = DateTime.UtcNow, Role = role, Workspace = workspace, User = user });
+            await _context.SaveChangesAsync();
 
             return new MemberDto() { Id = user.Id, Email = user.Email, Role = Enum.GetName((Role)role.Id)!, Name = user.Name };
         }
 
-        public List<MemberDto> AddMembers(long workspaceId, long[] userIds)
+        public async Task<List<MemberDto>> AddMembersAsync(long workspaceId, long[] userIds)
         {
-            var workspace = _context.Workspaces.Find(workspaceId);
+            var workspace = await _context.Workspaces.FindAsync(workspaceId);
 
-            var role = _context.Roles.Find((long)Role.Member);
+            var role = await _context.Roles.FindAsync((long)Role.Member);
 
             if (role == null || workspace == null)
             {
@@ -59,7 +59,7 @@ namespace Fragmenta.Api.Services
 
             foreach (long userId in userIds)
             {
-                var user = _context.Users.Find(userId);
+                var user = await _context.Users.FindAsync(userId);
 
                 if (user == null)
                     continue;
@@ -67,15 +67,15 @@ namespace Fragmenta.Api.Services
                 accesses.Add(new WorkspaceAccess() { JoinedAt = DateTime.UtcNow, Role = role, Workspace = workspace, User = user });
             }
 
-            _context.WorkspaceAccesses.AddRange(accesses);
-            _context.SaveChanges();
+            await _context.WorkspaceAccesses.AddRangeAsync(accesses);
+            await _context.SaveChangesAsync();
 
             return accesses.Select(e => new MemberDto() { Id = e.UserId, Email = e.User.Email, Role = Enum.GetName((Role)role.Id)!, Name = e.User.Name }).ToList();
         }
 
-        public bool DeleteMember(long workspaceId, long userId)
+        public async Task<bool> DeleteMemberAsync(long workspaceId, long userId)
         {
-            var access = _context.WorkspaceAccesses.Find(workspaceId, userId);
+            var access = await _context.WorkspaceAccesses.FindAsync(workspaceId, userId);
 
             if (access == null)
             {
@@ -89,18 +89,20 @@ namespace Fragmenta.Api.Services
                     .Where(e => e.UserId == userId && e.Board.WorkspaceId == workspaceId);
 
                 _context.RemoveRange(boardAccesses);
-                _context.SaveChanges();
+                
+                // TODO Can be deleted ???
+                await _context.SaveChangesAsync();
             }
 
             _context.Remove(access);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public List<MemberDto> GetMembers(long workspaceId)
+        public async Task<List<MemberDto>> GetMembersAsync(long workspaceId)
         {
-            return _context.WorkspaceAccesses
+            return await _context.WorkspaceAccesses
                 .Where(e => e.WorkspaceId == workspaceId)
                 .Include(e => e.User)
                 .Select(e => new MemberDto()
@@ -109,26 +111,26 @@ namespace Fragmenta.Api.Services
                     Id = e.UserId,
                     Name = e.User.Name,
                     Role = Enum.GetName((Role)e.RoleId)!
-                }).ToList();
+                }).ToListAsync();
         }
 
-        public Role? GetRole(long workspaceId, long userId)
+        public async Task<Role?> GetRoleAsync(long workspaceId, long userId)
         {
-            var access = _context.WorkspaceAccesses.Find(workspaceId, userId);
+            var access = await _context.WorkspaceAccesses.FindAsync(workspaceId, userId);
 
             return access == null ? null : (Role)access.RoleId;
         }
 
-        public bool GrantAdminPermission(long workspaceId, long memberId)
+        public async Task<bool> GrantAdminPermissionAsync(long workspaceId, long memberId)
         {
-            var access = _context.WorkspaceAccesses.Find(workspaceId, memberId);
+            var access = await _context.WorkspaceAccesses.FindAsync(workspaceId, memberId);
 
             if (access == null)
             {
                 return false;
             }
 
-            var role = _context.Roles.Find((long)Role.Admin);
+            var role = await _context.Roles.FindAsync((long)Role.Admin);
 
             if (role == null)
             {
@@ -137,21 +139,21 @@ namespace Fragmenta.Api.Services
 
             access.Role = role;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public bool RevokeAdminPermission(long workspaceId, long adminId)
+        public async Task<bool> RevokeAdminPermissionAsync(long workspaceId, long adminId)
         {
-            var access = _context.WorkspaceAccesses.Find(workspaceId, adminId);
+            var access = await _context.WorkspaceAccesses.FindAsync(workspaceId, adminId);
 
             if (access == null)
             {
                 return false;
             }
 
-            var role = _context.Roles.Find((long)Role.Member);
+            var role = await _context.Roles.FindAsync((long)Role.Member);
 
             if (role == null)
             {
@@ -160,7 +162,7 @@ namespace Fragmenta.Api.Services
 
             access.Role = role;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }

@@ -2,6 +2,7 @@
 using Fragmenta.Api.Dtos;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fragmenta.Api.Services
 {
@@ -16,9 +17,9 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public TagDto? CreateTag(string name, long boardId)
+        public async Task<TagDto?> CreateTagAsync(string name, long boardId)
         {
-            if(_context.Tags.Any(t => t.Name == name && t.BoardId == boardId))
+            if(await _context.Tags.AnyAsync(t => t.Name == name && t.BoardId == boardId))
             {
                 return null;
             }
@@ -29,16 +30,16 @@ namespace Fragmenta.Api.Services
                 BoardId = boardId
             };
 
-            _context.Add(entity);
-            _context.SaveChanges();
+            await _context.AddAsync(entity);
+            await _context.SaveChangesAsync();
 
 
             return new TagDto() { Id = entity.Id, Name = entity.Name };
         }
 
-        public bool DeleteTag(long tagId)
+        public async Task<bool> DeleteTagAsync(long tagId)
         {
-            var tag = _context.Tags.Find(tagId);
+            var tag = await _context.Tags.FindAsync(tagId);
 
             if (tag == null)
             {
@@ -46,13 +47,14 @@ namespace Fragmenta.Api.Services
             }
 
             _context.Remove(tag);
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public List<TagDto> GetTags(long boardId)
+        public async Task<List<TagDto>> GetTagsAsync(long boardId)
         {
-            return _context.Tags.Where(e => e.BoardId == boardId).Select(e => new TagDto { Id = e.Id, Name = e.Name}).ToList();
+            return await _context.Tags.Where(e => e.BoardId == boardId).Select(e => new TagDto { Id = e.Id, Name = e.Name}).ToListAsync();
         }
     }
 }

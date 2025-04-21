@@ -4,10 +4,10 @@ namespace Fragmenta.Api.Contracts
 {
     public interface ITagService
     {
-        List<TagDto> GetTags(long boardId);
+        Task<List<TagDto>> GetTagsAsync(long boardId);
 
-        bool DeleteTag(long tagId);
+        Task<bool> DeleteTagAsync(long tagId);
 
-        TagDto? CreateTag(string name, long boardId);
+        Task<TagDto?> CreateTagAsync(string name, long boardId);
     }
 }

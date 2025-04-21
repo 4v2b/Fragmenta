@@ -6,13 +6,13 @@ namespace Fragmenta.Api.Contracts
     #pragma warning disable CS1591
     public interface IWorkspaceService
     {
-        List<WorkspaceRoleDto> GetAll(long userId);
+        Task<List<WorkspaceRoleDto>> GetAllAsync(long userId);
 
-        bool Delete(long workspaceId);
+        Task<bool> DeleteAsync(long workspaceId);
 
-        WorkspaceDto? Update(string name, long workspaceId);
+        Task<WorkspaceDto?> UpdateAsync(string name, long workspaceId);
 
-        WorkspaceDto? Create(string name, long ownerId);
+        Task<WorkspaceDto?> CreateAsync(string name, long ownerId);
 
     }
 }

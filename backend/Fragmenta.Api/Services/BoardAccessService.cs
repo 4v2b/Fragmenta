@@ -18,11 +18,11 @@ public class BoardAccessService : IBoardAccessService
         _context = context;
     }
 
-    public bool RemoveGuest(long boardId, long guestId)
+    public async Task<bool>  RemoveGuestAsync(long boardId, long guestId)
     {
-        var board = _context.Boards.Include(e => e.AccessList).SingleOrDefault(e => e.Id == boardId);
+        var board = await _context.Boards.Include(e => e.AccessList).SingleOrDefaultAsync(e => e.Id == boardId);
 
-        var access = _context.BoardAccesses.Find(boardId, guestId);
+        var access = await _context.BoardAccesses.FindAsync(boardId, guestId);
 
         if (board == null || access == null)
         {
@@ -31,11 +31,11 @@ public class BoardAccessService : IBoardAccessService
         }
 
         _context.Remove(access);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
-        var isStillGuest = _context.BoardAccesses
+        var isStillGuest = await _context.BoardAccesses
             .Include(e => e.Board)
-            .Any(e => e.Board.WorkspaceId == board.WorkspaceId && e.UserId == guestId && e.BoardId != board.Id);
+            .AnyAsync(e => e.Board.WorkspaceId == board.WorkspaceId && e.UserId == guestId && e.BoardId != board.Id);
 
         if (!isStillGuest)
         {
@@ -54,14 +54,14 @@ public class BoardAccessService : IBoardAccessService
             }
         }
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return true;
     }
 
-    public List<MemberDto> AddGuests(long boardId, long[] usersId)
+    public async Task<List<MemberDto>> AddGuestsAsync(long boardId, long[] usersId)
     {
-        var board = _context.Boards.Include(e => e.AccessList).SingleOrDefault(e => e.Id == boardId);
+        var board = await _context.Boards.Include(e => e.AccessList).SingleOrDefaultAsync(e => e.Id == boardId);
 
         if (board == null)
         {
@@ -72,7 +72,7 @@ public class BoardAccessService : IBoardAccessService
 
         foreach (long id in usersId)
         {
-            var workspaceAccess = _context.WorkspaceAccesses.Find(board.WorkspaceId, id);
+            var workspaceAccess = await _context.WorkspaceAccesses.FindAsync(board.WorkspaceId, id);
             if (workspaceAccess == null)
             {
                 workspaceAccesses.Add(new WorkspaceAccess()
@@ -100,12 +100,12 @@ public class BoardAccessService : IBoardAccessService
 
         _logger.LogInformation("Users with id {Ids} joined board {WorkspaceId}", string.Join(' ', usersId), board.Id);
 
-        _context.WorkspaceAccesses.AddRange(workspaceAccesses);
-        _context.BoardAccesses.AddRange(accesses);
+        await _context.WorkspaceAccesses.AddRangeAsync(workspaceAccesses);
+        await _context.BoardAccesses.AddRangeAsync(accesses);
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
-        return _context.BoardAccesses
+        return await _context.BoardAccesses
             .Where(e => e.BoardId == board.Id)
             .Include(e => e.User)
             .Select(e => new MemberDto
@@ -115,17 +115,17 @@ public class BoardAccessService : IBoardAccessService
                 Name = e.User.Name,
                 Role = Enum.GetName(Role.Guest)!
             })
-            .ToList();
+            .ToListAsync();
     }
 
-    public List<GuestDto> GetGuests(long boardId)
+    public async Task<List<GuestDto>> GetGuestsAsync(long boardId)
     {
-        return _context.Users.Include(u => u.Boards).Where(e => e.Boards.Any(b => b.Id == boardId))
-            .Select(u => new GuestDto { Email = u.Email, Id = u.Id, Name = u.Name }).ToList();
+        return await _context.Users.Include(u => u.Boards).Where(e => e.Boards.Any(b => b.Id == boardId))
+            .Select(u => new GuestDto { Email = u.Email, Id = u.Id, Name = u.Name }).ToListAsync();
     }
 
-    public bool CanViewBoard(long boardId, long userId)
+    public async Task<bool> CanViewBoardAsync(long boardId, long userId)
     {
-        return _context.BoardAccesses.Find(boardId, userId) is not null;
+        return await _context.BoardAccesses.FindAsync(boardId, userId) is not null;
     }
 }

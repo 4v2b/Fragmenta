@@ -4,15 +4,15 @@ namespace Fragmenta.Api.Contracts
 {
     public interface ITaskService
     {
-        List<TaskPreviewDto> GetTasks(long boardId);
+        Task<List<TaskPreviewDto>> GetTasksAsync(long boardId);
 
-        TaskPreviewDto? GetTask(long taskId);
+        Task<TaskPreviewDto?> GetTaskAsync(long taskId);
 
-        bool UpdateTask(long taskId, UpdateTaskRequest request);
+        Task<bool> UpdateTaskAsync(long taskId, UpdateTaskRequest request);
 
-        bool DeleteTask(long taskId);
+        Task<bool> DeleteTaskAsync(long taskId);
 
-        TaskPreviewDto? CreateTask(long statusId, CreateOrUpdateTaskRequest request);
+        Task<TaskPreviewDto?> CreateTaskAsync(long statusId, CreateOrUpdateTaskRequest request);
 
         Task ShallowUpdateAsync(ShallowUpdateTaskRequest request);
     }

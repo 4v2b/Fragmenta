@@ -25,7 +25,7 @@ public class AttachmentService : IAttachmentService
     }
 
 
-    public async Task<List<AttachmentDto>> GetAttachmentPreviews(long taskId)
+    public async Task<List<AttachmentDto>> GetAttachmentPreviewsAsync(long taskId)
     {
         return await _context.Attachments.Where(a => a.TaskId == taskId).Select(a => new AttachmentDto()
         {
@@ -34,7 +34,7 @@ public class AttachmentService : IAttachmentService
         }).ToListAsync();
     }
 
-    public async Task<Attachment> UploadAttachment(IFormFile file, long taskId)
+    public async Task<Attachment> UploadAttachmentAsync(IFormFile file, long taskId)
     {
         var task = await _context.Tasks.FindAsync(taskId);
         if (task == null) throw new InvalidOperationException("Task not found");
@@ -44,7 +44,7 @@ public class AttachmentService : IAttachmentService
             .FirstOrDefaultAsync(b => b.Statuses.Any(s => s.Id == task.StatusId));
         if (board == null) throw new InvalidOperationException("Board not found");
 
-        if (!await IsFileExtensionAllowed(board.Id, file.FileName))
+        if (!await IsFileExtensionAllowedAsync(board.Id, file.FileName))
             throw new InvalidOperationException("File extension is not allowed");
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -84,7 +84,7 @@ public class AttachmentService : IAttachmentService
         return attachment;
     }
 
-    public async Task<Stream> DownloadAttachment(long attachmentId)
+    public async Task<Stream> DownloadAttachmentAsync(long attachmentId)
     {
         var attachment = await _context.Attachments.FindAsync(attachmentId);
         if (attachment == null)
@@ -110,7 +110,7 @@ public class AttachmentService : IAttachmentService
         return blobContainerClient.GetBlobClient(blobName);
     }
 
-    public async Task<List<AttachmentTypeDto>> GetAllTypes()
+    public async Task<List<AttachmentTypeDto>> GetAllTypesAsync()
     {
         var allTypes = await _context.AttachmentTypes.ToListAsync();
 
@@ -136,7 +136,7 @@ public class AttachmentService : IAttachmentService
             .ToList();
     }
 
-    public async Task<bool> IsFileExtensionAllowed(long boardId, string filename)
+    public async Task<bool> IsFileExtensionAllowedAsync(long boardId, string filename)
     {
         var extension = Path.GetExtension(filename).ToLowerInvariant();
 

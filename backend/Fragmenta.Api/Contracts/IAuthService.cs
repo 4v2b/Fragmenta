@@ -4,7 +4,7 @@ namespace Fragmenta.Api.Contracts;
 
 public interface IAuthService
 {
-    AuthResult Register(RegisterRequest model);
+    Task<AuthResult> RegisterAsync(RegisterRequest model);
     
-    AuthResult Authorize(LoginRequest model);
+    Task<AuthResult> AuthorizeAsync(LoginRequest model);
 }

@@ -6,6 +6,7 @@ using Fragmenta.Dal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
+using Task = System.Threading.Tasks.Task;
 
 namespace Fragmenta.Api.Services
 {
@@ -28,15 +29,15 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public string? GenerateToken(long userId)
+        public async Task<string?> GenerateTokenAsync(long userId)
         {
-            if (_context.RefreshTokens.Any(e => e.UserId == userId && e.RevokedAt == null))
+            if (await _context.RefreshTokens.AnyAsync(e => e.UserId == userId && e.RevokedAt == null))
             {
                 _logger.LogInformation("Cannot generate a refresh token. For user {Id} a valid token already exists", userId);
                 return null;
             }
 
-            var user = _context.Users.SingleOrDefault(e => e.Id == userId)
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                 ?? throw new ArgumentException("No user found for given id", nameof(userId));
 
             var randomBytes = new byte[32];
@@ -54,38 +55,41 @@ namespace Fragmenta.Api.Services
                 ExpiresAt = DateTime.UtcNow.AddDays(7)
             };
 
-            _context.Add(entry);
-            _context.SaveChanges();
+            await _context.AddAsync(entry);
+            await _context.SaveChangesAsync();
 
             return token;
         }
 
-        public string? RefreshToken(string refreshToken, long userId)
+        public async Task<string?> RefreshTokenAsync(string refreshToken, long userId)
         {
-            if (VerifyToken(refreshToken, userId) is not (RefreshTokenStatus.Valid or RefreshTokenStatus.Expired))
+            if (await VerifyTokenAsync(refreshToken, userId) is not (RefreshTokenStatus.Valid or RefreshTokenStatus.Expired))
             {
                 return null;
             }
 
-            RevokeTokens(userId);
-            return GenerateToken(userId);
+            await RevokeTokensAsync(userId);
+            return await GenerateTokenAsync(userId);
         }
 
-        public void RevokeTokens(long userId)
+        public async Task RevokeTokensAsync(long userId)
         {
             foreach (var token in _context.RefreshTokens.Where(e => e.UserId == userId && e.RevokedAt == null))
             {
                 token.RevokedAt = DateTime.UtcNow;
                 _context.RefreshTokens.Update(token);
             }
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public RefreshTokenStatus VerifyToken(string refreshToken, long userId)
+        
+        // TODO Reveiw implementation
+        
+        public async Task<RefreshTokenStatus> VerifyTokenAsync(string refreshToken, long userId)
         {
-            var tokens = _context.RefreshTokens
+            var tokens = await _context.RefreshTokens
                 .Where(e => e.UserId == userId && e.RevokedAt == null)
-                .ToList();
+                .ToListAsync();
 
             if (tokens.Count != 1 || !_hasher.Hash(refreshToken).SequenceEqual(tokens[0].TokenHash))
             {

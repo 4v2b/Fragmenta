@@ -19,22 +19,25 @@ public class RefreshTokenLookupService : IRefreshTokenLookupService
         _hasher = hasher;
         _context = context;
     }
-    public UserDto? GetUserByToken(string token)
+    
+    // TODO Review sequence equals with quering the database
+    public async Task<UserDto?> GetUserByTokenAsync(string token)
     {
         var hashedToken = _hasher.Hash(token);
 
-        var user = _context.RefreshTokens.Include(e => e.User).SingleOrDefault(e => e.TokenHash.SequenceEqual(hashedToken))?.User;
+        var user = (await _context.RefreshTokens.Include(e => e.User).SingleOrDefaultAsync(e => e.TokenHash.SequenceEqual(hashedToken)))?.User;
             
         if(user == null)
         {
             return null;
         }
+        
         _logger.LogInformation("User {Id} - {Email} retrieved", user.Id ,user.Email);
         return new UserDto() { Email = user.Email, Id = user.Id };
     }
 
-    public bool HasValidToken(long userId)
+    public async Task<bool> HasValidTokenAsync(long userId)
     {
-        return _context.RefreshTokens.Any(e => e.UserId == userId && e.RevokedAt == null && e.ExpiresAt > DateTime.UtcNow);
+        return await _context.RefreshTokens.AnyAsync(e => e.UserId == userId && e.RevokedAt == null && e.ExpiresAt > DateTime.UtcNow);
     }
 }

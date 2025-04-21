@@ -4,11 +4,11 @@ namespace Fragmenta.Api.Contracts;
 
 public interface IUserLookupService
 {
-    long? FindSingleByEmail(string email);
+    Task<long?> FindSingleByEmailAsync(string email);
     
-    UserFullDto? GetUserInfo(long userId);
+    Task<UserFullDto?> GetUserInfoAsync(long userId);
 
-    List<UserDto> FindManyByEmails(string[] emails);
+    Task<List<UserDto>> FindManyByEmailsAsync(string[] emails);
 
-    List<UserDto> FindByEmail(string email);
+    Task<List<UserDto>> FindByEmailAsync(string email);
 }

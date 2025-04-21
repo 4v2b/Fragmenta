@@ -18,9 +18,9 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public StatusDto? CreateStatus(long boardId, CreateOrUpdateStatusRequest request)
+        public async Task<StatusDto?> CreateStatusAsync(long boardId, CreateOrUpdateStatusRequest request)
         {
-            var board = _context.Boards.Find(boardId);
+            var board = await _context.Boards.FindAsync(boardId);
 
             if (board == null)
             {
@@ -36,8 +36,8 @@ namespace Fragmenta.Api.Services
                 TaskLimit = request.MaxTasks.HasValue ? request.MaxTasks.Value : 0,
             };
 
-            _context.Add(status);
-            _context.SaveChanges();
+            await _context.AddAsync(status);
+            await _context.SaveChangesAsync();
 
             return new StatusDto()
             {
@@ -49,24 +49,24 @@ namespace Fragmenta.Api.Services
             };
         }
 
-        public bool DeleteStatus(long statusId)
+        public async Task<bool> DeleteStatusAsync(long statusId)
         {
-            var status = _context.Statuses.Find(statusId);
+            var status = await _context.Statuses.FindAsync(statusId);
 
-            if (status == null || _context.Tasks.Any(e => e.StatusId == statusId))
+            if (status == null || await _context.Tasks.AnyAsync(e => e.StatusId == statusId))
             {
                 return false;
             }
 
             _context.Remove(status);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public StatusDto? UpdateStatus(long statusId, CreateOrUpdateStatusRequest request)
+        public async Task<StatusDto?> UpdateStatusAsync(long statusId, CreateOrUpdateStatusRequest request)
         {
-            var status = _context.Statuses.Find(statusId);
+            var status = await _context.Statuses.FindAsync(statusId);
 
             if (status == null)
             {
@@ -79,7 +79,7 @@ namespace Fragmenta.Api.Services
             status.TaskLimit = request.MaxTasks ?? 0;
 
             _context.Update(status);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return new StatusDto()
             {

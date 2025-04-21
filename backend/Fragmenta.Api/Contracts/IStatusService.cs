@@ -4,10 +4,10 @@ namespace Fragmenta.Api.Contracts
 {
     public interface IStatusService
     {
-        StatusDto? CreateStatus(long boardId, CreateOrUpdateStatusRequest request);
+        Task<StatusDto?> CreateStatusAsync(long boardId, CreateOrUpdateStatusRequest request);
 
-        StatusDto? UpdateStatus(long statusId, CreateOrUpdateStatusRequest request);
+        Task<StatusDto?> UpdateStatusAsync(long statusId, CreateOrUpdateStatusRequest request);
 
-        bool DeleteStatus(long statusId);
+        Task<bool> DeleteStatusAsync(long statusId);
     }
 }

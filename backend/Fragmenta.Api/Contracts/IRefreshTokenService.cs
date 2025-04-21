@@ -1,17 +1,18 @@
 ﻿using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Enums;
 using Fragmenta.Dal.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace Fragmenta.Api.Contracts
 {
     public interface IRefreshTokenService
     {
-        string? GenerateToken(long userId);
+        Task<string?> GenerateTokenAsync(long userId);
 
-        void RevokeTokens(long userId);
+        Task RevokeTokensAsync(long userId);
 
-        RefreshTokenStatus VerifyToken(string refreshToken, long userId);
+        Task<RefreshTokenStatus> VerifyTokenAsync(string refreshToken, long userId);
 
-        string? RefreshToken(string refreshToken, long userId);
+        Task<string?> RefreshTokenAsync(string refreshToken, long userId);
     }
 }

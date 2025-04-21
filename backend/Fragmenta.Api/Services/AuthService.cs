@@ -3,6 +3,7 @@ using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Utils;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Fragmenta.Api.Services;
@@ -25,7 +26,7 @@ public class AuthService : IAuthService
         _cache = cache;
     }
 
-    public AuthResult Authorize(LoginRequest model)
+    public async Task<AuthResult> AuthorizeAsync(LoginRequest model)
     {
         var key = $"failed_attempts_{model.Email}";
 
@@ -42,7 +43,7 @@ public class AuthService : IAuthService
             entry = (0, null);
         }
 
-        var entity = _context.Users.FirstOrDefault(e => e.Email == model.Email);
+        var entity = await _context.Users.FirstOrDefaultAsync(e => e.Email == model.Email);
 
         if (entity != null && _hasher.Verify(model.Password, entity.PasswordHash, entity.PasswordSalt))
         {
@@ -68,9 +69,9 @@ public class AuthService : IAuthService
             : AuthResult.Failed(Enums.AuthErrorType.PasswordInvalid);
     }
 
-    public AuthResult Register(RegisterRequest model)
+    public async Task<AuthResult> RegisterAsync(RegisterRequest model)
     {
-        if (_context.Users.Any(e => e.Email == model.Email))
+        if (await _context.Users.AnyAsync(e => e.Email == model.Email))
         {
             return AuthResult.Failed(Enums.AuthErrorType.UserExists);
         }
@@ -86,8 +87,8 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.Add(entity);
-        _context.SaveChanges();
+        await _context.AddAsync(entity);
+        await _context.SaveChangesAsync();
 
         return AuthResult.Success(new UserDto() { Email = entity.Email, Id = entity.Id });
     }

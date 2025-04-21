@@ -2,6 +2,7 @@
 using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Utils;
 using Fragmenta.Dal;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Fragmenta.Api.Services;
@@ -19,25 +20,25 @@ public class UserLookupService : IUserLookupService
             _hasher = hasher;
         }
 
-        public List<UserDto> FindManyByEmails(string[] emails)
+        public async Task<List<UserDto>> FindManyByEmailsAsync(string[] emails)
         {
-            return _context.Users
+            return await _context.Users
                 .Where(e => emails.Contains(e.Email))
                 .Select(e => new UserDto() { Email = e.Email, Id = e.Id})
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<UserDto> FindByEmail(string email)
+        public async Task<List<UserDto>> FindByEmailAsync(string email)
         {
-            return _context.Users
+            return await _context.Users
                 .Where(e => e.Email.Contains(email))
                 .Select(e => new UserDto() { Email = e.Email, Id = e.Id })
-                .ToList();
+                .ToListAsync();
         }
 
-        public UserFullDto? GetUserInfo(long userId)
+        public async Task<UserFullDto?> GetUserInfoAsync(long userId)
         {
-            var user = _context.Users.Find(userId);
+            var user = await _context.Users.FindAsync(userId);
 
             if(user == null)
             {
@@ -48,13 +49,13 @@ public class UserLookupService : IUserLookupService
         }
 
       
-        public bool VerifyPassword(string password, long userId)
+        public async Task<bool> VerifyPasswordAsync(string password, long userId)
         {
-            var user = _context.Users.SingleOrDefault(e => e.Id == userId)
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                 ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
             return _hasher.Verify(password, user.PasswordHash, user.PasswordSalt);
         }
 
-        public long? FindSingleByEmail(string email) => _context.Users.FirstOrDefault(e => e.Email == email)?.Id ?? null;
+        public async Task<long?> FindSingleByEmailAsync(string email) => (await _context.Users.FirstOrDefaultAsync(e => e.Email == email))?.Id ?? null;
 }

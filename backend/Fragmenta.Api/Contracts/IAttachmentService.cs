@@ -5,14 +5,14 @@ namespace Fragmenta.Api.Contracts
 {
     public interface IAttachmentService
     {
-        Task<List<AttachmentTypeDto>> GetAllTypes();
+        Task<List<AttachmentTypeDto>> GetAllTypesAsync();
         
-        Task<bool> IsFileExtensionAllowed(long boardId, string filename);
+        Task<bool> IsFileExtensionAllowedAsync(long boardId, string filename);
 
-        Task<Attachment> UploadAttachment(IFormFile file, long taskId);
+        Task<Attachment> UploadAttachmentAsync(IFormFile file, long taskId);
 
-        Task<Stream> DownloadAttachment(long attachmentId);
+        Task<Stream> DownloadAttachmentAsync(long attachmentId);
 
-        Task<List<AttachmentDto>> GetAttachmentPreviews(long taskId);
+        Task<List<AttachmentDto>> GetAttachmentPreviewsAsync(long taskId);
     }
 }

@@ -2,6 +2,7 @@
 using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Utils;
 using Fragmenta.Dal;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fragmenta.Api.Services
 {
@@ -19,12 +20,12 @@ namespace Fragmenta.Api.Services
             _hasher = hasher;
         }
 
-        public bool ChangePassword(string newPassword, string oldPassword, long userId)
+        public async Task<bool> ChangePasswordAsync(string newPassword, string oldPassword, long userId)
         {
-            var user = _context.Users.SingleOrDefault(e => e.Id == userId)
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                        ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
-            if (VerifyPassword(oldPassword, user.Id))
+            if (await VerifyPasswordAsync(oldPassword, user.Id))
             {
                 var salt = SaltGenerator.GenerateSalt();
 
@@ -53,12 +54,12 @@ namespace Fragmenta.Api.Services
             return true;
         }
 
-        public bool Delete(string password, long userId)
+        public async Task<bool> DeleteAsync(string password, long userId)
         {
-            var user = _context.Users.SingleOrDefault(e => e.Id == userId)
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                        ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
-            if (VerifyPassword(password, user.Id))
+            if (await VerifyPasswordAsync(password, user.Id))
             {
                 _context.Remove(user);
                 _context.SaveChanges();
@@ -69,17 +70,17 @@ namespace Fragmenta.Api.Services
             return false;
         }
 
-        public bool VerifyPassword(string password, long userId)
+        public async Task<bool> VerifyPasswordAsync(string password, long userId)
         {
-            var user = _context.Users.SingleOrDefault(e => e.Id == userId)
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                        ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
             return _hasher.Verify(password, user.PasswordHash, user.PasswordSalt);
         }
 
-        public bool ResetPassword(string newPassword, long userId)
+        public async Task<bool> ResetPasswordAsync(string newPassword, long userId)
         {
-            var user = _context.Users.Find(userId);
+            var user = await _context.Users.FindAsync(userId);
 
             if (user != null)
             {
@@ -89,7 +90,7 @@ namespace Fragmenta.Api.Services
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = salt;
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return true;
             }

@@ -2,6 +2,7 @@
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fragmenta.Api.Services
 {
@@ -19,16 +20,16 @@ namespace Fragmenta.Api.Services
             _hasher = hasher;
         }
 
-        public string GenerateToken(long userId)
+        public async Task<string> GenerateTokenAsync(long userId)
         {
-            var user = _context.Users.SingleOrDefault(e => e.Id == userId)
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                 ?? throw new ArgumentException("No user found for given id", nameof(userId));
 
-            if (_context.ResetTokens.Any(e => e.UserId == userId))
+            if (await _context.ResetTokens.AnyAsync(e => e.UserId == userId))
             {
                 var oldTokens = _context.ResetTokens.Where(e => e.UserId == userId).ToList();
                 _context.RemoveRange(oldTokens);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
             var randomBytes = new byte[32];
@@ -46,17 +47,17 @@ namespace Fragmenta.Api.Services
                 ExpiresAt = DateTime.UtcNow.Add(_timeout)
             };
 
-            _context.Add(entry);
-            _context.SaveChanges();
+            await _context.AddAsync(entry);
+            await _context.SaveChangesAsync();
 
             return token;
         }
 
-        public bool VerifyAndDestroyToken(string token, long userId)
+        public async Task<bool> VerifyAndDestroyTokenAsync(string token, long userId)
         {
             var tokenHash = _hasher.Hash(token);
 
-            var entity = _context.ResetTokens.SingleOrDefault(e => e.UserId == userId && e.TokenHash.SequenceEqual(tokenHash));
+            var entity = await _context.ResetTokens.SingleOrDefaultAsync(e => e.UserId == userId && e.TokenHash.SequenceEqual(tokenHash));
 
 
             _logger.LogInformation("Token {Token} created at {Time1} expires at {Time}", token, entity?.CreatedAt.ToString(), entity?.ExpiresAt.ToString());
@@ -66,7 +67,7 @@ namespace Fragmenta.Api.Services
                 var expiresAt = entity.ExpiresAt;
 
                 _context.Remove(entity);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Token {Token} destroyed", token);
 

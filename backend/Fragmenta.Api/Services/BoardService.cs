@@ -20,17 +20,17 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public BoardDto? CreateBoard(long workspaceId, CreateBoardRequest request)
+        public async Task<BoardDto?> CreateBoardAsync(long workspaceId, CreateBoardRequest request)
         {
-            var workspace = _context.Workspaces.Find(workspaceId);
+            var workspace = await _context.Workspaces.FindAsync(workspaceId);
 
             if (workspace == null)
             {
                 return null;
             }
 
-            var attachmentTypes = _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Contains(e.Id))
-                .ToList();
+            var attachmentTypes = await _context.AttachmentTypes.Where(e => request.AllowedTypeIds.Contains(e.Id))
+                .ToListAsync();
 
             var board = new Board()
             {
@@ -39,15 +39,15 @@ namespace Fragmenta.Api.Services
                 AttachmentTypes = attachmentTypes,
             };
 
-            _context.Boards.Add(board);
-            _context.SaveChanges();
+            await _context.Boards.AddAsync(board);
+            await _context.SaveChangesAsync();
 
             return new BoardDto() { Id = board.Id, Name = board.Name, ArchivedAt = null, AllowedTypeIds = board.AttachmentTypes.Select(a => a.Id).ToList() };
         }
 
-        public List<BoardDto> GetBoards(long workspaceId)
+        public async Task<List<BoardDto>> GetBoardsAsync(long workspaceId)
         {
-            return _context.Boards
+            return await _context.Boards
                 .Where(e => e.WorkspaceId == workspaceId)
                 .Include(e => e.AccessList)
                 .Select(e => new BoardDto
@@ -57,12 +57,12 @@ namespace Fragmenta.Api.Services
                     ArchivedAt = e.ArchivedAt,
                     AllowedTypeIds = e.AttachmentTypes.Select(a => a.Id).ToList()
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<BoardDto> GetGuestBoards(long workspaceId, long guestId)
+        public async Task<List<BoardDto>> GetGuestBoardsAsync(long workspaceId, long guestId)
         {
-            return _context.Boards
+            return await _context.Boards
                 .Include(e => e.AccessList)
                 .Where(e => e.WorkspaceId == workspaceId && e.AccessList.Any(a => a.UserId == guestId))
                 .Select(e => new BoardDto
@@ -72,15 +72,15 @@ namespace Fragmenta.Api.Services
                     ArchivedAt = e.ArchivedAt,
                     AllowedTypeIds = e.AttachmentTypes.Select(a => a.Id).ToList()
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        public BoardDto? UpdateBoard(long boardId, UpdateBoardRequest request)
+        public async Task<BoardDto?> UpdateBoardAsync(long boardId, UpdateBoardRequest request)
         {
-            var board = _context.Boards
+            var board = await _context.Boards
                 .Include(e => e.AccessList)
                 .Include(e => e.AttachmentTypes) // Include existing types
-                .SingleOrDefault(e => e.Id == boardId);
+                .SingleOrDefaultAsync(e => e.Id == boardId);
 
             if (board == null)
             {
@@ -91,9 +91,9 @@ namespace Fragmenta.Api.Services
             
             board.AttachmentTypes.Clear();
             
-            var attachmentTypes = _context.AttachmentTypes
+            var attachmentTypes = await _context.AttachmentTypes
                 .Where(e => uniqueTypeIds.Contains(e.Id))
-                .ToList();
+                .ToListAsync();
     
             foreach (var type in attachmentTypes)
             {
@@ -103,7 +103,7 @@ namespace Fragmenta.Api.Services
             board.Name = request.Name;
             board.ArchivedAt = request.ArchivedAt;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return new BoardDto()
             {
@@ -114,9 +114,9 @@ namespace Fragmenta.Api.Services
             };
         }
 
-        public bool DeleteBoard(long boardId)
+        public async Task<bool> DeleteBoardAsync(long boardId)
         {
-            var board = _context.Boards.Find(boardId);
+            var board = await _context.Boards.FindAsync(boardId);
 
             if (board == null || !board.ArchivedAt.HasValue )
             {
@@ -124,22 +124,22 @@ namespace Fragmenta.Api.Services
             }
             
             _context.Remove(board);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }
         
-        public FullBoardDto? GetBoard(long boardId)
+        public async Task<FullBoardDto?> GetBoardAsync(long boardId)
         {
-            var board = _context.Boards.Find(boardId);
+            var board = await _context.Boards.FindAsync(boardId);
 
             if(board == null)
             {
                 return null;
             }
 
-            var allowedTypes = _context.AttachmentTypes.Include(e => e.Boards)
-                .Where(e => e.Boards.Any(b => b.Id == boardId)).Select(a => a.Id).ToList();
+            var allowedTypes = await _context.AttachmentTypes.Include(e => e.Boards)
+                .Where(e => e.Boards.Any(b => b.Id == boardId)).Select(a => a.Id).ToListAsync();
 
             return new FullBoardDto()
             {

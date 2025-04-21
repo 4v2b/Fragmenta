@@ -19,10 +19,10 @@ namespace Fragmenta.Api.Services
             _context = context;
         }
 
-        public TaskPreviewDto? CreateTask(long statusId, CreateOrUpdateTaskRequest request)
+        public async Task<TaskPreviewDto?> CreateTaskAsync(long statusId, CreateOrUpdateTaskRequest request)
         {
             _logger.LogInformation("Creating task for status with id: {StatusId}", statusId);
-            var assignee = request.AssigneeId != null ? _context.Users.Find(request.AssigneeId) : null;
+            var assignee = request.AssigneeId != null ? await _context.Users.FindAsync(request.AssigneeId) : null;
 
             _logger.LogInformation("Found assignee for requested id {Id} : {Name} {Email}", request.AssigneeId,
                 assignee?.Name, assignee?.Email);
@@ -30,15 +30,15 @@ namespace Fragmenta.Api.Services
             _logger.LogInformation("Existing statuses with id's: {StatusId}",
                 string.Join(", ", _context.Statuses.Select(e => e.Id.ToString())));
 
-            var status = _context.Statuses.Find(statusId);
+            var status = await _context.Statuses.FindAsync(statusId);
 
             _logger.LogInformation("Status id: {StatusId}", status?.Id);
 
-            List<Tag> tags = new();
+            List<Tag> tags = [];
 
             foreach (var tagId in request.TagsId)
             {
-                var tag = _context.Tags.Find(tagId);
+                var tag = await _context.Tags.FindAsync(tagId);
 
                 if (tag != null)
                 {
@@ -63,8 +63,8 @@ namespace Fragmenta.Api.Services
                 Weight = request.Weight
             };
 
-            _context.Add(task);
-            _context.SaveChanges();
+            await _context.AddAsync(task);
+            await  _context.SaveChangesAsync();
 
             _logger.LogInformation("Created task with id: {TaskId}", task.Id);
 
@@ -84,9 +84,9 @@ namespace Fragmenta.Api.Services
             };
         }
 
-        public bool DeleteTask(long taskId)
+        public async Task<bool> DeleteTaskAsync(long taskId)
         {
-            var task = _context.Tasks.Find(taskId);
+            var task = await _context.Tasks.FindAsync(taskId);
             if (task == null)
             {
                 return false;
@@ -94,18 +94,18 @@ namespace Fragmenta.Api.Services
 
             _context.Remove(task);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public TaskPreviewDto? GetTask(long taskId)
+        public async Task<TaskPreviewDto?> GetTaskAsync(long taskId)
         {
             throw new NotImplementedException();
         }
 
-        public List<TaskPreviewDto> GetTasks(long boardId)
+        public async Task<List<TaskPreviewDto>> GetTasksAsync(long boardId)
         {
-            return _context.Tasks
+            return await _context.Tasks
                 .Include(e => e.Status)
                 .Include(e => e.Tags)
                 .Where(e => e.Status.BoardId == boardId)
@@ -123,7 +123,7 @@ namespace Fragmenta.Api.Services
                     Title = e.Title,
                     Weight = e.Weight
                 })
-                .ToList();
+                .ToListAsync();
         }
 
         public async Task ShallowUpdateAsync(ShallowUpdateTaskRequest request)
@@ -141,16 +141,16 @@ namespace Fragmenta.Api.Services
             await _context.SaveChangesAsync();
         }
 
-        public bool UpdateTask(long taskId, UpdateTaskRequest request)
+        public async Task<bool> UpdateTaskAsync(long taskId, UpdateTaskRequest request)
         {
-            var task = _context.Tasks.Find(taskId);
+            var task = await _context.Tasks.FindAsync(taskId);
 
             if (task == null)
                 return false;
 
             if (task.AssigneeId != request.AssigneeId)
             {
-                var assignee = request.AssigneeId == null ? _context.Users.Find(request.AssigneeId) : null;
+                var assignee = request.AssigneeId == null ? await _context.Users.FindAsync(request.AssigneeId) : null;
                 task.Assignee = assignee;
             }
 
@@ -162,7 +162,7 @@ namespace Fragmenta.Api.Services
 
             foreach (var tagId in request.TagsId)
             {
-                var tag = _context.Tags.Find(tagId);
+                var tag = await _context.Tags.FindAsync(tagId);
 
                 if (tag != null)
                 {
@@ -174,7 +174,7 @@ namespace Fragmenta.Api.Services
             task.Priority = request.Priority;
 
             _context.Update(task);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }

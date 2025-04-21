@@ -2,8 +2,8 @@
 {
     public interface IResetTokenService
     {
-        bool VerifyAndDestroyToken(string token, long userId);
+        Task<bool> VerifyAndDestroyTokenAsync(string token, long userId);
 
-        string GenerateToken(long userId);
+        Task<string> GenerateTokenAsync(long userId);
     }
 }
