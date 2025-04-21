@@ -33,7 +33,7 @@ namespace Fragmenta.Api.Controllers
 
             if (id != null)
             {
-                var result = await attachmentService.GetAllTypes();
+                var result = await attachmentService.GetAllTypesAsync();
 
                 return Ok(result);
             }

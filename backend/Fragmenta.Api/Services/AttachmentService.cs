@@ -34,6 +34,11 @@ public class AttachmentService : IAttachmentService
         }).ToListAsync();
     }
 
+    public Task<bool> DeleteAttachmentAsync(long attachmentId)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<Attachment> UploadAttachmentAsync(IFormFile file, long taskId)
     {
         var task = await _context.Tasks.FindAsync(taskId);

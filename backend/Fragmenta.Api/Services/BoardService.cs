@@ -6,6 +6,7 @@ using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
 using Microsoft.EntityFrameworkCore;
 using Role = Fragmenta.Api.Enums.Role;
+using Task = System.Threading.Tasks.Task;
 
 namespace Fragmenta.Api.Services
 {
@@ -128,7 +129,17 @@ namespace Fragmenta.Api.Services
 
             return true;
         }
-        
+
+        public async Task CleanupArchivedBoardsAsync(CancellationToken cancellationToken)
+        {
+            var threshold = DateTime.UtcNow.AddDays(-30);
+            var expiredItems = _context.Boards
+                .Where(x => x.ArchivedAt <= threshold);
+
+            _context.Boards.RemoveRange(expiredItems);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task<FullBoardDto?> GetBoardAsync(long boardId)
         {
             var board = await _context.Boards.FindAsync(boardId);

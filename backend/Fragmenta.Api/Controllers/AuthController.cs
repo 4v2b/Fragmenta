@@ -24,16 +24,16 @@ namespace Fragmenta.Api.Controllers
         [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Refresh([FromBody] RefreshRequest model, [FromServices] IRefreshTokenLookupService lookupService, [FromServices] IRefreshTokenService refreshService, [FromServices] IJwtService jwtService)
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequest model, [FromServices] IRefreshTokenLookupService lookupService, [FromServices] IRefreshTokenService refreshService, [FromServices] IJwtService jwtService)
         {
-            var user = lookupService.GetUserByToken(model.RefreshToken);
+            var user = await lookupService.GetUserByTokenAsync(model.RefreshToken);
 
             if (user == null)
             {
                 return Unauthorized();
             }
 
-            return refreshService.VerifyToken(model.RefreshToken, user.Id) switch
+            return await refreshService.VerifyTokenAsync(model.RefreshToken, user.Id) switch
             {
                 Enums.RefreshTokenStatus.Valid
                     => Ok(jwtService.GenerateToken(new UserDto() { Email = user.Email, Id = user.Id })),
@@ -51,7 +51,7 @@ namespace Fragmenta.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         // TODO Simultaneous login from different devices
-        public IActionResult Login(
+        public async Task<IActionResult> Login(
             [FromBody] LoginRequest model,
             [FromServices] IJwtService jwtService,
             [FromServices] IAuthService authService,
@@ -60,7 +60,7 @@ namespace Fragmenta.Api.Controllers
         {
             try
             {
-                var result = authService.Authorize(model);
+                var result = await authService.AuthorizeAsync(model);
 
                 if (result.IsLocked)
                     return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });
@@ -76,9 +76,9 @@ namespace Fragmenta.Api.Controllers
                         }
                     });
 
-                refreshService.RevokeTokens(result.User.Id);
+                await refreshService.RevokeTokensAsync(result.User.Id);
 
-                var refreshToken = refreshService.GenerateToken(result.User.Id);
+                var refreshToken = await refreshService.GenerateTokenAsync(result.User.Id);
 
                 if (refreshToken == null) return BadRequest("Failed to generate refresh token");
 
@@ -102,7 +102,7 @@ namespace Fragmenta.Api.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Register(
+        public async Task<IActionResult> Register(
             [FromBody] RegisterRequest model,
             [FromServices] IJwtService jwtService,
             [FromServices] IAuthService authService,
@@ -111,11 +111,11 @@ namespace Fragmenta.Api.Controllers
         {
             try
             {
-                var result = authService.Register(model);
+                var result = await authService.RegisterAsync(model);
 
                 if (result is { IsSuccess: true, User: not null })
                 {
-                    var refreshToken = refreshService.GenerateToken(result.User.Id);
+                    var refreshToken = await refreshService.GenerateTokenAsync(result.User.Id);
 
                     if (refreshToken != null)
                     {
@@ -156,11 +156,11 @@ namespace Fragmenta.Api.Controllers
         {
             try
             {
-                var userId = lookupService.FindSingleByEmail(email);
+                var userId = await lookupService.FindSingleByEmailAsync(email);
 
                 if (userId.HasValue)
                 {
-                    var token = resetService.GenerateToken(userId.Value);
+                    var token = await resetService.GenerateTokenAsync(userId.Value);
 
                     var content = MailBodyFormer.CreateResetPasswordTextBody("http://localhost:5173", token, userId.Value);
 
@@ -208,7 +208,7 @@ namespace Fragmenta.Api.Controllers
             {
                 //var decodedToken = WebUtility.UrlDecode(request.Token);
 
-                if (!resetService.VerifyAndDestroyToken(request.Token, request.UserId))
+                if (!await resetService.VerifyAndDestroyTokenAsync(request.Token, request.UserId))
                 {
                     return BadRequest(new
                     {
@@ -216,7 +216,7 @@ namespace Fragmenta.Api.Controllers
                     });
                 }
 
-                if (!userService.ResetPassword(request.NewPassword, request.UserId))
+                if (!await userService.ResetPasswordAsync(request.NewPassword, request.UserId))
                 {
                     return BadRequest(new
                     {

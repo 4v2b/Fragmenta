@@ -26,43 +26,21 @@ namespace Fragmenta.Api.Controllers
             return null;
         }
 
-        /*[HttpGet]
-        public IActionResult GetStatuses([FromQuery] long boardId, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
-        {
-            var id = GetAuthenticatedUserId();
-
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
-            {
-                var role = accessService.GetRole(workspaceId, id.Value);
-
-                if (role == null || !AccessCheck.CanManageStatuses(role.Value))
-                {
-                    return Forbid();
-                }
-
-                var result = statusService.GetStatuses(boardId);
-
-                return Ok(result);
-            }
-
-            return Unauthorized("User was not found");
-        }*/
-
         [HttpPost]
-        public IActionResult CreateStatus([FromQuery] long boardId, [FromBody] CreateOrUpdateStatusRequest request,[FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> CreateStatus([FromQuery] long boardId, [FromBody] CreateOrUpdateStatusRequest request,[FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageStatuses(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = statusService.CreateStatus(boardId, request);
+                var result = await statusService.CreateStatusAsync(boardId, request);
 
                 if(result != null)
                 {
@@ -76,20 +54,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPut("{statusId}")]
-        public IActionResult UpdateStatus(long statusId, [FromBody] CreateOrUpdateStatusRequest request, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> UpdateStatus(long statusId, [FromBody] CreateOrUpdateStatusRequest request, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageStatuses(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = statusService.UpdateStatus(statusId, request);
+                var result = await statusService.UpdateStatusAsync(statusId, request);
 
                 if (result != null)
                 {
@@ -103,20 +81,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpDelete("{statusId}")]
-        public IActionResult DeleteStatus(long statusId, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> DeleteStatus(long statusId, [FromServices] IStatusService statusService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageStatuses(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = statusService.DeleteStatus(statusId);
+                var result = await statusService.DeleteStatusAsync(statusId);
 
                 if (result)
                 {

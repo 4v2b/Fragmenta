@@ -34,18 +34,18 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpGet]
-        public IActionResult GetMembers([FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetMembers([FromServices] IWorkspaceAccessService accessService)
         {
             var userId = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && userId != null)
             {
-                var role = accessService.GetRole(workspaceId, userId.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, userId.Value);
 
                 if (role == null)
                     return Forbid();
 
-                List<MemberDto> members = accessService.GetMembers(workspaceId);
+                List<MemberDto> members = await accessService.GetMembersAsync(workspaceId);
 
                 return Ok(members);
             }
@@ -60,23 +60,23 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpPost]
-        public IActionResult AddMembers([FromBody] MemberRequest request, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> AddMembers([FromBody] MemberRequest request, [FromServices] IWorkspaceAccessService accessService)
         {
             var userId = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && userId != null)
             {
-                var role = accessService.GetRole(workspaceId, userId.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, userId.Value);
 
                 if (role == null || !AccessCheck.CanAddMember(role.Value))
                     return Forbid();
 
-                var addedMember = accessService.AddMembers(workspaceId, request.UsersId);
+                var addedMembers = await accessService.AddMembersAsync(workspaceId, request.UsersId);
 
-                if (addedMember == null)
+                if (addedMembers == null)
                     return BadRequest();
 
-                return CreatedAtAction(nameof(AddMembers), addedMember);
+                return CreatedAtAction(nameof(AddMembers), addedMembers);
             }
 
             return Unauthorized("User was not found");
@@ -90,15 +90,15 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpDelete("{memberId}")]
-        public IActionResult RemoveMember(long memberId, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> RemoveMember(long memberId, [FromServices] IWorkspaceAccessService accessService)
         {
             var actorId = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && actorId != null)
             {
-                var actorRole = accessService.GetRole(workspaceId, actorId.Value);
+                var actorRole = await accessService.GetRoleAsync(workspaceId, actorId.Value);
 
-                var memberRole = accessService.GetRole(workspaceId, memberId);
+                var memberRole = await accessService.GetRoleAsync(workspaceId, memberId);
 
                 if (memberRole == null)
                     return BadRequest();
@@ -106,7 +106,7 @@ namespace Fragmenta.Api.Controllers
                 if (actorRole == null || !AccessCheck.CanDeleteMember(actorRole.Value, memberRole.Value))
                     return Forbid();
 
-                if (!accessService.DeleteMember(workspaceId, memberId))
+                if (!await accessService.DeleteMemberAsync(workspaceId, memberId))
                     return BadRequest();
 
                 return NoContent();
@@ -122,15 +122,15 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpPost("/members/{memberId}/revoke")]
-        public IActionResult RevokeAdmin(long memberId, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> RevokeAdmin(long memberId, [FromServices] IWorkspaceAccessService accessService)
         {
             var actorId = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && actorId != null)
             {
-                var actorRole = accessService.GetRole(workspaceId, actorId.Value);
+                var actorRole = await accessService.GetRoleAsync(workspaceId, actorId.Value);
 
-                var memberRole = accessService.GetRole(workspaceId, memberId);
+                var memberRole = await accessService.GetRoleAsync(workspaceId, memberId);
 
                 if (memberRole == null)
                     return BadRequest();
@@ -138,7 +138,7 @@ namespace Fragmenta.Api.Controllers
                 if (actorRole == null || !AccessCheck.CanRevokeAdminPermission(actorRole.Value, memberRole.Value))
                     return Forbid();
 
-                if (!accessService.RevokeAdminPermission(workspaceId, memberId))
+                if (!await accessService.RevokeAdminPermissionAsync(workspaceId, memberId))
                     return BadRequest();
 
                 return NoContent();
@@ -154,15 +154,15 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpPost("/members/{memberId}/grant")]
-        public IActionResult GrantAdmin(long memberId, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GrantAdmin(long memberId, [FromServices] IWorkspaceAccessService accessService)
         {
             var actorId = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && actorId != null)
             {
-                var actorRole = accessService.GetRole(workspaceId, actorId.Value);
+                var actorRole = await accessService.GetRoleAsync(workspaceId, actorId.Value);
 
-                var memberRole = accessService.GetRole(workspaceId, memberId);
+                var memberRole = await accessService.GetRoleAsync(workspaceId, memberId);
 
                 if (memberRole == null)
                     return BadRequest();
@@ -170,7 +170,7 @@ namespace Fragmenta.Api.Controllers
                 if (actorRole == null || !AccessCheck.CanGrantAdminPermission(actorRole.Value, memberRole.Value))
                     return Forbid();
 
-                if (!accessService.RevokeAdminPermission(workspaceId, memberId))
+                if (! await accessService.RevokeAdminPermissionAsync(workspaceId, memberId))
                     return BadRequest();
 
                 return NoContent();

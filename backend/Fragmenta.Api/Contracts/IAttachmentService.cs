@@ -8,6 +8,8 @@ namespace Fragmenta.Api.Contracts
         Task<List<AttachmentTypeDto>> GetAllTypesAsync();
         
         Task<bool> IsFileExtensionAllowedAsync(long boardId, string filename);
+        
+        Task<bool> DeleteAttachmentAsync(long attachmentId);
 
         Task<Attachment> UploadAttachmentAsync(IFormFile file, long taskId);
 

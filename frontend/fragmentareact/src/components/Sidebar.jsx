@@ -6,11 +6,12 @@ import {
   VStack,
   Heading,
   Icon,
-  Flex
+  Flex,
 } from "@chakra-ui/react"
 import { FiHome, FiFolder, FiPlus, FiList } from "react-icons/fi"
 import { Portal, createListCollection } from "@chakra-ui/react"
 import { api } from "@/api/fetchClient.js"
+import { Select } from "@chakra-ui/react"
 
 export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspace }) {
   const { t } = useTranslation()

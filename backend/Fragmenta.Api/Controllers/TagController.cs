@@ -27,20 +27,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetTags([FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetTags([FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = tagService.GetTags(boardId);
+                var result = await tagService.GetTagsAsync(boardId);
 
                 return Ok(result);
             }
@@ -49,20 +49,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTag([FromQuery] string name, [FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> CreateTag([FromQuery] string name, [FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = tagService.CreateTag(name, boardId);
+                var result = await tagService.CreateTagAsync(name, boardId);
 
                 if (result != null)
                 {
@@ -76,20 +76,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpDelete("{tagId}")]
-        public IActionResult DeleteTask(long tagId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> DeleteTag(long tagId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageStatuses(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = tagService.DeleteTag(tagId);
+                var result = await tagService.DeleteTagAsync(tagId);
 
                 if (result)
                 {

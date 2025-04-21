@@ -28,13 +28,13 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetBoards([FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetBoards([FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null)
                 {
@@ -43,30 +43,30 @@ namespace Fragmenta.Api.Controllers
 
                 if (role == Role.Guest)
                 {
-                    return Ok(boardService.GetGuestBoards(workspaceId, id.Value));
+                    return Ok(await boardService.GetGuestBoardsAsync(workspaceId, id.Value));
                 }
 
-                return Ok(boardService.GetBoards(workspaceId));
+                return Ok(await boardService.GetBoardsAsync(workspaceId));
             }
 
             return Unauthorized("User was not found");
         }
 
         [HttpGet("{boardId}")]
-        public IActionResult GetBoard(long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetBoard(long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
-                if (role == null || (role == Role.Guest && !boardAccessService.CanViewBoard(boardId, id.Value)))
+                if (role == null || (role == Role.Guest && !await boardAccessService.CanViewBoardAsync(boardId, id.Value)))
                 {
                     return Forbid();
                 }
 
-                var result = boardService.GetBoard(boardId);
+                var result = await boardService.GetBoardAsync(boardId);
                 
                 if(result == null)
                 {
@@ -80,20 +80,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateBoard([FromBody] CreateBoardRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> CreateBoard([FromBody] CreateBoardRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanCreateBoard(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = boardService.CreateBoard(workspaceId, request);
+                var result = await boardService.CreateBoardAsync(workspaceId, request);
 
                 if (result != null)
                 {
@@ -106,20 +106,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPut("{boardId}")]
-        public IActionResult UpdateBoard(long boardId, [FromBody] UpdateBoardRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> UpdateBoard(long boardId, [FromBody] UpdateBoardRequest request, [FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanUpdateBoard(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = boardService.UpdateBoard(boardId, request);
+                var result = await boardService.UpdateBoardAsync(boardId, request);
 
                 if (result != null)
                 {
@@ -133,20 +133,20 @@ namespace Fragmenta.Api.Controllers
         }
         
         [HttpDelete("{boardId:long}")]
-        public IActionResult DeleteBoard(long boardId,[FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> DeleteBoard(long boardId,[FromServices] IBoardService boardService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanUpdateBoard(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = boardService.DeleteBoard(boardId);
+                var result = await boardService.DeleteBoardAsync(boardId);
 
                 if (result)
                 {
@@ -160,20 +160,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost("{boardId:long}/guests")]
-        public IActionResult AddGuests(long boardId, [FromBody] AddGuestsRequest request, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> AddGuests(long boardId, [FromBody] AddGuestsRequest request, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageGuests(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = boardAccessService.AddGuests(boardId, request.UsersId);
+                var result = await boardAccessService.AddGuestsAsync(boardId, request.UsersId);
 
                 if (result.Count > 0)
                 {
@@ -187,20 +187,20 @@ namespace Fragmenta.Api.Controllers
         }
         
         [HttpGet("{boardId:long}/guests")]
-        public IActionResult GetGuests(long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetGuests(long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
-                if (role == null || (role == Role.Guest && !boardAccessService.CanViewBoard(boardId, id.Value)))
+                if (role == null || (role == Role.Guest && !await boardAccessService.CanViewBoardAsync(boardId, id.Value)))
                 {
                     return Forbid();
                 }
 
-                var guests = boardAccessService.GetGuests(boardId);
+                var guests = await boardAccessService.GetGuestsAsync(boardId);
 
                 return Ok(guests);
             }
@@ -209,20 +209,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpDelete("{boardId:long}/guests/{guestId:long}")]
-        public IActionResult RemoveGuests(long boardId, long guestId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> RemoveGuests(long boardId, long guestId, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageGuests(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = boardAccessService.RemoveGuest(boardId, guestId);
+                var result = await boardAccessService.RemoveGuestAsync(boardId, guestId);
 
                 if (result)
                 {

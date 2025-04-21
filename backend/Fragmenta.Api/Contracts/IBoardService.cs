@@ -15,5 +15,7 @@ namespace Fragmenta.Api.Contracts
         Task<BoardDto?> UpdateBoardAsync(long boardId, UpdateBoardRequest request);
         
         Task<bool> DeleteBoardAsync(long boardId);
+        
+        Task CleanupArchivedBoardsAsync(CancellationToken cancellationToken);
     }
 }

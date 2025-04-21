@@ -29,20 +29,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetTasks([FromQuery] long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetTasks([FromQuery] long boardId, [FromServices] IBoardAccessService boardAccessService, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
-                if (role == null || (role == Role.Guest && !boardAccessService.CanViewBoard(boardId, id.Value)))
+                if (role == null || (role == Role.Guest && !await boardAccessService.CanViewBoardAsync(boardId, id.Value)))
                 {
                     return Forbid();
                 }
 
-                var result = taskService.GetTasks(boardId);
+                var result = await taskService.GetTasksAsync(boardId);
 
                 return Ok(result);
             }
@@ -51,20 +51,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet("{taskId}")]
-        public IActionResult GetTask([FromQuery] long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetTask([FromQuery] long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null)
                 {
                     return Forbid();
                 }
 
-                var result = taskService.GetTask(taskId);
+                var result = await taskService.GetTaskAsync(taskId);
 
                 return Ok(result);
             }
@@ -73,20 +73,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTask([FromQuery] long statusId, [FromBody] CreateOrUpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> CreateTask([FromQuery] long statusId, [FromBody] CreateOrUpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = taskService.CreateTask(statusId, request);
+                var result = await taskService.CreateTaskAsync(statusId, request);
 
                 if (result != null)
                 {
@@ -106,7 +106,7 @@ namespace Fragmenta.Api.Controllers
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out var workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
@@ -126,20 +126,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPut("{taskId:long}")]
-        public IActionResult UpdateTask(long taskId, [FromBody] UpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> UpdateTask(long taskId, [FromBody] UpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out var workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = taskService.UpdateTask(taskId, request);
+                var result = await taskService.UpdateTaskAsync(taskId, request);
 
                 if (result)
                 {
@@ -153,20 +153,20 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpDelete("{taskId:long}")]
-        public IActionResult DeleteTask(long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> DeleteTask(long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
             if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out var workspaceId) && id != null)
             {
-                var role = accessService.GetRole(workspaceId, id.Value);
+                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
                 if (role == null || !AccessCheck.CanManageStatuses(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = taskService.DeleteTask(taskId);
+                var result = await taskService.DeleteTaskAsync(taskId);
 
                 if (result)
                 {

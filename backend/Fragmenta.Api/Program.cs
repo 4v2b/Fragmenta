@@ -10,6 +10,8 @@ using Serilog.Events;
 using Serilog;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Fragmenta.Api.Controllers;
 using Fragmenta.Api.Middleware;
 using Azure.Storage.Blobs;
@@ -33,6 +35,14 @@ builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+/*builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });*/
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -148,7 +158,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
-builder.Services.AddHostedService<ArchivedBoardCleanupService>();
+builder.Services.AddHostedService<BoardCleanupBackgroundService>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

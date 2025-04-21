@@ -18,7 +18,7 @@ public class BoardAccessService : IBoardAccessService
         _context = context;
     }
 
-    public async Task<bool>  RemoveGuestAsync(long boardId, long guestId)
+    public async Task<bool> RemoveGuestAsync(long boardId, long guestId)
     {
         var board = await _context.Boards.Include(e => e.AccessList).SingleOrDefaultAsync(e => e.Id == boardId);
 

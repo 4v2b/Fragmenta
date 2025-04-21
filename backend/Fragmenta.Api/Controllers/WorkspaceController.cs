@@ -26,18 +26,18 @@ namespace Fragmenta.Api.Controllers
         }
 
         /// <summary>
-        /// Returns workspaces avialable to the user
+        /// Returns workspaces available to the user
         /// </summary>
         /// <response code="200">Returns workspace</response>
         /// <response code="401">If user is unauthorized</response>
         [HttpGet]
-        public IActionResult GetAll([FromServices] IWorkspaceService workspaceService)
+        public async Task<IActionResult> GetAll([FromServices] IWorkspaceService workspaceService)
         {
             var id = GetAuthenticatedUserId();
 
             if (id != null)
             {
-                List<WorkspaceRoleDto> workspaces = workspaceService.GetAll(id.Value);
+                var workspaces = await workspaceService.GetAllAsync(id.Value);
 
                 return Ok(workspaces);
             }
@@ -51,13 +51,13 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="400">If request contains invalid data</response>
         [HttpPost]
-        public IActionResult Create([FromBody] CreateOrUpdateWorkspaceRequest request, [FromServices] IWorkspaceService workspaceService)
+        public async Task<IActionResult> Create([FromBody] CreateOrUpdateWorkspaceRequest request, [FromServices] IWorkspaceService workspaceService)
         {
             var id = GetAuthenticatedUserId();
 
             if (id != null)
             {
-                var result = workspaceService.Create(request.Name, id.Value);
+                var result = await workspaceService.CreateAsync(request.Name, id.Value);
 
                 if (result != null)
                 {
@@ -78,20 +78,20 @@ namespace Fragmenta.Api.Controllers
         /// <response code="400">If request contains invalid data</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpPut("{id}")]
-        public IActionResult Update(long id, [FromBody] CreateOrUpdateWorkspaceRequest request, [FromServices] IWorkspaceService workspaceService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> Update(long id, [FromBody] CreateOrUpdateWorkspaceRequest request, [FromServices] IWorkspaceService workspaceService, [FromServices] IWorkspaceAccessService accessService)
         {
             var userId = GetAuthenticatedUserId();
 
             if (userId != null)
             {
-                var role = accessService.GetRole(id, userId.Value);
+                var role = await accessService.GetRoleAsync(id, userId.Value);
 
                 if (role == null || !AccessCheck.CanUpdateWorkspace(role.Value))
                 {
                     return Forbid();
                 }
 
-                var result = workspaceService.Update(request.Name, userId.Value);
+                var result = await workspaceService.UpdateAsync(request.Name, userId.Value);
 
                 if (result != null)
                 {
@@ -111,20 +111,20 @@ namespace Fragmenta.Api.Controllers
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
         [HttpDelete("{id}")]
-        public IActionResult Delete(long id, [FromServices] IWorkspaceService workspaceService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> Delete(long id, [FromServices] IWorkspaceService workspaceService, [FromServices] IWorkspaceAccessService accessService)
         {
             var userId = GetAuthenticatedUserId();
 
             if (userId != null)
             {
-                var role = accessService.GetRole(id, userId.Value);
+                var role = await accessService.GetRoleAsync(id, userId.Value);
 
                 if(role == null)
                 {
                     return Forbid();
                 }
 
-                if (AccessCheck.CanDeleteWorkspace(role.Value) && workspaceService.Delete(id))
+                if (AccessCheck.CanDeleteWorkspace(role.Value) && await workspaceService.DeleteAsync(id))
                 {
                     return NoContent();
                 }
