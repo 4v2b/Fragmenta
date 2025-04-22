@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Fragmenta.Api.Services
 {
-    public class Sha265HashingService : IHashingService
+    public class Sha256HashingService : IHashingService
     {
         public byte[] Hash(string data, byte[]? salt = null)
         {

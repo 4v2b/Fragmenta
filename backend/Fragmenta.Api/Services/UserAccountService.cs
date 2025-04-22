@@ -12,7 +12,7 @@ namespace Fragmenta.Api.Services
         private readonly ILogger<UserAccountService> _logger;
         private readonly IHashingService _hasher;
 
-        public UserAccountService(ApplicationContext context, ILogger<UserAccountService> logger,
+        public UserAccountService(ILogger<UserAccountService> logger, ApplicationContext context,
             IHashingService hasher)
         {
             _context = context;
@@ -25,7 +25,7 @@ namespace Fragmenta.Api.Services
             var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                        ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
-            if (await VerifyPasswordAsync(oldPassword, user.Id))
+            if (_hasher.Verify(oldPassword, user.PasswordHash, user.PasswordSalt))
             {
                 var salt = SaltGenerator.GenerateSalt();
 
@@ -59,7 +59,7 @@ namespace Fragmenta.Api.Services
             var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                        ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
-            if (await VerifyPasswordAsync(password, user.Id))
+            if (_hasher.Verify(password, user.PasswordHash, user.PasswordSalt))
             {
                 _context.Remove(user);
                 _context.SaveChanges();
@@ -68,14 +68,6 @@ namespace Fragmenta.Api.Services
             }
 
             return false;
-        }
-
-        public async Task<bool> VerifyPasswordAsync(string password, long userId)
-        {
-            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
-                       ?? throw new ArgumentException("No user found with given id", nameof(userId));
-
-            return _hasher.Verify(password, user.PasswordHash, user.PasswordSalt);
         }
 
         public async Task<bool> ResetPasswordAsync(string newPassword, long userId)

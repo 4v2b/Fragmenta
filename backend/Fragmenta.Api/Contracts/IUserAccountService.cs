@@ -10,8 +10,6 @@ namespace Fragmenta.Api.Contracts
 
         Task<bool> ResetPasswordAsync(string newPassword, long userId);
 
-        Task<bool> VerifyPasswordAsync(string password, long userId);
-
         Task<bool> DeleteAsync(string password, long userId);
     }
 }

@@ -8,16 +8,8 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Fragmenta.Tests.UnitTests;
 
-public class BoardServiceTests
+public class BoardServiceTests : UnitTestsBase
 {
-     private ApplicationContext CreateContext(string dbName)
-    {
-        var options = new DbContextOptionsBuilder<ApplicationContext>()
-            .UseInMemoryDatabase(databaseName: dbName)
-            .Options;
-        return new ApplicationContext(options);
-    }
-
     private BoardService CreateService(ApplicationContext context)
     {
         return new BoardService(new NullLogger<BoardService>(), context);
@@ -26,7 +18,7 @@ public class BoardServiceTests
     [Fact]
     public async Task CreateBoardAsync_ReturnsNull_WhenWorkspaceNotFound()
     {
-        var context = CreateContext("NoWorkspace");
+        var context = CreateInMemoryContext();
         var service = CreateService(context);
 
         var request = new CreateBoardRequest
@@ -43,7 +35,7 @@ public class BoardServiceTests
     [Fact]
     public async Task CreateBoardAsync_CreatesBoard_WhenWorkspaceExists()
     {
-        var context = CreateContext("WorkspaceExists");
+        var context = CreateInMemoryContext();
         context.Workspaces.Add(new Workspace { Id = 1, Name = "Workspace" });
         context.AttachmentTypes.Add(new AttachmentType { Id = 1, Value = "pdf" });
         await context.SaveChangesAsync();
@@ -64,7 +56,7 @@ public class BoardServiceTests
     [Fact]
     public async Task GetBoardsAsync_ReturnsBoardsForWorkspace()
     {
-        var context = CreateContext("GetBoards");
+        var context = CreateInMemoryContext();
         context.Boards.Add(new Board { Id = 1, Name = "Board 1", WorkspaceId = 5 });
         context.Boards.Add(new Board { Id = 2, Name = "Board 2", WorkspaceId = 5 });
         context.Boards.Add(new Board { Id = 3, Name = "Board 3", WorkspaceId = 99 });
@@ -80,7 +72,7 @@ public class BoardServiceTests
     [Fact]
     public async Task UpdateBoardAsync_UpdatesNameAndTypes()
     {
-        var context = CreateContext("UpdateBoard");
+        var context = CreateInMemoryContext();
         var board = new Board { Id = 10, Name = "Old", AttachmentTypes = new List<AttachmentType>(), WorkspaceId = 1 };
         context.Boards.Add(board);
         context.AttachmentTypes.AddRange(
@@ -104,7 +96,7 @@ public class BoardServiceTests
     [Fact]
     public async Task DeleteBoardAsync_ReturnsFalse_IfBoardNotFoundOrNotArchived()
     {
-        var context = CreateContext("DeleteFails");
+        var context = CreateInMemoryContext();
         context.Boards.Add(new Board { Id = 5, Name = "Not Archived", ArchivedAt = null });
         await context.SaveChangesAsync();
 
@@ -120,7 +112,7 @@ public class BoardServiceTests
     [Fact]
     public async Task DeleteBoardAsync_Deletes_WhenArchived()
     {
-        var context = CreateContext("DeleteOk");
+        var context = CreateInMemoryContext();
         context.Boards.Add(new Board { Id = 7, Name = "To Delete", ArchivedAt = DateTime.UtcNow });
         await context.SaveChangesAsync();
 
@@ -134,7 +126,7 @@ public class BoardServiceTests
     [Fact]
     public async Task GetBoardAsync_ReturnsFullBoard()
     {
-        var context = CreateContext("GetFullBoard");
+        var context = CreateInMemoryContext();
 
         var board = new Board { Id = 1, Name = "TestBoard" };
         var type = new AttachmentType { Id = 42, Value = "pdf", Boards = new List<Board> { board } };
@@ -164,7 +156,7 @@ public class BoardServiceTests
      [Fact]
     public async Task UpdateBoardAsync_ReturnsNull_WhenBoardNotFound()
     {
-        var context = CreateContext("UpdateBoardNotFound");
+        var context = CreateInMemoryContext();
         var service = CreateService(context);
 
         var result = await service.UpdateBoardAsync(999, new UpdateBoardRequest
@@ -180,7 +172,7 @@ public class BoardServiceTests
     [Fact]
     public async Task GetGuestBoardsAsync_ReturnsBoards_WhenUserHasAccess()
     {
-        var context = CreateContext("GuestBoards");
+        var context = CreateInMemoryContext();
         var user = new User { Id = 2, Name = "User", PasswordHash = [], PasswordSalt = [],  Email = ""};
         var workspace = new Workspace { Id = 1, Name = "Workspace"};
         var board1 = new Board { Id = 1, Name = "Shared 1", Users = new List<User> { user }, Workspace = workspace };
@@ -201,7 +193,7 @@ public class BoardServiceTests
     [Fact]
     public async Task GetGuestBoardsAsync_ReturnsEmpty_WhenNoAccess()
     {
-        var context = CreateContext("GuestBoardsNone");
+        var context = CreateInMemoryContext();
         var workspace = new Workspace { Id = 1, Name = "Workspace"};
         var board = new Board { Id = 1, Name = "Board", Users = new List<User>(), Workspace = workspace};
         context.Users.Add(new User { Id = 2, Name = "User", PasswordHash = [], PasswordSalt = [], Email = ""});
@@ -217,7 +209,7 @@ public class BoardServiceTests
     [Fact]
     public async Task CleanupArchivedBoardsAsync_RemovesBoardsArchivedOver7DaysAgo()
     {
-        var context = CreateContext("CleanupArchived");
+        var context = CreateInMemoryContext();
         context.Boards.AddRange(
             new Board { Id = 1, Name = "Old Archived", ArchivedAt = DateTime.UtcNow.AddDays(-31) },
             new Board { Id = 2, Name = "Recent Archived", ArchivedAt = DateTime.UtcNow.AddDays(-3) },
@@ -238,7 +230,7 @@ public class BoardServiceTests
     [Fact]
     public async Task CleanupArchivedBoardsAsync_DoesNothing_IfNoExpiredBoards()
     {
-        var context = CreateContext("CleanupNone");
+        var context = CreateInMemoryContext();
         context.Boards.Add(new Board { Id = 10, Name = "Archived 6d", ArchivedAt = DateTime.UtcNow.AddDays(-6) });
         await context.SaveChangesAsync();
 

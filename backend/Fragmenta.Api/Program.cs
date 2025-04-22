@@ -157,7 +157,7 @@ builder.Services.AddScoped<IRefreshTokenLookupService, RefreshTokenLookupService
 builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IHashingService, Sha265HashingService>();
+builder.Services.AddSingleton<IHashingService, Sha256HashingService>();
 builder.Services.AddHostedService<BoardCleanupBackgroundService>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");

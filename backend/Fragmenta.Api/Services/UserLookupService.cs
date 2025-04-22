@@ -48,14 +48,5 @@ public class UserLookupService : IUserLookupService
             return new UserFullDto() { Email = user.Email, Id = user.Id, Name = user.Name };
         }
 
-      
-        public async Task<bool> VerifyPasswordAsync(string password, long userId)
-        {
-            var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
-                ?? throw new ArgumentException("No user found with given id", nameof(userId));
-
-            return _hasher.Verify(password, user.PasswordHash, user.PasswordSalt);
-        }
-
         public async Task<long?> FindSingleByEmailAsync(string email) => (await _context.Users.FirstOrDefaultAsync(e => e.Email == email))?.Id ?? null;
 }
