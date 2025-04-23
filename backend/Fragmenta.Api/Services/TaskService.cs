@@ -150,7 +150,7 @@ namespace Fragmenta.Api.Services
 
             if (task.AssigneeId != request.AssigneeId)
             {
-                var assignee = request.AssigneeId == null ? await _context.Users.FindAsync(request.AssigneeId) : null;
+                var assignee = request.AssigneeId != null ? await _context.Users.FindAsync(request.AssigneeId) : null;
                 task.Assignee = assignee;
             }
 

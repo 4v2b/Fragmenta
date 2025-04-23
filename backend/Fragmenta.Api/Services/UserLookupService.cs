@@ -13,7 +13,7 @@ public class UserLookupService : IUserLookupService
         private readonly ILogger<UserLookupService> _logger;
         private readonly IHashingService _hasher;
 
-        public UserLookupService(ApplicationContext context, ILogger<UserLookupService> logger, IHashingService hasher)
+        public UserLookupService(ILogger<UserLookupService> logger, ApplicationContext context, IHashingService hasher)
         {
             _context = context;
             _logger = logger;
