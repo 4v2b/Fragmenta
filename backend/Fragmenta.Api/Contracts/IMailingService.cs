@@ -4,6 +4,6 @@ namespace Fragmenta.Api.Contracts
 {
     public interface IMailingService
     {
-        Task<EmailSendResult> SendEmailAsync(string receiver, string content);
+        Task<EmailSendResult> SendResetTokenAsync(string receiver, string token, long userId);
     }
 }

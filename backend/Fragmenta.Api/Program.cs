@@ -152,6 +152,7 @@ builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IBoardAccessService, BoardAccessService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserLookupService, UserLookupService>();
+builder.Services.AddScoped<IEmailHttpClient, EmailHttpClient>();
 builder.Services.AddScoped<IRefreshTokenLookupService, RefreshTokenLookupService>();
 
 builder.Services.AddMemoryCache();

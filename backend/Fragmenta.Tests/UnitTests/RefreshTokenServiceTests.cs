@@ -106,7 +106,7 @@ public class RefreshTokenServiceTests : UnitTestsBase
         {
             UserId = userId,
             TokenHash = hashedToken,
-            ExpiresAt = DateTime.UtcNow.AddDays(1),
+            ExpiresAt = DateTime.UtcNow.AddDays(-1),
             CreatedAt = DateTime.UtcNow,
             RevokedAt = null
         };
@@ -214,7 +214,7 @@ public class RefreshTokenServiceTests : UnitTestsBase
             {
                 UserId = userId,
                 TokenHash = new byte[] { 1, 2, 3, 4 },
-                ExpiresAt = DateTime.UtcNow.AddDays(1),
+                ExpiresAt = DateTime.UtcNow.AddDays(-1),
                 CreatedAt = DateTime.UtcNow,
                 RevokedAt = null
             },
@@ -222,7 +222,7 @@ public class RefreshTokenServiceTests : UnitTestsBase
             {
                 UserId = userId,
                 TokenHash = new byte[] { 5, 6, 7, 8 },
-                ExpiresAt = DateTime.UtcNow.AddDays(2),
+                ExpiresAt = DateTime.UtcNow.AddDays(-2),
                 CreatedAt = DateTime.UtcNow,
                 RevokedAt = null
             }

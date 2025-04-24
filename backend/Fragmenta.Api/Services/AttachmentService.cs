@@ -14,14 +14,14 @@ using Fragmenta.Api.Dtos;
 public class AttachmentService : IAttachmentService
 {
     private readonly ApplicationContext _context;
-    private readonly BlobServiceClient _blobServiceClient;
     private readonly AzureStorageOptions _options;
+    private readonly IBlobClientFactory _blobClientFactory;
 
-    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig, BlobServiceClient blobServiceClient)
+    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig, IBlobClientFactory blobClientFactory)
     {
         _options = blobStorageConfig?.Value ?? throw new ArgumentNullException(nameof(blobStorageConfig));
         _context = context;
-        _blobServiceClient = blobServiceClient;
+        _blobClientFactory = blobClientFactory;
     }
 
 
@@ -59,7 +59,7 @@ public class AttachmentService : IAttachmentService
             throw new InvalidOperationException("Unknown file type");
 
         var blobName = $"{Guid.NewGuid()}{extension}";
-        var blobClient = await GetBlobClientAsync(blobName);
+        var blobClient =await _blobClientFactory.GetBlobClientAsync(blobName);
 
         try
         {
@@ -95,7 +95,7 @@ public class AttachmentService : IAttachmentService
         if (attachment == null)
             throw new InvalidOperationException("Attachment not found");
 
-        var blobClient = await GetBlobClientAsync(attachment.FileName);
+        var blobClient = await _blobClientFactory.GetBlobClientAsync(attachment.FileName);
 
         try
         {
@@ -106,13 +106,6 @@ public class AttachmentService : IAttachmentService
         {
             throw new InvalidOperationException("Error downloading file from blob storage", ex);
         }
-    }
-    
-    private async Task<BlobClient> GetBlobClientAsync(string blobName)
-    {
-        var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
-        await blobContainerClient.CreateIfNotExistsAsync();
-        return blobContainerClient.GetBlobClient(blobName);
     }
 
     public async Task<List<AttachmentTypeDto>> GetAllTypesAsync()

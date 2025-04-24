@@ -1,4 +1,5 @@
-﻿using Fragmenta.Api.Contracts;
+﻿using System.Runtime.InteropServices.ComTypes;
+using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Enums;
 using Fragmenta.Dal;
@@ -31,7 +32,7 @@ namespace Fragmenta.Api.Services
 
         public async Task<string?> GenerateTokenAsync(long userId)
         {
-            if (await _context.RefreshTokens.AnyAsync(e => e.UserId == userId && e.RevokedAt == null))
+            if (await _context.RefreshTokens.AnyAsync(e => e.UserId == userId && e.RevokedAt == null && e.ExpiresAt > DateTime.UtcNow))
             {
                 _logger.LogInformation("Cannot generate a refresh token. For user {Id} a valid token already exists", userId);
                 return null;
@@ -74,7 +75,11 @@ namespace Fragmenta.Api.Services
 
         public async Task RevokeTokensAsync(long userId)
         {
-            foreach (var token in _context.RefreshTokens.Where(e => e.UserId == userId && e.RevokedAt == null))
+            var revokedTokens = _context.RefreshTokens.Where(e => e.UserId == userId && e.RevokedAt != null);
+            _context.RemoveRange(revokedTokens);
+            await _context.SaveChangesAsync();
+            
+            foreach (var token in _context.RefreshTokens.Where(e => e.UserId == userId && e.ExpiresAt < DateTime.UtcNow))
             {
                 token.RevokedAt = DateTime.UtcNow;
                 _context.RefreshTokens.Update(token);

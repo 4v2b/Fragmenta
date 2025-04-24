@@ -162,9 +162,7 @@ namespace Fragmenta.Api.Controllers
                 {
                     var token = await resetService.GenerateTokenAsync(userId.Value);
 
-                    var content = MailBodyFormer.CreateResetPasswordTextBody("http://localhost:5173", token, userId.Value);
-
-                    var result = await mailingService.SendEmailAsync(email, content);
+                    var result = await mailingService.SendResetTokenAsync(email, token, userId.Value);
 
                     if (result.IsLocked)
                         return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });
