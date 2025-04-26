@@ -103,7 +103,7 @@ namespace Fragmenta.Api.Controllers
                 if (memberRole == null)
                     return BadRequest();
 
-                if (actorRole == null || !AccessCheck.CanDeleteMember(actorRole.Value, memberRole.Value))
+                if (actorRole == null || (!AccessCheck.CanDeleteMember(actorRole.Value, memberRole.Value) && actorId != memberId))
                     return Forbid();
 
                 if (!await accessService.DeleteMemberAsync(workspaceId, memberId))

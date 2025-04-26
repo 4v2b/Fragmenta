@@ -13,7 +13,7 @@ export function Autocomplete({ addItem, membersBlacklist = [] }) {
     const delayDebounce = setTimeout(() => {
       if (query.trim()) {
         setLoading(true);
-        api.get(`/users/lookup?email=${query}`)
+        api.get(`/lookup-users?email=${query}`)
           .then((data) => setSuggestions(data.filter(fetchedUser =>
             !membersBlacklist.some(memeber => memeber.email === fetchedUser.email)
           )))

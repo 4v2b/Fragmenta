@@ -217,7 +217,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageGuests(role.Value))
+                if (role == null || (!AccessCheck.CanManageGuests(role.Value) && id != guestId ))
                 {
                     return Forbid();
                 }

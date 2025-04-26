@@ -92,6 +92,7 @@ i18n
                             title: "Title",
                             desc: "Description",
                             tags: "Tags",
+                            upload: "Upload",
                             priority: "Prioirity",
                             dueDate: "Due date",
                             assignee: "Assignee",
@@ -113,6 +114,7 @@ i18n
                             cannotUndone: "This action cannot be undone",
                             cancel: "Cancel",
                             save: "Save",
+
                             create: "Create",
                             login: "Login",
                             register: "Register",
@@ -219,6 +221,7 @@ i18n
                             selPriority: "Оберіть приоритет",
                             title: "Назва",
                             desc: "Опис",
+                            upload: "Завантажити",
                             allowedAttachmentTypes: "Дозволені файлові розширення",
                             tags: "Теги",
                             dueDate: "Дедлайн",

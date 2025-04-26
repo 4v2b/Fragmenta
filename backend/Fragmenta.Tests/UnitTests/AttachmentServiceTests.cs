@@ -19,8 +19,7 @@ public class AttachmentServiceTests : UnitTestsBase
 {
  private AttachmentService CreateService(ApplicationContext context, Mock<IBlobClientFactory>? blobFactoryMock = null)
     {
-        var options = Options.Create(new AzureStorageOptions { ContainerName = "test-container" });
-        return new AttachmentService(context, options, blobFactoryMock?.Object ?? Mock.Of<IBlobClientFactory>());
+        return new AttachmentService(context, blobFactoryMock?.Object ?? Mock.Of<IBlobClientFactory>());
     }
 
     [Fact]

@@ -230,6 +230,18 @@ namespace Fragmenta.Api.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        
+        /// <summary>
+        /// Searches for users with given emails
+        /// </summary>
+        /// <response code="200">List of ids and emails of found users</response>
+        [HttpGet("lookup-users")]
+        public async Task<IActionResult> UserLookup([FromQuery]string email, [FromServices] IUserLookupService userService)
+        {
+            var users = await userService.FindByEmailAsync(email);
+
+            return Ok(users);
+        }
 
     }
 }

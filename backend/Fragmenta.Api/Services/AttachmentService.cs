@@ -14,12 +14,10 @@ using Fragmenta.Api.Dtos;
 public class AttachmentService : IAttachmentService
 {
     private readonly ApplicationContext _context;
-    private readonly AzureStorageOptions _options;
     private readonly IBlobClientFactory _blobClientFactory;
 
-    public AttachmentService(ApplicationContext context, IOptions<AzureStorageOptions> blobStorageConfig, IBlobClientFactory blobClientFactory)
+    public AttachmentService(ApplicationContext context,  IBlobClientFactory blobClientFactory)
     {
-        _options = blobStorageConfig?.Value ?? throw new ArgumentNullException(nameof(blobStorageConfig));
         _context = context;
         _blobClientFactory = blobClientFactory;
     }
@@ -34,12 +32,28 @@ public class AttachmentService : IAttachmentService
         }).ToListAsync();
     }
 
-    public Task<bool> DeleteAttachmentAsync(long attachmentId)
+    public async Task<bool> DeleteAttachmentAsync(long attachmentId)
     {
-        throw new NotImplementedException();
+        var attachment = await _context.Attachments.FindAsync(attachmentId);
+        if (attachment == null)
+            return false;
+
+        try
+        {
+            var blobClient = await _blobClientFactory.GetBlobClientAsync(attachment.FileName);
+            await blobClient.DeleteAsync();
+
+            _context.Attachments.Remove(attachment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
-    public async Task<Attachment> UploadAttachmentAsync(IFormFile file, long taskId)
+    public async Task<AttachmentDto> UploadAttachmentAsync(IFormFile file, long taskId)
     {
         var task = await _context.Tasks.FindAsync(taskId);
         if (task == null) throw new InvalidOperationException("Task not found");
@@ -86,7 +100,14 @@ public class AttachmentService : IAttachmentService
         _context.Attachments.Add(attachment);
         await _context.SaveChangesAsync();
 
-        return attachment;
+        return new AttachmentDto
+        {
+            Id = attachment.Id,
+            FileName = attachment.FileName,
+            OriginalName = attachment.OriginalName,
+            SizeBytes = attachment.SizeBytes,
+            CreatedAt = attachment.CreatedAt
+        };;
     }
 
     public async Task<Stream> DownloadAttachmentAsync(long attachmentId)

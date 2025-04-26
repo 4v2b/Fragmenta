@@ -9,18 +9,20 @@ namespace Fragmenta.Api.Services;
 public class EmailHttpClient : IEmailHttpClient
 {
     private readonly SmtpOptions _options;
-    private readonly HttpClient _client;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public EmailHttpClient(IOptions<SmtpOptions> options, HttpClient client)
+    public EmailHttpClient(IOptions<SmtpOptions> options, IHttpClientFactory httpClientFactory)
     {
+        _httpClientFactory = httpClientFactory;
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
-        _client = client;
     }
 
     public async Task<HttpResponseMessage> SendEmailAsync(string toEmail, string subject, string content, bool isPlainText = true)
     {
-        _client.DefaultRequestHeaders.Clear();
-        _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.ApiKey}");
+        var client = _httpClientFactory.CreateClient();
+        
+        client.DefaultRequestHeaders.Clear();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.ApiKey}");
 
         var payload = new
         {
@@ -32,6 +34,6 @@ public class EmailHttpClient : IEmailHttpClient
         };
 
         var jsonContent = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        return await _client.PostAsync(_options.RequestUrl, jsonContent);
+        return await client.PostAsync(_options.RequestUrl, jsonContent);
     }
 }

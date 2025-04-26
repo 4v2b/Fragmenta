@@ -89,9 +89,11 @@ namespace Fragmenta.Api.Services
                     .Where(e => e.UserId == userId && e.Board.WorkspaceId == workspaceId);
 
                 _context.RemoveRange(boardAccesses);
-                
-                // TODO Can be deleted ???
                 await _context.SaveChangesAsync();
+            }
+            else
+            {
+                await _context.Tasks.Where(t => t.AssigneeId == userId).ForEachAsync(t => t.Assignee = null);
             }
 
             _context.Remove(access);

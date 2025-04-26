@@ -1,6 +1,6 @@
 import { useWorkspace } from "@/utils/WorkspaceContext"
-import {  Stack, Text, Button, Input, CloseButton, Textarea } from "@chakra-ui/react"
-import { useState } from "react"
+import { Stack, Text, Button, Input, CloseButton, Textarea } from "@chakra-ui/react"
+import { useEffect, useState } from "react"
 import { Field } from "./ui/field"
 import { Field as InputField } from "@chakra-ui/react"
 import { TagSelector } from "./TagSelector"
@@ -10,16 +10,25 @@ import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import { Checkbox } from "@chakra-ui/react"
 import { FileManager } from "./FileManager"
+import { api } from "@/api/fetchClient"
+import { useParams } from "react-router"
 
 // BUG - Data in message box stays after exit
 
 export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
     const { t, i18n } = useTranslation()
+    const { workspaceId, boardId } = useParams()
     const { members } = useWorkspace()
     const [error, setError] = useState(false)
     const [selectDueDate, setSelectDueDate] = useState(task?.dueDate ? true : false)
     const [selectedTags, setSelectedTags] = useState([])
     const [newTask, setNewTask] = useState(task)
+    const [attachments, setAttachments] = useState([])
+
+    useEffect(() => {
+
+        api.get(`/attachments?taskId=${task.id}`, workspaceId).then(res => setAttachments(res))
+    }, []);
 
     const priorities = [0, 1, 2, 3]
 
@@ -30,6 +39,28 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             tagsId: selectedTags.map(e => e.id),
             dueDate: selectDueDate ? newTask?.dueDate : null
         })
+    }
+
+    function handleFileUpload(file) {
+
+        const formData = new FormData()
+
+        formData.append("file", file);
+        console.log(file)
+        api.postFormData(`/attachments?taskId=${task.id}`, formData, workspaceId).then(res => console.log(res))
+
+        // try {
+        //     const response = await fetch("/upload", {
+        //         method: "POST",
+        //         body: formData,
+        //     });
+
+        //     if (!response.ok) throw new Error("Upload failed");
+
+        //     toaster.create({ title: t("fields.labels.uploadSuccess"), type: "success" });
+        // } catch (error) {
+        //     toaster.create({ title: t("fields.labels.uploadError"), type: "error" });
+        // }
     }
 
     return <Stack spacing={4}>
@@ -97,6 +128,10 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                 minDate={new Date(Date.now())}
             />
         </Field>
+
+        <FileManager allowedTypes={[".txt"]} onUpload={handleFileUpload} />
+
+
 
         {/* <Field label={t("fields.labels.assignee")}>
                         {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>

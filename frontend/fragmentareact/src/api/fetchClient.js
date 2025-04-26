@@ -42,7 +42,9 @@ async function fetchWithJwtBearer(url, options = {}) {
     const accessToken = localStorage.getItem("accessToken");
 
     if (!options.headers) options.headers = {};
-    options.headers["Content-Type"] = "application/json";
+
+    if(options.headers["Content-Type"] != "formdata")
+        options.headers["Content-Type"] = "application/json";
 
     options.headers["Authorization"] = `Bearer ${accessToken}`;
 
@@ -114,6 +116,14 @@ export const api = {
         } : {},
         method: 'POST',
         body: JSON.stringify(data)
+    }),
+    postFormData: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
+        headers: workspaceId ? {
+            "Content-Type" : "formdata",
+            "X-Workspace-Id": workspaceId
+        } : {},
+        method: 'POST',
+        body: data
     }),
     put: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
         headers: workspaceId ? {

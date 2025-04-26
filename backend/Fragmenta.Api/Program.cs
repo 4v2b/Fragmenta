@@ -81,9 +81,12 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-builder.Services.AddDbContext<ApplicationContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<ApplicationContext>(
+        options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    );
+}
 
 var jwtOptionsSection = builder.Configuration.GetRequiredSection("Jwt");
 
@@ -152,12 +155,15 @@ builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IBoardAccessService, BoardAccessService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserLookupService, UserLookupService>();
-builder.Services.AddScoped<IEmailHttpClient, EmailHttpClient>();
+
 builder.Services.AddScoped<IRefreshTokenLookupService, RefreshTokenLookupService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
+builder.Services.AddHttpClient();
 
+builder.Services.AddSingleton<IEmailHttpClient, EmailHttpClient>();
+builder.Services.AddSingleton<IBlobClientFactory, BlobClientFactory>();
 builder.Services.AddSingleton<IHashingService, Sha256HashingService>();
 builder.Services.AddHostedService<BoardCleanupBackgroundService>();
 
@@ -165,10 +171,12 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+var migrate = builder.Configuration.GetValue<bool>("MigrateDatabaseOnStartup");
+
+if (migrate)
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationContext>();
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
     context.Database.Migrate();
 }
 
@@ -192,18 +200,9 @@ app.UseCors("AllowReactApp");
 
 app.UseAuthorization();
 
-app.Use(async (context, next) =>
-{
-    var token = context.Request.Cookies["accessToken"];
-    if (token != null)
-    {
-        context.Request.Headers.Authorization = $"Bearer {token}";
-    }
-
-    await next();
-});
-
 app.MapControllers();
 app.MapHub<BoardHub>("/hub/board");
 
 app.Run();
+
+public partial class Program { }

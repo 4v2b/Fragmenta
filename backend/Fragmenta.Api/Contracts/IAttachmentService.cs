@@ -11,7 +11,7 @@ namespace Fragmenta.Api.Contracts
         
         Task<bool> DeleteAttachmentAsync(long attachmentId);
 
-        Task<Attachment> UploadAttachmentAsync(IFormFile file, long taskId);
+        Task<AttachmentDto> UploadAttachmentAsync(IFormFile file, long taskId);
 
         Task<Stream> DownloadAttachmentAsync(long attachmentId);
 
