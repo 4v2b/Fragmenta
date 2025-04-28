@@ -19,6 +19,8 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseEnvironment("Testing");
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -85,12 +87,11 @@ builder.Services.AddDbContext<ApplicationContext>(
     options =>
     {
         var isTesting = builder.Environment.IsEnvironment("Testing");
-        if(!isTesting || (isTesting && builder.Configuration.GetValue<bool>("UseMsSql")))
+        if (!isTesting || (isTesting && builder.Configuration.GetValue<bool>("DatabaseOptions:UseMsSql")))
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
         }
     }
-       
 );
 
 var jwtOptionsSection = builder.Configuration.GetRequiredSection("Jwt");
@@ -173,18 +174,26 @@ builder.Services.AddSingleton<IBlobClientFactory, BlobClientFactory>();
 builder.Services.AddSingleton<IHashingService, Sha256HashingService>();
 builder.Services.AddHostedService<BoardCleanupBackgroundService>();
 
+builder.Services.AddScoped<DatabaseSeeder>();
+
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 var app = builder.Build();
 
-var migrate = builder.Configuration.GetValue<bool>("MigrateDatabaseOnStartup");
+var migrate = builder.Configuration.GetValue<bool>("DatabaseOptions:MigrateDatabaseOnStartup");
+
+
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
 
 if (migrate)
 {
-    using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
     context.Database.Migrate();
 }
+
+await seeder.SeedIfNeededAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -211,4 +220,6 @@ app.MapHub<BoardHub>("/hub/board");
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

@@ -1,98 +1,54 @@
-﻿using System.Text;
-using Azure;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Fragmenta.Api.Contracts;
-using Fragmenta.Api.Controllers;
-using Fragmenta.Api.Services;
+﻿using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Utils;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
-using Fragmenta.Tests.Fakes; // заміни на свій namespace
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Moq;
+using Microsoft.EntityFrameworkCore;
 using Task = System.Threading.Tasks.Task;
 
-namespace Fragmenta.Tests.IntegrationTests
+namespace Fragmenta.Api.Services;
+
+public class DatabaseSeeder
 {
-    public class TestWebApplicationFactory : WebApplicationFactory<Program>
+    private readonly ApplicationContext _context;
+    private readonly IConfiguration _configuration;
+    private readonly IHashingService _hasher;
+
+    public DatabaseSeeder(ApplicationContext context, IConfiguration configuration, IHashingService hasher)
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
-        {
-            builder.UseEnvironment("Testing");
+        _context = context;
+        _configuration = configuration;
+        _hasher = hasher;
+    }
 
-            builder.ConfigureAppConfiguration((context, configBuilder) =>
-            {
-                configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["DatabaseOptions:MigrateDatabaseOnStartup"] = "false",
-                    ["DatabaseOptions:UseMsSql"] = "false",
-                });
-            });
+    public async Task SeedIfNeededAsync()
+    {
+        bool shouldSeed = _configuration.GetValue<bool>("DatabaseOptions:SeedTestData");
+        
+        if (!shouldSeed)
+            return;
+            
+        // Check if already seeded
+        if (await _context.Users.AnyAsync())
+            return;
+            
+        // Create test users with hashed passwords
+        await SeedUsersAsync();
+        
+        // Add other seed methods
+    }
+    
+    private async Task SeedUsersAsync()
+    {
+        var salt = SaltGenerator.GenerateSalt();
 
-            builder.ConfigureServices(services =>
-            {
-                services.RemoveAll<ApplicationContext>();
-                services.RemoveAll<DbContextOptions<ApplicationContext>>();
-                services.AddDbContext<ApplicationContext>(options => { options.UseInMemoryDatabase("TestDb"); });
-                
-                services.RemoveAll<IEmailHttpClient>();
-                services.AddScoped<IEmailHttpClient, FakeEmailHttpClient>();
+            _context.Users.RemoveRange(_context.Users);
 
-                services.RemoveAll<IBlobClientFactory>();
-                var mockBlobClient = new Mock<BlobClient>();
-                mockBlobClient
-                    .Setup(b => b.UploadAsync(It.IsAny<Stream>(), It.IsAny<BlobUploadOptions>(),
-                        It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
-                mockBlobClient
-                    .Setup(b => b.DownloadAsync(It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(Response.FromValue(
-                        BlobsModelFactory.BlobDownloadInfo(
-                            content: new MemoryStream(Encoding.UTF8.GetBytes("fake content"))),
-                        Mock.Of<Response>()));
-
-                services.AddSingleton<IBlobClientFactory>(new FakeBlobClientFactory(mockBlobClient.Object));
-                
-                services.AddAuthentication(options =>
-                    {
-                        options.DefaultAuthenticateScheme = "Test";
-                        options.DefaultChallengeScheme = "Test";
-                        options.DefaultScheme = "Test";
-                    })
-                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
-                
-                var sp = services.BuildServiceProvider();
-                using var scope = sp.CreateScope();
-                var scopedServices = scope.ServiceProvider;
-                var db = scopedServices.GetRequiredService<ApplicationContext>();
-                var passwordHasher = scopedServices.GetRequiredService<IHashingService>();
-
-                db.Database.EnsureCreated();
-                SeedTestData(db, passwordHasher);
-            });
-        }
-
-
-        private void SeedTestData(ApplicationContext context, IHashingService hasher)
-        {
-            var salt = SaltGenerator.GenerateSalt();
-
-            context.Users.RemoveRange(context.Users);
-
-            context.Users.AddRange(new User
+            _context.Users.AddRange(new User
                 {
                     Id = 1,
                     Name = "testuser1",
                     Email = "test1@example.com",
-                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordHash = _hasher.Hash("Password1234", salt),
                     PasswordSalt = salt
                 },
                 new User
@@ -100,7 +56,7 @@ namespace Fragmenta.Tests.IntegrationTests
                     Id = 2,
                     Name = "testuser2",
                     Email = "test2@example.com",
-                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordHash = _hasher.Hash("Password1234", salt),
                     PasswordSalt = salt
                 },
                 new User
@@ -108,7 +64,7 @@ namespace Fragmenta.Tests.IntegrationTests
                     Id = 3,
                     Name = "testuser3",
                     Email = "test3@example.com",
-                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordHash = _hasher.Hash("Password1234", salt),
                     PasswordSalt = salt
                 },
                 new User
@@ -116,7 +72,7 @@ namespace Fragmenta.Tests.IntegrationTests
                     Id = 4,
                     Name = "testuser4",
                     Email = "test4@example.com",
-                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordHash = _hasher.Hash("Password1234", salt),
                     PasswordSalt = salt
                 },
                 new User
@@ -124,7 +80,7 @@ namespace Fragmenta.Tests.IntegrationTests
                     Id = 5,
                     Name = "testuser5",
                     Email = "test5@example.com",
-                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordHash = _hasher.Hash("Password1234", salt),
                     PasswordSalt = salt
                 },
                 new User
@@ -132,11 +88,11 @@ namespace Fragmenta.Tests.IntegrationTests
                     Id = 6,
                     Name = "testuser6",
                     Email = "test6@example.com",
-                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordHash = _hasher.Hash("Password1234", salt),
                     PasswordSalt = salt
                 });
 
-            context.WorkspaceAccesses.AddRange(new WorkspaceAccess()
+            _context.WorkspaceAccesses.AddRange(new WorkspaceAccess()
                 {
                     Workspace = new Workspace() { Name = "Workspace 1", Id = 1 },
                     RoleId = 1,
@@ -178,15 +134,15 @@ namespace Fragmenta.Tests.IntegrationTests
                     RoleId = 4,
                     UserId = 6
                 });
-            context.BoardAccesses.Add(new BoardAccess() { BoardId = 1, UserId = 6 });
-            context.ResetTokens.Add(new ResetToken()
+            _context.BoardAccesses.Add(new BoardAccess() { BoardId = 1, UserId = 6 });
+            _context.ResetTokens.Add(new ResetToken()
             {
                 UserId = 2, Id = 10,
-                TokenHash = hasher.Hash("valid-reset-token"), CreatedAt = DateTime.UtcNow,
+                TokenHash = _hasher.Hash("valid-reset-token"), CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(1)
             });
 
-            context.Boards.AddRange(
+            _context.Boards.AddRange(
                 new Board()
                 {
                     Name = "Board",
@@ -279,7 +235,6 @@ namespace Fragmenta.Tests.IntegrationTests
                     ArchivedAt = DateTime.UtcNow.AddDays(-1)
                 });
 
-            context.SaveChanges();
-        }
+            await _context.SaveChangesAsync();
     }
 }
