@@ -6,6 +6,7 @@ using Fragmenta.Dal.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Role = Fragmenta.Api.Enums.Role;
 
 namespace Fragmenta.Api.Controllers
 {
@@ -103,7 +104,9 @@ namespace Fragmenta.Api.Controllers
                 if (memberRole == null)
                     return BadRequest();
 
-                if (actorRole == null || (!AccessCheck.CanDeleteMember(actorRole.Value, memberRole.Value) && actorId != memberId))
+                if (actorRole == null 
+                        || (!AccessCheck.CanDeleteMember(actorRole.Value, memberRole.Value) && actorId != memberId)
+                        || (actorId == memberId && actorRole.Value == Role.Owner))
                     return Forbid();
 
                 if (!await accessService.DeleteMemberAsync(workspaceId, memberId))
@@ -170,7 +173,7 @@ namespace Fragmenta.Api.Controllers
                 if (actorRole == null || !AccessCheck.CanGrantAdminPermission(actorRole.Value, memberRole.Value))
                     return Forbid();
 
-                if (! await accessService.RevokeAdminPermissionAsync(workspaceId, memberId))
+                if (! await accessService.GrantAdminPermissionAsync(workspaceId, memberId))
                     return BadRequest();
 
                 return NoContent();

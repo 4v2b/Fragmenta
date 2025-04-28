@@ -50,28 +50,6 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
 
-        [HttpGet("{taskId}")]
-        public async Task<IActionResult> GetTask([FromQuery] long taskId, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
-        {
-            var id = GetAuthenticatedUserId();
-
-            if (long.TryParse(HttpContext.Items["WorkspaceId"]?.ToString(), out long workspaceId) && id != null)
-            {
-                var role = await accessService.GetRoleAsync(workspaceId, id.Value);
-
-                if (role == null)
-                {
-                    return Forbid();
-                }
-
-                var result = await taskService.GetTaskAsync(taskId);
-
-                return Ok(result);
-            }
-
-            return Unauthorized("User was not found");
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromQuery] long statusId, [FromBody] CreateOrUpdateTaskRequest request, [FromServices] ITaskService taskService, [FromServices] IWorkspaceAccessService accessService)
         {

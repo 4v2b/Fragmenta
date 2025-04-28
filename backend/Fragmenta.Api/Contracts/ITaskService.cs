@@ -6,8 +6,6 @@ namespace Fragmenta.Api.Contracts
     {
         Task<List<TaskPreviewDto>> GetTasksAsync(long boardId);
 
-        Task<TaskPreviewDto?> GetTaskAsync(long taskId);
-
         Task<bool> UpdateTaskAsync(long taskId, UpdateTaskRequest request);
 
         Task<bool> DeleteTaskAsync(long taskId);

@@ -16,5 +16,7 @@ namespace Fragmenta.Api.Contracts
         Task<Stream> DownloadAttachmentAsync(long attachmentId);
 
         Task<List<AttachmentDto>> GetAttachmentPreviewsAsync(long taskId);
+
+        Task<AttachmentDto?> GetAttachmentPreviewAsync(long attachmentId);
     }
 }

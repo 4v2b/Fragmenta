@@ -31,6 +31,19 @@ public class AttachmentService : IAttachmentService
             SizeBytes = a.SizeBytes
         }).ToListAsync();
     }
+    
+    public async Task<AttachmentDto?> GetAttachmentPreviewAsync(long attachmentId)
+    {
+        var entity = await _context.Attachments.FindAsync(attachmentId);
+
+        return entity is null
+            ? null
+            : new AttachmentDto()
+            {
+                CreatedAt = entity.CreatedAt, Id = entity.Id, FileName = entity.FileName, OriginalName = entity.OriginalName,
+                SizeBytes = entity.SizeBytes
+            };
+    }
 
     public async Task<bool> DeleteAttachmentAsync(long attachmentId)
     {
@@ -68,7 +81,7 @@ public class AttachmentService : IAttachmentService
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var fileType = await _context.AttachmentTypes
-            .FirstOrDefaultAsync(t => t.Value.Equals(extension, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefaultAsync(t => t.Value.Equals(extension));
         if (fileType == null)
             throw new InvalidOperationException("Unknown file type");
 
@@ -107,7 +120,7 @@ public class AttachmentService : IAttachmentService
             OriginalName = attachment.OriginalName,
             SizeBytes = attachment.SizeBytes,
             CreatedAt = attachment.CreatedAt
-        };;
+        };
     }
 
     public async Task<Stream> DownloadAttachmentAsync(long attachmentId)

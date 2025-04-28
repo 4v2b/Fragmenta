@@ -37,14 +37,11 @@ function logout() {
     window.location.href = "/login"; // Redirect to login page
 }
 
-async function fetchWithJwtBearer(url, options = {}) {
+async function fetchWithJwtBearer(url, options = {}, isBlob = false) {
 
     const accessToken = localStorage.getItem("accessToken");
 
     if (!options.headers) options.headers = {};
-
-    if(options.headers["Content-Type"] != "formdata")
-        options.headers["Content-Type"] = "application/json";
 
     options.headers["Authorization"] = `Bearer ${accessToken}`;
 
@@ -76,8 +73,10 @@ async function fetchWithJwtBearer(url, options = {}) {
     if (response.status == 204) {
         return { status: response.status }
     }
+
+    console.log(response)
     
-    return await response.json()
+    return isBlob ? {blob: await response.blob(), contentDisposition: response.headers.get('Content-Disposition') } : await response.json()
 };
 
 export async function refreshToken() {
@@ -107,11 +106,19 @@ export async function refreshToken() {
 export const api = {
     get: (url, workspaceId = null) => fetchWithJwtBearer(url, {
         headers: workspaceId ? {
+            "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
         } : {}
     }),
+    getBlob: (url, workspaceId = null) => fetchWithJwtBearer(url, {
+        headers: workspaceId ? {
+            "Content-Type": "application/json",
+            "X-Workspace-Id": workspaceId
+        } : {}
+    }, true),
     post: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
         headers: workspaceId ? {
+            "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
         } : {},
         method: 'POST',
@@ -119,7 +126,6 @@ export const api = {
     }),
     postFormData: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
         headers: workspaceId ? {
-            "Content-Type" : "formdata",
             "X-Workspace-Id": workspaceId
         } : {},
         method: 'POST',
@@ -127,6 +133,7 @@ export const api = {
     }),
     put: (url, data, workspaceId = null) => fetchWithJwtBearer(url, {
         headers: workspaceId ? {
+            "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
         } : {},
         method: 'PUT',
@@ -135,6 +142,7 @@ export const api = {
     delete:
         (url, workspaceId = null) => fetchWithJwtBearer(url, {
             headers: workspaceId ? {
+                "Content-Type": "application/json",
                 "X-Workspace-Id": workspaceId
             } : {},
             method: 'DELETE'

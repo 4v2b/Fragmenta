@@ -98,11 +98,6 @@ namespace Fragmenta.Api.Services
             return true;
         }
 
-        public async Task<TaskPreviewDto?> GetTaskAsync(long taskId)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<TaskPreviewDto>> GetTasksAsync(long boardId)
         {
             return await _context.Tasks

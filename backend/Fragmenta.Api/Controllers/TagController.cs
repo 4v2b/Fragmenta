@@ -96,7 +96,7 @@ namespace Fragmenta.Api.Controllers
                     return NoContent();
                 }
 
-                return BadRequest();
+                return NotFound();
             }
 
             return Unauthorized("User was not found");

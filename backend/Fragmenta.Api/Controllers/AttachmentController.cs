@@ -5,6 +5,7 @@ using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Fragmenta.Api.Controllers
 {
@@ -89,7 +90,7 @@ namespace Fragmenta.Api.Controllers
                 {
                     var attachment = await attachmentService.UploadAttachmentAsync(file, taskId);
 
-                    return CreatedAtAction(nameof(DownloadAttachment), attachment);
+                    return CreatedAtAction(nameof(UploadAttachment), attachment);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -100,7 +101,7 @@ namespace Fragmenta.Api.Controllers
             return Unauthorized("User was not found");
         }
 
-// Download attachment
+        // Download attachment
         [HttpGet("attachments/{attachmentId}")]
         public async Task<IActionResult> DownloadAttachment(long attachmentId,
             [FromServices] IAttachmentService attachmentService, [FromServices] IWorkspaceAccessService accessService)
@@ -118,13 +119,21 @@ namespace Fragmenta.Api.Controllers
 
                 try
                 {
+                   
+                    
                     var stream = await attachmentService.DownloadAttachmentAsync(attachmentId);
-                    var attachmentInfo = await attachmentService.GetAttachmentPreviewsAsync(attachmentId);
+                    var attachmentInfo = await attachmentService.GetAttachmentPreviewAsync(attachmentId);
 
-                    if (attachmentInfo == null || !attachmentInfo.Any())
+                    if (attachmentInfo == null)
                         return NotFound("Attachment not found");
-
-                    return File(stream, "application/octet-stream", attachmentInfo.First().OriginalName);
+                    
+                    var provider = new FileExtensionContentTypeProvider();
+                    if (!provider.TryGetContentType(attachmentInfo.OriginalName, out var contentType))
+                    {
+                        contentType = "application/octet-stream";
+                    }
+                    Response.Headers.Append("Access-Control-Expose-Headers", "Content-Disposition");
+                    return File(stream, contentType, attachmentInfo.OriginalName);
                 }
                 catch (InvalidOperationException ex)
                 {

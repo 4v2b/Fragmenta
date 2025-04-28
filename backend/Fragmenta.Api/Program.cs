@@ -81,12 +81,17 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-if (!builder.Environment.IsEnvironment("Testing"))
-{
-    builder.Services.AddDbContext<ApplicationContext>(
-        options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    );
-}
+builder.Services.AddDbContext<ApplicationContext>(
+    options =>
+    {
+        var isTesting = builder.Environment.IsEnvironment("Testing");
+        if(!isTesting || (isTesting && builder.Configuration.GetValue<bool>("UseMsSql")))
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        }
+    }
+       
+);
 
 var jwtOptionsSection = builder.Configuration.GetRequiredSection("Jwt");
 
@@ -134,8 +139,9 @@ builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection
 
 builder.Services.AddSingleton<BlobServiceClient>(sp =>
 {
-    var options = sp.GetRequiredService<IOptions<AzureStorageOptions>>().Value;
-    return new BlobServiceClient(options.ConnectionString);
+    var connectionString = sp.GetRequiredService<IOptions<AzureStorageOptions>>().Value.ConnectionString;
+    var options = new BlobClientOptions(BlobClientOptions.ServiceVersion.V2023_01_03);
+    return new BlobServiceClient(connectionString, options);
 });
 
 builder.Services.AddScoped<WorkspaceFilter>();

@@ -32,7 +32,7 @@ namespace Fragmenta.Api.Services
 
         public async Task<string?> GenerateTokenAsync(long userId)
         {
-            if (await _context.RefreshTokens.AnyAsync(e => e.UserId == userId && e.RevokedAt == null && e.ExpiresAt > DateTime.UtcNow))
+            if (await _context.RefreshTokens.AnyAsync(e => e.UserId == userId && e.RevokedAt == null))
             {
                 _logger.LogInformation("Cannot generate a refresh token. For user {Id} a valid token already exists", userId);
                 return null;
@@ -79,16 +79,13 @@ namespace Fragmenta.Api.Services
             _context.RemoveRange(revokedTokens);
             await _context.SaveChangesAsync();
             
-            foreach (var token in _context.RefreshTokens.Where(e => e.UserId == userId && e.ExpiresAt < DateTime.UtcNow))
+            foreach (var token in _context.RefreshTokens.Where(e => e.UserId == userId))
             {
                 token.RevokedAt = DateTime.UtcNow;
                 _context.RefreshTokens.Update(token);
             }
             await _context.SaveChangesAsync();
         }
-
-        
-        // TODO Reveiw implementation
         
         public async Task<RefreshTokenStatus> VerifyTokenAsync(string refreshToken, long userId)
         {

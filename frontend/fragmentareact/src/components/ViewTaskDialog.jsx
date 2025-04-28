@@ -1,5 +1,5 @@
 import { useWorkspace } from "@/utils/WorkspaceContext"
-import { Stack, Text, Button, Input, CloseButton, Textarea } from "@chakra-ui/react"
+import { Stack, Text, Button, Input, CloseButton, Textarea, Box, Card, HStack } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Field } from "./ui/field"
 import { Field as InputField } from "@chakra-ui/react"
@@ -12,6 +12,9 @@ import { Checkbox } from "@chakra-ui/react"
 import { FileManager } from "./FileManager"
 import { api } from "@/api/fetchClient"
 import { useParams } from "react-router"
+import { MdOutlineFileDownload } from "react-icons/md"
+import { FaTrashCan } from "react-icons/fa6"
+import { AlertDialog } from "./AlertDialog"
 
 // BUG - Data in message box stays after exit
 
@@ -61,6 +64,31 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         // } catch (error) {
         //     toaster.create({ title: t("fields.labels.uploadError"), type: "error" });
         // }
+    }
+
+    async function handleDownload(id) {
+        const response = await api.getBlob(`/attachments/${id}`, workspaceId);
+        const blob = response.blob;
+        const contentDisposition = response.contentDisposition;
+        const downloadUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+
+        const fileNameMatch = contentDisposition?.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        const fileName = fileNameMatch ? fileNameMatch[1].replace(/['"]/g, '') : 'downloaded_file';
+
+        console.log(contentDisposition)
+
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(downloadUrl);
+    }
+
+    function deleteAttachment(id) {
+        api.delete(`/attachments/${id}`, workspaceId).then(() => setAttachments(attachments.filter(a => a.id != id)));
     }
 
     return <Stack spacing={4}>
@@ -129,7 +157,33 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             />
         </Field>
 
-        <FileManager allowedTypes={[".txt"]} onUpload={handleFileUpload} />
+        <Box>
+            <Stack>
+                {attachments.map(a => (
+                    <Box key={a.id}>
+                        <HStack spacing="2">
+                            <Text fontWeight="bold">{a.originalName}</Text>
+                            {/* <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString()}</Text> */}
+                            <Text fontSize="sm">{(a.sizeBytes / 1024).toFixed(2)} KB</Text>
+                            <Button onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
+
+                            <AlertDialog
+                                onConfirm={() => deleteAttachment(a.id)}
+                                base={<Button><FaTrashCan /></Button>}
+                                message="Are you sure you want to delete this status?"
+                                title="Confirm Deletion"
+                                confirmMessage="Delete"
+                                cancelMessage="Cancel"
+                            />
+
+
+                        </HStack>
+                    </Box>
+                ))}
+            </Stack>
+            <FileManager allowedTypes={[".txt"]} onUpload={handleFileUpload} />
+        </Box>
+       
 
 
 

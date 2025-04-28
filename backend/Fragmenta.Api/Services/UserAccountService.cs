@@ -59,10 +59,12 @@ namespace Fragmenta.Api.Services
             var user = await _context.Users.SingleOrDefaultAsync(e => e.Id == userId)
                        ?? throw new ArgumentException("No user found with given id", nameof(userId));
 
-            if (_hasher.Verify(password, user.PasswordHash, user.PasswordSalt))
+            var result = await _context.WorkspaceAccesses.AnyAsync(w => w.UserId == userId);
+            
+            if (!result && _hasher.Verify(password, user.PasswordHash, user.PasswordSalt))
             {
                 _context.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return true;
             }

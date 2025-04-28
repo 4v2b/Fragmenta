@@ -5,6 +5,7 @@ using Azure.Storage.Blobs.Models;
 using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Controllers;
 using Fragmenta.Api.Services;
+using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,111 +20,47 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using Task = System.Threading.Tasks.Task;
 
-namespace Fragmenta.Api.Tests.IntegrationTests
+namespace Fragmenta.Tests.IntegrationTests
 {
     public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Testing");
-            
+
             builder.ConfigureAppConfiguration((context, configBuilder) =>
             {
                 configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["MigrateDatabaseOnStartup"] = "false"
+                    ["MigrateDatabaseOnStartup"] = "false",
+                    ["UseMsSql"] = "false",
                 });
             });
-            
+
             builder.ConfigureServices(services =>
             {
-                var contextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(ApplicationContext));
-                if (contextDescriptor != null)
-                    services.Remove(contextDescriptor);
-            
-                var optionsDescriptor = services.SingleOrDefault(d => 
-                    d.ServiceType == typeof(DbContextOptions<ApplicationContext>));
-                if (optionsDescriptor != null)
-                    services.Remove(optionsDescriptor);
-
-
-                services.RemoveAll<IUserAccountService>();
-                services.RemoveAll<IWorkspaceService>();
-                services.RemoveAll<IWorkspaceAccessService>();
-                services.RemoveAll<IRefreshTokenService>();
-                services.RemoveAll<IBoardService>();
-                services.RemoveAll<IStatusService>();
-                services.RemoveAll<ITaskService>();
-                services.RemoveAll<ITagService>();
-                services.RemoveAll<IResetTokenService>();
-                services.RemoveAll<IMailingService>();
-                services.RemoveAll<IAttachmentService>();
-                services.RemoveAll<IBoardAccessService>();
-                services.RemoveAll<IAuthService>();
-                services.RemoveAll<IUserLookupService>();
-                services.RemoveAll<IRefreshTokenLookupService>();
+                services.RemoveAll<ApplicationContext>();
+                services.RemoveAll<DbContextOptions<ApplicationContext>>();
+                services.AddDbContext<ApplicationContext>(options => { options.UseInMemoryDatabase("TestDb"); });
+                
                 services.RemoveAll<IEmailHttpClient>();
-
-                services.RemoveAll<IHostedService>(); // Видалити HostedService, інакше BoardCleanupBackgroundService буде валити через старий контекст
-                
-// Реєструємо сервіси заново
-                services.AddScoped<IUserAccountService, UserAccountService>();
-                services.AddScoped<IWorkspaceService, WorkspaceService>();
-                services.AddScoped<IWorkspaceAccessService, WorkspaceAccessService>();
-                services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-                services.AddScoped<IBoardService, BoardService>();
-                services.AddScoped<IStatusService, StatusService>();
-                services.AddScoped<ITaskService, TaskService>();
-                services.AddScoped<ITagService, TagService>();
-                services.AddScoped<IResetTokenService, ResetTokenService>();
-                services.AddScoped<IMailingService, MailingService>();
-                services.AddScoped<IAttachmentService, AttachmentService>();
-                services.AddScoped<IBoardAccessService, BoardAccessService>();
-                services.AddScoped<IAuthService, AuthService>();
-                services.AddScoped<IUserLookupService, UserLookupService>();
-                services.AddScoped<IRefreshTokenLookupService, RefreshTokenLookupService>();
-
-                // Додати фейкові сервіси
                 services.AddScoped<IEmailHttpClient, FakeEmailHttpClient>();
-                
-                var blobFactoryDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IBlobClientFactory));
-                if (blobFactoryDescriptor != null)
-                {
-                    services.Remove(blobFactoryDescriptor);
-                }
 
-                // Створити моки
+                services.RemoveAll<IBlobClientFactory>();
                 var mockBlobClient = new Mock<BlobClient>();
                 mockBlobClient
-                    .Setup(b => b.UploadAsync(It.IsAny<Stream>(), It.IsAny<BlobUploadOptions>(), It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(Mock.Of<Response<BlobContentInfo>>()));
-
+                    .Setup(b => b.UploadAsync(It.IsAny<Stream>(), It.IsAny<BlobUploadOptions>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(Mock.Of<Response<BlobContentInfo>>());
                 mockBlobClient
                     .Setup(b => b.DownloadAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Response.FromValue(
-                        BlobsModelFactory.BlobDownloadInfo(content: new MemoryStream(Encoding.UTF8.GetBytes("fake content"))),
+                        BlobsModelFactory.BlobDownloadInfo(
+                            content: new MemoryStream(Encoding.UTF8.GetBytes("fake content"))),
                         Mock.Of<Response>()));
 
-                // Реєстрація фейкового IBlobClientFactory
                 services.AddSingleton<IBlobClientFactory>(new FakeBlobClientFactory(mockBlobClient.Object));
-
-                // Реєструємо InMemory БД
-                services.AddDbContext<ApplicationContext>(options =>
-                {
-                    options.UseInMemoryDatabase("TestDb");
-                });
                 
-                var sp = services.BuildServiceProvider();
-                using (var scope = sp.CreateScope())
-                {
-                    var scopedServices = scope.ServiceProvider;
-                    var db = scopedServices.GetRequiredService<ApplicationContext>();
-                
-                    db.Database.EnsureCreated();
-                    SeedTestData(db);
-                }
-
-                // Підміна автентифікації
                 services.AddAuthentication(options =>
                     {
                         options.DefaultAuthenticateScheme = "Test";
@@ -131,26 +68,218 @@ namespace Fragmenta.Api.Tests.IntegrationTests
                         options.DefaultScheme = "Test";
                     })
                     .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
+                
+                var sp = services.BuildServiceProvider();
+                using var scope = sp.CreateScope();
+                var scopedServices = scope.ServiceProvider;
+                var db = scopedServices.GetRequiredService<ApplicationContext>();
+                var passwordHasher = scopedServices.GetRequiredService<IHashingService>();
+
+                db.Database.EnsureCreated();
+                SeedTestData(db, passwordHasher);
             });
         }
-        
-        private void SeedTestData(ApplicationContext context)
+
+
+        private void SeedTestData(ApplicationContext context, IHashingService hasher)
         {
-            // Clear existing data
+            var salt = SaltGenerator.GenerateSalt();
+
             context.Users.RemoveRange(context.Users);
-        
-            // Add test data
-            context.Users.Add(new User
+
+            context.Users.AddRange(new User
+                {
+                    Id = 1,
+                    Name = "testuser1",
+                    Email = "test1@example.com",
+                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordSalt = salt
+                },
+                new User
+                {
+                    Id = 2,
+                    Name = "testuser2",
+                    Email = "test2@example.com",
+                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordSalt = salt
+                },
+                new User
+                {
+                    Id = 3,
+                    Name = "testuser3",
+                    Email = "test3@example.com",
+                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordSalt = salt
+                },
+                new User
+                {
+                    Id = 4,
+                    Name = "testuser4",
+                    Email = "test4@example.com",
+                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordSalt = salt
+                },
+                new User
+                {
+                    Id = 5,
+                    Name = "testuser5",
+                    Email = "test5@example.com",
+                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordSalt = salt
+                },
+                new User
+                {
+                    Id = 6,
+                    Name = "testuser6",
+                    Email = "test6@example.com",
+                    PasswordHash = hasher.Hash("Password1234", salt),
+                    PasswordSalt = salt
+                });
+
+            context.WorkspaceAccesses.AddRange(new WorkspaceAccess()
+                {
+                    Workspace = new Workspace() { Name = "Workspace 1", Id = 1 },
+                    RoleId = 1,
+                    UserId = 1
+                }, new WorkspaceAccess()
+                {
+                    Workspace = new Workspace() { Name = "Workspace 2", Id = 2 },
+                    RoleId = 1,
+                    UserId = 2
+                },
+                new WorkspaceAccess()
+                {
+                    Workspace = new Workspace() { Name = "Workspace 3", Id = 3 },
+                    RoleId = 3,
+                    UserId = 1
+                }, new WorkspaceAccess()
+                {
+                    WorkspaceId = 1,
+                    RoleId = 2,
+                    UserId = 2
+                }, new WorkspaceAccess()
+                {
+                    WorkspaceId = 1,
+                    RoleId = 2,
+                    UserId = 5
+                }, new WorkspaceAccess()
+                {
+                    WorkspaceId = 1,
+                    RoleId = 3,
+                    UserId = 3
+                }, new WorkspaceAccess()
+                {
+                    WorkspaceId = 2,
+                    RoleId = 4,
+                    UserId = 3
+                }, new WorkspaceAccess()
+                {
+                    WorkspaceId = 1,
+                    RoleId = 4,
+                    UserId = 6
+                });
+            context.BoardAccesses.Add(new BoardAccess() { BoardId = 1, UserId = 6 });
+            context.ResetTokens.Add(new ResetToken()
             {
-                Id = 1, 
-                Name = "testuser",
-                Email = "test@example.com",
-                PasswordHash = new byte[] { 1, 2, 3 },
-                PasswordSalt = new byte[] { 4, 5, 6 }
+                UserId = 2, Id = 10,
+                TokenHash = hasher.Hash("valid-reset-token"), CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(1)
             });
-        
+
+            context.Boards.AddRange(
+                new Board()
+                {
+                    Name = "Board",
+                    AttachmentTypes = [],
+                    WorkspaceId = 1,
+                    Id = 1,
+                    Statuses =
+                    [
+                        new Status()
+                        {
+                            Id = 1,
+                            ColorHex = "#FFFFFF",
+                            TaskLimit = 0,
+                            Weight = 0,
+                            Name = "Status"
+                        }
+                    ],
+                    Tags =
+                    [
+                        new Tag()
+                        {
+                            Name = "design",
+                            Tasks =
+                            [
+                                new()
+                                {
+                                    StatusId = 1,
+                                    AssigneeId = 1,
+                                    Title = "Task 2",
+                                    Priority = 0
+                                },
+                                new()
+                                {
+                                    StatusId = 1,
+                                    AssigneeId = null,
+                                    Title = "Task 2",
+                                    Priority = 0
+                                }
+                            ]
+                        }
+                    ]
+                },
+                new Board()
+                {
+                    Name = "Board",
+                    AttachmentTypes = [],
+                    WorkspaceId = 2,
+                    Id = 2,
+                    Statuses =
+                    [
+                        new Status()
+                        {
+                            Id = 2,
+                            ColorHex = "#FFFFFF",
+                            TaskLimit = 0,
+                            Weight = 0,
+                            Name = "Status 1"
+                        },
+                        new Status()
+                        {
+                            Id = 3,
+                            ColorHex = "#FAF",
+                            TaskLimit = 0,
+                            Weight = 10,
+                            Name = "Status 2"
+                        }
+                    ],
+                    Tags =
+                    [
+                        new Tag()
+                        {
+                            Name = "QA",
+                            Tasks =
+                            [
+                                new()
+                                {
+                                    StatusId = 2,
+                                    Title = "Task Board 2",
+                                    Priority = 0
+                                }
+                            ]
+                        }
+                    ]
+                }, new Board()
+                {
+                    Name = "Board",
+                    AttachmentTypes = [],
+                    WorkspaceId = 1,
+                    Id = 4,
+                    ArchivedAt = DateTime.UtcNow.AddDays(-1)
+                });
+
             context.SaveChanges();
         }
-        
     }
 }

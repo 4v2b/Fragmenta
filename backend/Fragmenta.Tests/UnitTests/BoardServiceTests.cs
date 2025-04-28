@@ -37,7 +37,6 @@ public class BoardServiceTests : UnitTestsBase
     {
         var context = CreateInMemoryContext();
         context.Workspaces.Add(new Workspace { Id = 1, Name = "Workspace" });
-        context.AttachmentTypes.Add(new AttachmentType { Id = 1, Value = "pdf" });
         await context.SaveChangesAsync();
 
         var service = CreateService(context);
@@ -73,24 +72,20 @@ public class BoardServiceTests : UnitTestsBase
     public async Task UpdateBoardAsync_UpdatesNameAndTypes()
     {
         var context = CreateInMemoryContext();
-        var board = new Board { Id = 10, Name = "Old", AttachmentTypes = new List<AttachmentType>(), WorkspaceId = 1 };
+        var board = new Board { Id = 10, Name = "Old", AttachmentTypes = [], WorkspaceId = 1 };
         context.Boards.Add(board);
-        context.AttachmentTypes.AddRange(
-            new AttachmentType { Id = 1, Value = "doc" },
-            new AttachmentType { Id = 2, Value = "img" }
-        );
         await context.SaveChangesAsync();
 
         var service = CreateService(context);
         var updated = await service.UpdateBoardAsync(10, new UpdateBoardRequest
         {
             Name = "Updated",
-            AllowedTypeIds = new List<long> { 1, 2 },
+            AllowedTypeIds = [ 1 ],
             ArchivedAt = null
         });
 
         Assert.Equal("Updated", updated!.Name);
-        Assert.Equal(2, updated.AllowedTypeIds.Count);
+        Assert.Equal(1, updated.AllowedTypeIds.Count);
     }
 
     [Fact]
