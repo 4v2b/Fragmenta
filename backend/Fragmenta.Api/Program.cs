@@ -17,9 +17,10 @@ using Fragmenta.Api.Middleware;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Host.UseEnvironment("Testing");
+var builder = WebApplication.CreateBuilder(options: new WebApplicationOptions()
+{
+    EnvironmentName = "Testing"
+});
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
