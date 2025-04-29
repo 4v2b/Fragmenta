@@ -1,6 +1,6 @@
 import {  useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Stack, Button, Wrap, Badge, CloseButton, Table} from "@chakra-ui/react"
+import { Stack, Button, Wrap, Badge, CloseButton, Table, Text} from "@chakra-ui/react"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import { Autocomplete } from "@/components/Autocomplete"
 import { canDeleteMember } from "@/utils/permissions"
@@ -63,7 +63,10 @@ export function Members({ workspaceId }) {
                             <Table.Cell>{item.name}</Table.Cell>
                             <Table.Cell>{item.email}</Table.Cell>
                             <Table.Cell textAlign="center">
-                                {item.role ? t(`roles.${item.role.toLowerCase()}`) : "Unknown"}
+
+                            {item.role == "Owner" ?
+                                <Text color={"primary"}>{t(`roles.${item.role.toLowerCase()}`)}</Text> :
+                                (item.role ? t(`roles.${item.role.toLowerCase()}`) : "Unknown")}
                             </Table.Cell>
                             <Table.Cell textAlign="center">
                                 <DialogRoot role="alertdialog">

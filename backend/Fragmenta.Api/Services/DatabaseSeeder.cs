@@ -23,221 +23,112 @@ public class DatabaseSeeder
     public async Task SeedIfNeededAsync()
     {
         bool shouldSeed = _configuration.GetValue<bool>("DatabaseOptions:SeedTestData");
-        
+
         if (!shouldSeed)
             return;
-            
-        // Check if already seeded
-        if (await _context.Users.AnyAsync())
-            return;
-            
+
         // Create test users with hashed passwords
         await SeedUsersAsync();
-        
+
         // Add other seed methods
     }
-    
+
     private async Task SeedUsersAsync()
-{
-    var salt = SaltGenerator.GenerateSalt();
+    {
+        var salt = SaltGenerator.GenerateSalt();
 
-    _context.Users.RemoveRange(_context.Users);
-    await _context.SaveChangesAsync();
-    
-    await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT('[Users]', RESEED, 0)");
-    await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT('[Workspaces]', RESEED, 0)");
-    await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT('[Boards]', RESEED, 0)");
+        await _context.Tasks.ForEachAsync(t => t.Assignee = null);
+        
+        await _context.SaveChangesAsync();
+        
+        
+        _context.Users.RemoveRange(_context.Users);
+        // STEP 1: Create and insert Users
+        var users = new List<User>
+        {
+            new() { Name = "testuser1", Email = "test1@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser2", Email = "test2@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser3", Email = "test3@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser4", Email = "test4@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser5", Email = "test5@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser6", Email = "test6@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+        };
 
-    _context.Users.AddRange(new User
-        {
-            Name = "testuser1",
-            Email = "test1@example.com",
-            PasswordHash = _hasher.Hash("Password1234", salt),
-            PasswordSalt = salt
-        },
-        new User
-        {
-            Name = "testuser2",
-            Email = "test2@example.com",
-            PasswordHash = _hasher.Hash("Password1234", salt),
-            PasswordSalt = salt
-        },
-        new User
-        {
-            Name = "testuser3",
-            Email = "test3@example.com",
-            PasswordHash = _hasher.Hash("Password1234", salt),
-            PasswordSalt = salt
-        },
-        new User
-        {
-            Name = "testuser4",
-            Email = "test4@example.com",
-            PasswordHash = _hasher.Hash("Password1234", salt),
-            PasswordSalt = salt
-        },
-        new User
-        {
-            Name = "testuser5",
-            Email = "test5@example.com",
-            PasswordHash = _hasher.Hash("Password1234", salt),
-            PasswordSalt = salt
-        },
-        new User
-        {
-            Name = "testuser6",
-            Email = "test6@example.com",
-            PasswordHash = _hasher.Hash("Password1234", salt),
-            PasswordSalt = salt
-        });
+        _context.Users.AddRange(users);
+        await _context.SaveChangesAsync();
+        
+        _context.Workspaces.RemoveRange(_context.Workspaces);
 
-    await _context.SaveChangesAsync();
+        // STEP 2: Create and insert Workspaces
+        var workspaces = new List<Workspace>
+        {
+            new() { Name = "Workspace 1" },
+            new() { Name = "Workspace 2" },
+            new() { Name = "Workspace 3" }
+        };
 
-    _context.Workspaces.AddRange(
-        new Workspace() { Name = "Workspace 1"},
-        new Workspace() { Name = "Workspace 2" },
-        new Workspace() { Name = "Workspace 3" }
-    );
-    
-    await _context.SaveChangesAsync();
-    
-    _context.WorkspaceAccesses.AddRange(new WorkspaceAccess()
+        _context.Workspaces.AddRange(workspaces);
+        await _context.SaveChangesAsync();
+        
+        var accesses = new List<WorkspaceAccess>
         {
-            WorkspaceId = 2,
-            RoleId = 1,
-            UserId = 1
-        }, new WorkspaceAccess()
-        {
-            WorkspaceId = 2,
-            RoleId = 1,
-            UserId = 2
-        },
-        new WorkspaceAccess()
-        {
-            WorkspaceId = 3,
-            RoleId = 3,
-            UserId = 1
-        }, new WorkspaceAccess()
-        {
-            WorkspaceId = 1,
-            RoleId = 2,
-            UserId = 2
-        }, new WorkspaceAccess()
-        {
-            WorkspaceId = 1,
-            RoleId = 2,
-            UserId = 5
-        }, new WorkspaceAccess()
-        {
-            WorkspaceId = 1,
-            RoleId = 3,
-            UserId = 3
-        }, new WorkspaceAccess()
-        {
-            WorkspaceId = 2,
-            RoleId = 4,
-            UserId = 3
-        }, new WorkspaceAccess()
-        {
-            WorkspaceId = 1,
-            RoleId = 4,
-            UserId = 6
-        });
-    
-    await _context.SaveChangesAsync();
+            new() { Workspace = workspaces[1], RoleId = 1, User = users[0] },
+            new() { Workspace = workspaces[1], RoleId = 2, User = users[1] },
+            new() { Workspace = workspaces[2], RoleId = 3, User = users[0] },
+            new() { Workspace = workspaces[0], RoleId = 2, User = users[1] },
+            new() { Workspace = workspaces[0], RoleId = 2, User = users[4] },
+            new() { Workspace = workspaces[0], RoleId = 3, User = users[2] },
+            new() { Workspace = workspaces[1], RoleId = 4, User = users[2] },
+            new() { Workspace = workspaces[0], RoleId = 4, User = users[5] },
+        };
 
-    _context.Boards.AddRange(
-        new Board()
+        _context.WorkspaceAccesses.AddRange(accesses);
+        await _context.SaveChangesAsync();
+
+        var board1Status = new Status { Name = "Status", ColorHex = "#FFFFFF", TaskLimit = 0, Weight = 0 };
+        var board1Tasks = new List<Dal.Models.Task>
+        {
+            new() { Title = "Task 1", Priority = 0, Assignee = users[0], Status = board1Status },
+            new() { Title = "Task 2", Priority = 0, Assignee = null, Status = board1Status },
+        };
+        var board1Tag = new Tag { Name = "design", Tasks = board1Tasks };
+
+        var board1 = new Board
         {
             Name = "Board",
             AttachmentTypes = [],
-            WorkspaceId = 1,
-            Statuses =
-            [
-                new Status()
-                {
-                    ColorHex = "#FFFFFF",
-                    TaskLimit = 0,
-                    Weight = 0,
-                    Name = "Status"
-                }
-            ],
-            Tags =
-            [
-                new Tag()
-                {
-                    Name = "design",
-                    Tasks =
-                    [
-                        new()
-                        {
-                            StatusId = 1,
-                            AssigneeId = 1,
-                            Title = "Task 2",
-                            Priority = 0
-                        },
-                        new()
-                        {
-                            StatusId = 1,
-                            AssigneeId = null,
-                            Title = "Task 2",
-                            Priority = 0
-                        }
-                    ]
-                }
-            ]
-        },
-        new Board()
+            Workspace = workspaces[0],
+            Statuses = [ board1Status ],
+            Tags = [ board1Tag ],
+        };
+
+        var board2Status1 = new Status { Name = "Status 1", ColorHex = "#FFFFFF", TaskLimit = 0, Weight = 0 };
+        var board2Status2 = new Status { Name = "Status 2", ColorHex = "#FAF", TaskLimit = 0, Weight = 10 };
+        var board2Task = new Dal.Models.Task { Title = "Task Board 2", Priority = 0, Status = board2Status2 };
+        var board2Tag = new Tag { Name = "QA", Tasks = [ board2Task ] };
+
+        var board2 = new Board
         {
             Name = "Board",
             AttachmentTypes = [],
-            WorkspaceId = 2,
-            Statuses =
-            [
-                new Status()
-                {
-                    ColorHex = "#FFFFFF",
-                    TaskLimit = 0,
-                    Weight = 0,
-                    Name = "Status 1"
-                },
-                new Status()
-                {
-                    ColorHex = "#FAF",
-                    TaskLimit = 0,
-                    Weight = 10,
-                    Name = "Status 2"
-                }
-            ],
-            Tags =
-            [
-                new Tag()
-                {
-                    Name = "QA",
-                    Tasks =
-                    [
-                        new()
-                        {
-                            StatusId = 2,
-                            Title = "Task Board 2",
-                            Priority = 0
-                        }
-                    ]
-                }
-            ]
-        }, new Board()
+            Workspace = workspaces[1],
+            Statuses = [ board2Status1, board2Status2 ],
+            Tags = [ board2Tag ],
+        };
+
+        var board3 = new Board
         {
             Name = "Board",
             AttachmentTypes = [],
-            WorkspaceId = 1,
-            Id = 4,
+            Workspace = workspaces[0],
             ArchivedAt = DateTime.UtcNow.AddDays(-1)
-        });
+        };
 
-    await _context.SaveChangesAsync();
-    
-    _context.BoardAccesses.Add(new BoardAccess() { BoardId = 1, UserId = 6 });
-    
-    await _context.SaveChangesAsync();
-}
+        _context.Boards.AddRange(board1, board2, board3);
+        await _context.SaveChangesAsync();
+        
+        _context.BoardAccesses.Add(new BoardAccess { Board = board1, User = users[5] });
+        await _context.SaveChangesAsync();
+
+    }
 }

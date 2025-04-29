@@ -57,7 +57,6 @@ async function fetchWithJwtBearer(url, options = {}, isBlob = false) {
             response = await fetch(BASE_URL + url, options);
 
             if (!response.ok) {
-                console.log("Cannot refresh token")
                 throw Error()
             }
             console.log(response, "from url ", url)
@@ -65,7 +64,6 @@ async function fetchWithJwtBearer(url, options = {}, isBlob = false) {
 
         } catch (error) {
             console.log(error)
-            logout();
             return;
         }
     }
@@ -108,11 +106,10 @@ export const api = {
         headers: workspaceId ? {
             "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
-        } : {}
+        } : {"Content-Type": "application/json"}
     }),
     getBlob: (url, workspaceId = null) => fetchWithJwtBearer(url, {
         headers: workspaceId ? {
-            "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
         } : {}
     }, true),
@@ -120,7 +117,7 @@ export const api = {
         headers: workspaceId ? {
             "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
-        } : {},
+        } : {"Content-Type": "application/json"},
         method: 'POST',
         body: JSON.stringify(data)
     }),
@@ -135,7 +132,7 @@ export const api = {
         headers: workspaceId ? {
             "Content-Type": "application/json",
             "X-Workspace-Id": workspaceId
-        } : {},
+        } : {"Content-Type": "application/json"},
         method: 'PUT',
         body: JSON.stringify(data)
     }),
@@ -144,7 +141,7 @@ export const api = {
             headers: workspaceId ? {
                 "Content-Type": "application/json",
                 "X-Workspace-Id": workspaceId
-            } : {},
+            } : {"Content-Type": "application/json"},
             method: 'DELETE'
         })
     // Add other methods as needed

@@ -40,6 +40,12 @@ export function Login() {
 
   async function handleLogin() {
 
+    if(email == "" || password == ""){
+      setError(t("errors.fieldEmpty"))
+      return;
+    }
+
+
     const response = await login(email, password);
     if (response.status == 200) {
       setSkip(true);

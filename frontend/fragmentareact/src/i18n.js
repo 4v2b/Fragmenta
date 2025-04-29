@@ -35,6 +35,8 @@ i18n
                         guest: "Guest"
                     },
                     errors: {
+                        workspaceExists: "Робочий простір з таким іменем вже існує",
+                        fieldEmpty: "Fields cannot be empty",
                         userNotFound: "Users not found",
                         fileTooLarge: "File '{{filename}}' is too large",
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
@@ -168,6 +170,8 @@ i18n
                         guest: "Гість"
                     },
                     errors: {
+                        workspaceExists: "Робочий простір з таким іменем вже існує", 
+                        fieldEmpty: "Поле не може бути порожнім",
                         userNotFound: "Користувачів не знайдено",
                         fileTooLarge: "Файл '{{filename}}' завеликий",
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"

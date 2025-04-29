@@ -21,7 +21,7 @@ export async function login(email, password) {
         console.log('Response content:', data);
 
         if (response.status == 400) {
-            return { status: response.status, error: data.message }
+            return { status: response.status, error: data.message ? data.message : Object.entries(data.errors).at(0)[1][0] }
         }
 
         if (response.ok) {
