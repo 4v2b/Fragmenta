@@ -5,13 +5,13 @@ using Fragmenta.Api.Dtos;
 
 namespace Fragmenta.Tests.IntegrationTests;
 
-public class AccessControllerTests : IClassFixture<TestWebApplicationFactoryContainers>
+public class AccessControllerTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private const string BaseUrl = "/api/members";
     private string _authToken;
 
-    public AccessControllerTests(TestWebApplicationFactoryContainers factory)
+    public AccessControllerTests(TestWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

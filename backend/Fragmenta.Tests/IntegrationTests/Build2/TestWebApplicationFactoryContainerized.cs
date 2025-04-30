@@ -43,6 +43,15 @@ public class TestWebApplicationFactoryContainers : WebApplicationFactory<Program
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        
+        builder.ConfigureAppConfiguration((context, configBuilder) =>
+        {
+            configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MigrateDatabaseOnStartup"] = "false",
+                ["UseMsSql"] = "false",
+            });
+        });
 
         builder.ConfigureServices(services =>
         {
@@ -61,15 +70,10 @@ public class TestWebApplicationFactoryContainers : WebApplicationFactory<Program
                 );
 
             services.PostConfigure<SmtpOptions>(options => { options.RequestUrl = "http://localhost:8088/api/send"; });
-
-            services.RemoveAll<IEmailHttpClient>();
-            services.AddScoped<IEmailHttpClient, FakeEmailHttpClient>();
-
-            // Replace in-memory DB with SQL Server
+            
             services.RemoveAll<DbContextOptions<ApplicationContext>>();
             services.AddDbContext<ApplicationContext>(options => { options.UseInMemoryDatabase("TestDb"); });
-
-            // Use real Azurite for blob storage
+            
             services.RemoveAll<BlobServiceClient>();
             services.AddSingleton(sp =>
             {

@@ -243,38 +243,6 @@ public class AuthControllerTests : IClassFixture<TestWebApplicationFactory>
     }
 
     [Fact]
-    public async Task ForgotPassword_ReturnsOk_WhenEmailExists()
-    {
-        // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/forgot-password?email=test1@example.com");
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task ForgotPassword_ReturnsBadRequest_WhenEmailDoesNotExist()
-    {
-        // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/forgot-password?email=nonexistent@example.com");
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        
-        var content = await response.Content.ReadAsStringAsync();
-        var error = JsonSerializer.Deserialize<ErrorResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        
-        Assert.NotNull(error);
-        Assert.Equal("auth.errors.userDoesntExist", error.Message);
-    }
-
-    [Fact]
     public async Task ResetPassword_ReturnsOk_WhenTokenValid()
     {
         // Need to set up a valid reset token in the database first

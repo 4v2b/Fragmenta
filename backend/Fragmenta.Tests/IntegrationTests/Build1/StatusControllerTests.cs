@@ -155,7 +155,7 @@ public class StatusControllerTests: IClassFixture<TestWebApplicationFactory>
     }
     
     [Fact]
-    public async Task DeleteTag_ReturnsForbidden_WhenGuest()
+    public async Task DeleteStatus_ReturnsForbidden_WhenGuest()
     {
         // Arrange
         var request = new HttpRequestMessage(HttpMethod.Delete, $"{BaseUrl}/3");

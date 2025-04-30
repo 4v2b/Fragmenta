@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace Fragmenta.Tests.IntegrationTests;
-
-using Fragmenta.Api.Dtos;
+﻿using Fragmenta.Api.Dtos;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Net.Http.Headers;
@@ -10,47 +6,19 @@ using System.Text;
 using Xunit;
 using Azure.Storage.Blobs;
 using System.IO;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
-public class AttachmentControllerTests : IClassFixture<TestWebApplicationFactoryContainers>
+namespace Fragmenta.Tests.IntegrationTests;
+
+public class ExternalServicesIntegrationTests : IClassFixture<TestWebApplicationFactoryContainers>
 {
     private readonly HttpClient _client;
     private const string BaseUrl = "/api";
-    private readonly BlobServiceClient _blobServiceClient;
 
-    public AttachmentControllerTests(TestWebApplicationFactoryContainers factory)
+    public ExternalServicesIntegrationTests(TestWebApplicationFactoryContainers factory)
     {
         _client = factory.CreateClient();
-        _blobServiceClient = factory.Services.GetRequiredService<BlobServiceClient>();
-    }
-
-    [Fact]
-    public async Task GetAttachmentTypes_ReturnsOk_WhenAuthenticated()
-    {
-        // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/attachment-types");
-        request.Headers.Add("X-Workspace-Id", "1");
-        request.Headers.Add("Test-UserId", "1");
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task GetAttachments_ReturnsOk_WhenAuthorized()
-    {
-        // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/attachments?taskId=1");
-        request.Headers.Add("X-Workspace-Id", "1");
-        request.Headers.Add("Test-UserId", "1");
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
@@ -118,26 +86,6 @@ public class AttachmentControllerTests : IClassFixture<TestWebApplicationFactory
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
-
-    // Helper method to upload a test file and ensure it exists in Azurite
-    /*private async Task UploadTestFile(long attachmentId)
-    {
-        // Create a temporary file for testing
-        var fileName = $"test-file-{attachmentId}.txt";
-        var fileContent = $"This is test file {attachmentId}";
-        var bytes = Encoding.UTF8.GetBytes(fileContent);
-
-        // Ensure the container exists in Azurite
-        var containerName = "attachments";
-        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-        await containerClient.CreateIfNotExistsAsync();
-
-        // Upload the blob directly to Azurite
-        var blobName = $"{attachmentId}";
-        var blobClient = containerClient.GetBlobClient(blobName);
-        using var ms = new MemoryStream(bytes);
-        await blobClient.UploadAsync(ms, true);
-    }*/
     
     private async Task UploadTestFile(long attachmentId)
     {
@@ -159,5 +107,41 @@ public class AttachmentControllerTests : IClassFixture<TestWebApplicationFactory
 
         var response = await _client.SendAsync(request);
         response.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task ForgotPassword_ReturnsOk_WhenEmailExists()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/forgot-password?email=test1@example.com");
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ForgotPassword_ReturnsBadRequest_WhenEmailDoesNotExist()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/forgot-password?email=nonexistent@example.com");
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        var error = JsonSerializer.Deserialize<ErrorResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        
+        Assert.NotNull(error);
+        Assert.Equal("auth.errors.userDoesntExist", error.Message);
+    }
+    private class ErrorResponse
+    {
+        public string Message { get; set; }
     }
 }

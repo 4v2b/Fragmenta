@@ -63,9 +63,9 @@ public class BoardServiceTests : UnitTestsBase
 
         var service = CreateService(context);
 
-        var boards = await service.GetBoardsAsync(5);
+        var result = await service.GetBoardsAsync(5);
 
-        Assert.Equal(2, boards.Count);
+        Assert.Equal(2, result.Count);
     }
 
     [Fact]
@@ -77,15 +77,15 @@ public class BoardServiceTests : UnitTestsBase
         await context.SaveChangesAsync();
 
         var service = CreateService(context);
-        var updated = await service.UpdateBoardAsync(10, new UpdateBoardRequest
+        var result = await service.UpdateBoardAsync(10, new UpdateBoardRequest
         {
             Name = "Updated",
             AllowedTypeIds = [ 1 ],
             ArchivedAt = null
         });
 
-        Assert.Equal("Updated", updated!.Name);
-        Assert.Equal(1, updated.AllowedTypeIds.Count);
+        Assert.Equal("Updated", result!.Name);
+        Assert.Equal(1, result.AllowedTypeIds.Count);
     }
 
     [Fact]
@@ -217,9 +217,9 @@ public class BoardServiceTests : UnitTestsBase
         var source = new CancellationTokenSource();
         await service.CleanupArchivedBoardsAsync(source.Token);
 
-        var remaining = await context.Boards.ToListAsync();
-        Assert.Equal(2, remaining.Count);
-        Assert.DoesNotContain(remaining, b => b.Name == "Old Archived");
+        var result = await context.Boards.ToListAsync();
+        Assert.Equal(2, result.Count);
+        Assert.DoesNotContain(result, b => b.Name == "Old Archived");
     }
 
     [Fact]
@@ -234,8 +234,8 @@ public class BoardServiceTests : UnitTestsBase
         var source = new CancellationTokenSource();
         await service.CleanupArchivedBoardsAsync(source.Token);
 
-        var boards = await context.Boards.ToListAsync();
-        Assert.Single(boards);
-        Assert.Equal("Archived 6d", boards[0].Name);
+        var result = await context.Boards.ToListAsync();
+        Assert.Single(result);
+        Assert.Equal("Archived 6d", result[0].Name);
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Fragmenta.Dal;
 using Fragmenta.Dal.Models;
-using Fragmenta.Tests.Fakes; // заміни на свій namespace
+using Fragmenta.Tests.Fakes;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
