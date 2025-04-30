@@ -546,7 +546,7 @@ public class LoginTests : IAsyncLifetime
         await RegisterAsync(name, email, password1, password2);
 
         var errorElement = "//p[contains(@class, 'css-zofl1m')]";
-        string error = null;
+        string? error = null;
         
         if (await _page.ElementExists(errorElement))
         {
@@ -564,14 +564,14 @@ public class LoginTests : IAsyncLifetime
         await _page.GotoAsync(UrlBase + "/register");
         
         var email = $"test{Random.Shared.Next(1000)}@example.com";
-        var password1 = "Password12";
-        var password2 = "Password12";
-        var name = "Test User";
+        var password1 = "Password123";
+        var password2 = "Password123";
+        var name = "Test User 1";
         
         await RegisterAsync(name, email, password1, password2);
 
         var errorElement = "//p[contains(@class, 'css-zofl1m')]";
-        string error = null;
+        string? error = null;
         
         if (await _page.ElementExists(errorElement))
         {
@@ -608,23 +608,120 @@ public class LoginTests : IAsyncLifetime
     [Fact]
     public async Task CreateWorkspace_Success_WhenUniqueName()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        
+        var button = "//button[contains(@class, 'chakra-button chakra-dialog__trigger css-md70yr')]";
+        await _page.ClickAsync(button);
+
+        var input = "//input[contains(@class, 'chakra-input css-eiee9d')]";
+        await _page.FillAsync(input, Guid.NewGuid().ToString());
+        
+        var submit = "//button[contains(@class, 'chakra-button chakra-dialog__trigger css-n9m7sp')]";
+        await _page.ClickAsync(submit);
+
+        var errorElement = "//span[contains(@class, 'chakra-field__errorText css-118wl8')]";
+        
+        Assert.False(await _page.ElementExists(errorElement));
     }
 
     [Fact]
     public async Task CreateWorkspace_ShowError_WhenNamesDuplicate()
     {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
         
-        Assert.Fail();
+        var button = "//button[contains(@class, 'chakra-button chakra-dialog__trigger css-md70yr')]";
+        await _page.ClickAsync(button);
+
+        var input = "//input[contains(@class, 'chakra-input css-eiee9d')]";
+        await _page.FillAsync(input, "Workspace 1");
+        
+        var submit = "//button[contains(@class, 'chakra-button css-166vzny')]";
+        await _page.ClickAsync(submit);
+
+        var errorElement = "//span[contains(@class, 'chakra-field__errorText css-118wl8')]";
+        string? error = null;
+        
+        if (await _page.ElementExists(errorElement))
+        {
+            error = await _page.TextContentAsync(errorElement);
+        }
+        
+        Assert.False(string.IsNullOrEmpty(error));
     }
 
     [Fact]
     public async Task CreateWorkspace_ShowError_WhenNameEmpty()
     {
        
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        
+        var button = "//button[contains(@class, 'chakra-button chakra-dialog__trigger css-md70yr')]";
+        await _page.ClickAsync(button);
+        
+        var submit = "//button[contains(@class, 'chakra-button css-166vzny')]";
+        await _page.ClickAsync(submit);
+
+        var errorElement = "//span[contains(@class, 'chakra-field__errorText css-118wl8')]";
+        string? error = null;
+        
+        if (await _page.ElementExists(errorElement))
+        {
+            error = await _page.TextContentAsync(errorElement);
+        }
+        
+        Assert.False(string.IsNullOrEmpty(error));
+    }
+    
+    [Fact]
+    public async Task CreateWorkspace_ShowDialog_WhenClickedButton()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        
+        var button = "//button[contains(@class, 'chakra-button chakra-dialog__trigger css-md70yr')]";
+        await _page.ClickAsync(button);
+        
+        var submit = "//button[contains(@class, 'chakra-button css-166vzny')]";
+        
+        Assert.True(await _page.ElementExists(submit));
+    }
+    
+    [Fact]
+    public async Task CreateWorkspace_Canceled_WhenClickedCloseButton()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        
+        var button = "//button[contains(@class, 'chakra-button chakra-dialog__trigger css-md70yr')]";
+        await _page.ClickAsync(button);
+        
+        var cancel = "//button[contains(@class, 'chakra-button css-y5du55')]";
+        await _page.ClickAsync(cancel);
+        
+        var overlay = "//div[@data-aria-hidden]";
+        
+        Assert.False(await _page.ElementExists(overlay));
     }
 
+    private async Task NavigateWorkspace(int index = 0, bool toMembers = false)
+    {
+        var workspace = "//div[@id='select::r3::positioner']//div[@data-part='item']";
+
+        await _page.ClickAsync(workspace);
+
+        var members = "//button[@data-value=\"members\"]";
+        
+        if(toMembers)
+            await _page.ClickAsync(members);
+    }
 
     [Fact]
     public async Task GrantAdminRoleToMember_Success_IfOwnerOfWorkspace()
@@ -657,8 +754,28 @@ public class LoginTests : IAsyncLifetime
     [Fact]
     public async Task AddMember_Success_IfUserWasntMember()
     {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+
+        await NavigateWorkspace(toMembers: true);
         
-        Assert.Fail();
+        var items1  = await
+            _page.GetAllTextContents("//td[@class=\"chakra-table__cell css-4v8c5f\" and text() or ./p]//text()");
+
+        var search = "//input[@class=\"chakra-input css-eiee9d\"]";
+
+        await _page.FillAsync(search, "test");
+
+        await _page.ClickAsync("//ul[@class=\"chakra-list__root css-1yzzf3n\"]/li");
+
+        var add = "//button[@class=\"chakra-button css-166vzny\"]";
+
+        await _page.ClickAsync(add);
+        
+        var items2  = await
+            _page.GetAllTextContents("//td[@class=\"chakra-table__cell css-4v8c5f\" and text() or ./p]//text()");
+        Assert.True(items2.Count > items1.Count);
     }
 
     [Fact]

@@ -64,6 +64,7 @@ async function fetchWithJwtBearer(url, options = {}, isBlob = false) {
 
         } catch (error) {
             console.log(error)
+            logout();
             return;
         }
     }

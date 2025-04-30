@@ -16,6 +16,7 @@ import { TasksProvider } from './utils/TaskContext';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { system } from "./theme"; // Ensure you import your theme
+import { Settings } from './pages/Settings';
 
 
 createRoot(document.getElementById('root')).render(
@@ -33,6 +34,7 @@ createRoot(document.getElementById('root')).render(
           <Route element={<MainLayout />}>
             <Route index element={<Main />}/>
             <Route path="workspaces/:workspaceId" element={<Workspace />}/>
+            <Route path="me" element={<Settings />}/>
             <Route path="workspaces/:workspaceId/boards/:boardId" element={
               <TasksProvider>
                 <TagsProvider>

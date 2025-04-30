@@ -113,10 +113,11 @@ i18n
                             archive: "Archive",
                             restore: "Restore",
                             areYouSure: "Are you sure?",
+                            areYouSureAccount: "Are you sure you want to delete the account?",
                             cannotUndone: "This action cannot be undone",
                             cancel: "Cancel",
                             save: "Save",
-
+                            deleteAccount: "Delete account",
                             create: "Create",
                             login: "Login",
                             register: "Register",
@@ -255,9 +256,11 @@ i18n
                             newBoard: "Нова дошка",
                             newStatus: "Новий статус",
                             login: "Увійти",
+                            areYouSureAccount: "Впевнені, що хочете видалити обліковий запис?",
                             register: "Зареєструватися",
                             logout: "Вийти",
                             delete: "Видалити",
+                            deleteAccount: "Видалити обліковий запис",
                             addMembers: "Додати учасників",
                             findUser: "Знайти користувача"
                         }
