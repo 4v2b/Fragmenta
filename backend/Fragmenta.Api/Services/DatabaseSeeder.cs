@@ -56,6 +56,7 @@ public class DatabaseSeeder
             new() { Name = "testuser8", Email = "test8@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser9", Email = "test9@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser10", Email = "test10@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser11", Email = "vitalijber2004@gmail.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
         };
 
         _context.Users.AddRange(users);
