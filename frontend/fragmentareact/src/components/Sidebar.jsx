@@ -173,6 +173,9 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
           )
         }
       </VStack >
+
+
+      <Button className="tome" onClick={() => navigate("/me")}>Settings</Button>
     </Box >
   )
 }

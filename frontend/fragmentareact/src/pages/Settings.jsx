@@ -25,7 +25,7 @@ export function Settings() {
     return <Box>
         <AlertDialog
             onConfirm={() => deleteAccount()}
-            base={<Button disabled={!anyWorkpace} color="danger"><BiTrash />{t("fields.actions.deleteAccount")}</Button>}
+            base={<Button disabled={anyWorkpace} color="danger"><BiTrash />{t("fields.actions.deleteAccount")}</Button>}
             message={t("fields.actions.areYouSureAccount")}
             title={t("fields.actions.areYouSure")}
             confirmMessage={t("fields.actions.delete")}

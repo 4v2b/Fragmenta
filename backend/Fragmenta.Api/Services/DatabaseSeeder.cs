@@ -52,6 +52,10 @@ public class DatabaseSeeder
             new() { Name = "testuser4", Email = "test4@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser5", Email = "test5@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser6", Email = "test6@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser7", Email = "test7@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser8", Email = "test8@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser9", Email = "test9@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser10", Email = "test10@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
         };
 
         _context.Users.AddRange(users);
@@ -76,10 +80,13 @@ public class DatabaseSeeder
             new() { Workspace = workspaces[1], RoleId = 2, User = users[1] },
             new() { Workspace = workspaces[2], RoleId = 3, User = users[0] },
             new() { Workspace = workspaces[0], RoleId = 2, User = users[1] },
-            new() { Workspace = workspaces[0], RoleId = 2, User = users[4] },
+            new() { Workspace = workspaces[0], RoleId = 1, User = users[4] },
             new() { Workspace = workspaces[0], RoleId = 3, User = users[2] },
             new() { Workspace = workspaces[1], RoleId = 4, User = users[2] },
             new() { Workspace = workspaces[0], RoleId = 4, User = users[5] },
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[6] },
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[7] },
+            new() { Workspace = workspaces[1], RoleId = 4, User = users[8] },
         };
 
         _context.WorkspaceAccesses.AddRange(accesses);
@@ -123,11 +130,33 @@ public class DatabaseSeeder
             Workspace = workspaces[0],
             ArchivedAt = DateTime.UtcNow.AddDays(-1)
         };
+        
+        var board4 = new Board
+        {
+            Name = "Board 1",
+            AttachmentTypes = [],
+            Workspace = workspaces[1],
+            Statuses = [],
+            Tags = [],
+        };
+        
+        var board5 = new Board
+        {
+            Name = "Board 2",
+            AttachmentTypes = [],
+            Workspace = workspaces[1],
+            Statuses = [],
+            Tags = [],
+            ArchivedAt = DateTime.UtcNow.AddDays(-1)
+        };
 
-        _context.Boards.AddRange(board1, board2, board3);
+        _context.Boards.AddRange(board1, board2, board3, board4, board5);
         await _context.SaveChangesAsync();
         
-        _context.BoardAccesses.Add(new BoardAccess { Board = board1, User = users[5] });
+        _context.BoardAccesses.AddRange(
+            new BoardAccess { Board = board1, User = users[5] },
+            new BoardAccess { Board = board2, User = users[2] },
+            new BoardAccess { Board = board2, User = users[8] });
         await _context.SaveChangesAsync();
 
     }

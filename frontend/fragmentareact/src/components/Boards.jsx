@@ -3,8 +3,9 @@ import { canCreateBoard, canEditBoard } from "@/utils/permissions";
 import { Button, HStack, Box, Input, Stack, Text, Wrap } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LiaDoorOpenSolid } from "react-icons/lia";
-import { Heading,  Badge, CloseButton } from "@chakra-ui/react";
+import { Heading, Badge, CloseButton } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
+import { Field as InputField } from "@chakra-ui/react"
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog";
 import { useWorkspace } from "@/utils/WorkspaceContext";
 import { Autocomplete } from "./Autocomplete";
@@ -26,6 +27,7 @@ export function Boards({ id }) {
     const { role } = useWorkspace()
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
+    const [error, setError] = useState(false);
 
     //console.log(types)
 
@@ -48,7 +50,7 @@ export function Boards({ id }) {
         api.post(`/boards`, {
             name: form.name,
             guestsId: chosenUsers.map(e => e.id),
-            allowedTypeIds : allowedTypeIds
+            allowedTypeIds: allowedTypeIds
         }, id).then(res => setBoards(prev => [...prev, res]))
     }
 
@@ -70,9 +72,9 @@ export function Boards({ id }) {
         })
     }
 
-    function deleteBoard(id) {
-        api.delete(`/boards/${board.id}`, id).then(() =>
-            setArchivedBoards(prev => prev.filter(b => b.id != id)))
+    function deleteBoard(boardId) {
+        api.delete(`/boards/${boardId}`, id).then(() =>
+            setArchivedBoards(prev => prev.filter(b => b.id != boardId)))
     }
 
     const getRemainingDays = (archivedAt) => {
@@ -119,9 +121,11 @@ export function Boards({ id }) {
                         </DialogHeader>
                         <DialogBody pb="8">
                             <Stack gap="4">
-                                <Field label={t("fields.labels.name")}>
+                                <InputField.Root invalid={error}>
+                                    <InputField.Label>{t("fields.labels.name")}</InputField.Label>
                                     <Input onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                                </Field>
+                                    <InputField.ErrorText>{t(error)}</InputField.ErrorText>
+                                </InputField.Root>
                                 <Field label={t("common.guests")}>
                                     <Autocomplete addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} />
                                     <Wrap>
@@ -134,7 +138,7 @@ export function Boards({ id }) {
                             </Stack>
 
                         </DialogBody>
-                        <DialogFooter>
+                        {/* <DialogFooter>
                             <DialogActionTrigger asChild>
                                 <Button variant="outline">Cancel</Button>
                             </DialogActionTrigger>
@@ -142,7 +146,23 @@ export function Boards({ id }) {
                                 <Button onClick={() => createBoard()} >Create</Button>
                             </DialogActionTrigger>
 
+                        </DialogFooter> */}
+
+
+                        <DialogFooter>
+                            <DialogActionTrigger asChild>
+                                <Button variant="outline">{t("fields.actions.cancel")}</Button>
+                            </DialogActionTrigger>
+                            {
+                                form.name != "" && !boards.some(w => w.name == form.name) ?
+                                    (<DialogTrigger asChild>
+                                        <Button onClick={() => { setError(form?.name == "" ? "fields.labels.required" : false); createBoard() }} bg="primary">{t("fields.actions.create")}</Button>
+                                    </DialogTrigger>) :
+                                    (<Button onClick={() => { setError(form?.name == "" ? "fields.labels.required" : "errors.workspaceExists"); }} bg="primary">{t("fields.actions.create")}</Button>)
+                            }
+
                         </DialogFooter>
+
                         <DialogCloseTrigger />
                     </DialogContent>
                 </DialogRoot>}

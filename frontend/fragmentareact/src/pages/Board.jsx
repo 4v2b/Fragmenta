@@ -1,6 +1,6 @@
 import { api } from "@/api/fetchClient"
 import { EditableTitle } from "@/components/EditableTitle"
-import { canManageBoardContent } from "@/utils/permissions"
+import { canCreateBoard, canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
@@ -315,42 +315,45 @@ export function Board() {
                         </Drawer.Root>
                     </BoardProvider>
 
-                    <Drawer.Root size={"xs"}>
-                        <Drawer.Trigger asChild>
-                            <Button variant="outline" size="sm">
-                                {t("fields.labels.allowedAttachmentTypes")}
-                                <BiCog />
-                            </Button>
-                        </Drawer.Trigger>
-                        <Portal>
-                            <Drawer.Backdrop />
-                            <Drawer.Positioner>
-                                <Drawer.Content>
-                                    <Drawer.Context>
-                                        {(store) => (
-                                            <>
-                                                <Drawer.Header>
-                                                    <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
-                                                </Drawer.Header>
-                                                <Drawer.Body>
-                                                    <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
-                                                </Drawer.Body>
-                                                <Drawer.Footer>
-                                                    <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
-                                                    <Button onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
-                                                </Drawer.Footer>
-                                            </>
-                                        )}
-                                    </Drawer.Context>
+                    {
+                        canCreateBoard(role) &&
+
+                        <Drawer.Root size={"xs"}>
+                            <Drawer.Trigger asChild>
+                                <Button variant="outline" size="sm" className="allowedTypes">
+                                    {t("fields.labels.allowedAttachmentTypes")}
+                                    <BiCog />
+                                </Button>
+                            </Drawer.Trigger>
+                            <Portal>
+                                <Drawer.Backdrop />
+                                <Drawer.Positioner>
+                                    <Drawer.Content>
+                                        <Drawer.Context>
+                                            {(store) => (
+                                                <>
+                                                    <Drawer.Header>
+                                                        <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
+                                                    </Drawer.Header>
+                                                    <Drawer.Body>
+                                                        <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
+                                                    </Drawer.Body>
+                                                    <Drawer.Footer>
+                                                        <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
+                                                        <Button onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
+                                                    </Drawer.Footer>
+                                                </>
+                                            )}
+                                        </Drawer.Context>
 
 
-                                    <Drawer.CloseTrigger asChild>
-                                        <CloseButton size="sm" />
-                                    </Drawer.CloseTrigger>
-                                </Drawer.Content>
-                            </Drawer.Positioner>
-                        </Portal>
-                    </Drawer.Root>
+                                        <Drawer.CloseTrigger asChild>
+                                            <CloseButton size="sm" />
+                                        </Drawer.CloseTrigger>
+                                    </Drawer.Content>
+                                </Drawer.Positioner>
+                            </Portal>
+                        </Drawer.Root>}
 
                 </Flex>
             )}
