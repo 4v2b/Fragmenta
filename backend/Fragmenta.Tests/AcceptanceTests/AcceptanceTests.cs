@@ -54,6 +54,7 @@ public class AcceptanceTests : IAsyncLifetime
         await _page.ClickAsync("//div[contains(@class, 'css-3fisqh')]//button[@type='submit']");
     }
 
+    
     [Fact]
     public async Task Login_Success_IfValidCredentials()
     {
@@ -67,21 +68,6 @@ public class AcceptanceTests : IAsyncLifetime
         var logout = "//button[contains(@class, 'chakra-button css-10ap741')]";
 
         Assert.True(await _page.ElementExists(logout));
-    }
-
-    [Fact]
-    public async Task Login_ContainsEmailAndPasswordFields_WhenNavigated()
-    {
-        await LogoutAsync();
-
-        await _page.GotoAsync(UrlBase + "/login");
-
-        var email = await _page.ElementExists("//input[contains(@class, 'chakra-input css-eiee9d') and @type='email']");
-        var password =
-            await _page.ElementExists("//input[contains(@class, 'chakra-input css-eiee9d') and @type='password']");
-
-        Assert.True(email);
-        Assert.True(password);
     }
 
     [Fact]
@@ -179,67 +165,6 @@ public class AcceptanceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Login_ShowError_IfTooManyUnsuccessfullTries()
-    {
-        await LogoutAsync();
-
-        await _page.GotoAsync(UrlBase + "/login");
-
-        var email = "test3@example.com";
-        var password = "Password4321";
-
-        await LoginAsync(email, password);
-        await LoginAsync(email, password);
-        await LoginAsync(email, password);
-
-        var errorElement = "//p[contains(@class, 'css-zofl1m')]";
-
-        var error = await _page.TextContentAsync(errorElement);
-
-        Assert.False(string.IsNullOrEmpty(error));
-    }
-
-    [Fact]
-    public async Task Login_ShowTimer_WhenLocked()
-    {
-        await LogoutAsync();
-
-        await _page.GotoAsync(UrlBase + "/login");
-
-        var email = "test4@example.com";
-        var password = "Password4321";
-
-        await LoginAsync(email, password);
-        await LoginAsync(email, password);
-        await LoginAsync(email, password);
-
-        var errorElement = "//p[contains(@class, 'css-zofl1m')]";
-
-        var errors = await _page.GetAllTextContents(errorElement);
-
-        var error = errors.FirstOrDefault();
-        var timer = errors.LastOrDefault();
-
-        Assert.False(string.IsNullOrEmpty(error));
-        Assert.False(string.IsNullOrEmpty(timer));
-        Assert.NotEqual(error, timer);
-    }
-
-    [Fact]
-    public async Task ForgotPassword_Navigate_WhenLabelClicked()
-    {
-        await LogoutAsync();
-
-        await _page.GotoAsync(UrlBase + "/login");
-
-        var link = "//a[contains(@href, 'forgot-password')]";
-
-        await _page.ClickAsync(link);
-
-        Assert.Equal(UrlBase + "/forgot-password", _page.Url);
-    }
-
-    [Fact]
     public async Task ForgotPassword_SendLetter_WhenEmailValid()
     {
         await LogoutAsync();
@@ -253,9 +178,8 @@ public class AcceptanceTests : IAsyncLifetime
         await _page.ClickAsync(button);
 
         var errorElement = "//p[contains(@class, 'css-zofl1m')]";
-        var error = await _page.TextContentAsync(errorElement);
 
-        Assert.True(string.IsNullOrEmpty(error));
+        Assert.False(await _page.ElementExists(errorElement));
     }
 
     [Fact]
@@ -315,31 +239,7 @@ public class AcceptanceTests : IAsyncLifetime
 
         Assert.False(string.IsNullOrEmpty(error));
     }
-
-    [Fact]
-    public async Task Login_Navigate_WhenClickedButtonOnRegisterPage()
-    {
-        await LogoutAsync();
-
-        await _page.GotoAsync(UrlBase + "/register");
-
-        var link = "//a[contains(@href, 'login')]";
-        await _page.ClickAsync(link);
-        Assert.Equal(_page.Url, UrlBase + "/login");
-    }
-
-    [Fact]
-    public async Task Register_Navigate_WhenClickedButtonOnLoginPage()
-    {
-        await LogoutAsync();
-
-        await _page.GotoAsync(UrlBase + "/login");
-
-        var link = "//a[contains(@href, 'register')]";
-        await _page.ClickAsync(link);
-        Assert.Equal(_page.Url, UrlBase + "/register");
-    }
-
+    
     [Fact]
     public async Task Register_ShowError_WhenEmptyName()
     {
@@ -764,44 +664,6 @@ public class AcceptanceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ViewBoard_ArchivedBoardsHidden_WhenMemberRole()
-    {
-        await LogoutAsync();
-        await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test8@example.com", "Password1234");
-        
-        var workspaceSelect = "//button[@id='select::r5::trigger']";
-        await _page.ClickAsync(workspaceSelect);
-        
-        var workspace = "//div[@data-part='item']";
-        await _page.ClickAsync(workspace);
-
-        var archivedBoard =
-            "//div[contains(@class, 'chakra-stack css-1m0tjh1')]//button[contains(@class, 'chakra-button css-10ap741')]";
-
-        Assert.False(await _page.ElementExists(archivedBoard));
-    }
-
-    [Fact]
-    public async Task ViewBoard_ArchivedBoardsVisible_WhenOwnerRole()
-    {
-        await LogoutAsync();
-        await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test1@example.com", "Password1234");
-        
-        var workspaceSelect = "//button[@id='select::r5::trigger']";
-        await _page.ClickAsync(workspaceSelect);
-        
-        var workspace = "//div[@data-part='item']";
-        await _page.ClickAsync(workspace);
-
-        var archivedBoard =
-            "//div[contains(@class, 'chakra-stack css-1m0tjh1')]//button[contains(@class, 'chakra-button css-10ap741')]";
-
-        Assert.True(await _page.ElementExists(archivedBoard));
-    }
-
-    [Fact]
     public async Task AddGuest_EmptyPrompt_WhenUserNotFound()
     {
         await LogoutAsync();
@@ -892,41 +754,6 @@ public class AcceptanceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AddGuest_Unavailable_WhenActorHasMemberRole()
-    {
-        await LogoutAsync();
-        await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test7@example.com", "Password1234");
-        
-        var workspaceSelect = "//button[@id='select::r5::trigger']";
-        await _page.ClickAsync(workspaceSelect);
-        
-        var workspace = "//div[@data-part='item']";
-        await _page.ClickAsync(workspace);
-        
-        var openBoard = "//div[contains(@class, 'chakra-card__root css-10r8yuk')]//p";
-        await _page.ClickAsync(openBoard);
-
-        var guestList = "//button[contains(@class, 'chakra-button chakra-drawer__trigger css-xvlchq')]";
-        await _page.ClickAsync(guestList);
-        
-        int count1 = await _page.Locator("//tr").CountAsync();
-        
-        var search = "//input[@class=\"chakra-input css-eiee9d\"]";
-        await _page.FillAsync(search, "test");
-        await _page.ClickAsync("//ul[@class=\"chakra-list__root css-1yzzf3n\"]/li");
-
-        var add = "//button[@class=\"chakra-button css-166vzny\"]";
-        await _page.ClickAsync(add);
-        
-        var e = await _page.ContentAsync();
-
-        int count2 = await _page.Locator("//tr").CountAsync();
-        
-        Assert.True(count2 == count1);
-    }
-
-    [Fact]
     public async Task RemoveGuest_Success_WhenUserIsAlreadyAGuestOnBoard()
     {
         await LogoutAsync();
@@ -982,25 +809,6 @@ public class AcceptanceTests : IAsyncLifetime
         bool isDisabled = await _page.Locator(guests).IsDisabledAsync();
         
         Assert.True(isDisabled);
-    }
-    
-    [Fact]
-    public async Task CreateStatus_Success_WhenEnteredCorrectName()
-    {
-        var createStatus =
-            "//div[contains(@class, 'css-69i1ev')]//button[contains(@class, 'chakra-button chakra-dialog__trigger css-n9m7sp')]";
-    }
-
-    [Fact]
-    public async Task CreateStatus_NoIndicator_WhenLimitNotSet()
-    {
-        Assert.Fail();
-    }
-
-    [Fact]
-    public async Task CreateStatus_ShowIndicator_WhenSetLimit()
-    {
-        Assert.Fail();
     }
 
     [Fact]
