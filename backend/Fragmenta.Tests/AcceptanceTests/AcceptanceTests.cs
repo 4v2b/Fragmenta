@@ -133,7 +133,7 @@ public class AcceptanceTests : IAsyncLifetime
 
         await _page.GotoAsync(UrlBase + "/login");
 
-        var email = "test12@example.com";
+        var email = "test_nonexisting@example.com";
         var password = "Password1234";
 
         await LoginAsync(email, password);
@@ -208,7 +208,7 @@ public class AcceptanceTests : IAsyncLifetime
 
         await _page.GotoAsync(UrlBase + "/forgot-password");
 
-        var email = "test12@example.com";
+        var email = "test123@example.com";
         await _page.FillAsync("//input[contains(@class, 'chakra-input css-eiee9d') and @type='email']", email);
 
         var button = "//div[contains(@class, 'main-content')]//button[@type='submit']";

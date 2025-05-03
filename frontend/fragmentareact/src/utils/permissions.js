@@ -34,3 +34,7 @@ export function canGrantAdmin(actorRole, userRole){
 export function canRevokeAdmin(actorRole, userRole){
     return actorRole == "Owner" && userRole == "Admin";
 }
+
+export function canLeaveWorkspace(role) {
+    return role === "Admin" || role === "Member";
+}

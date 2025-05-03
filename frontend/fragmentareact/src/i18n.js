@@ -108,6 +108,8 @@ i18n
                             taskLimitInfo: "Limit amout of simultaneous tasks in the column",
                         },
                         actions: {
+                            leaveWorkspace: "Leave workspace",
+                            deleteWorkspace: "Delete workspace",
                             newStatus: "New status",
                             newBoard: "New board",
                             archive: "Archive",
@@ -250,6 +252,8 @@ i18n
                             statusExists: "Статус з таким іменем вже існує",
                         },
                         actions: {
+                            leaveWorkspace: "Покинути робочий простір",
+                            deleteWorkspace: "Видалити робочий простір",
                             grant: "Ви впевнені, що хочете надати права адміністратора користувачу {{user}}?",
                             revoke: "Ви впевнені, що хочете відкликати права адміністратора в користувача {{user}}?",
                             confirm: "Підтвердити",

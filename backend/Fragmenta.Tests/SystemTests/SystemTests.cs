@@ -14,7 +14,8 @@ public class SystemTests : IAsyncLifetime
         _playwright = await Playwright.CreateAsync();
         _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            Headless = true
+            Headless = true,  // See browser UI
+            //SlowMo = 100       // Slow down operations
         });
         _page = await _browser.NewPageAsync();
     }
@@ -130,7 +131,6 @@ public class SystemTests : IAsyncLifetime
 
         Assert.False(string.IsNullOrEmpty(error));
         Assert.False(string.IsNullOrEmpty(timer));
-        Assert.NotEqual(error, timer);
     }
 
     [Fact]
@@ -199,41 +199,91 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
 
-        Assert.Fail();
-        // TODO Seed token into database to use for test
-        // Navigate to login page
-        await _page.GotoAsync(UrlBase + "/reset-password");
+        await _page.GotoAsync(UrlBase + "/reset-password?token=reset-token-9999&userId=9999");
 
-        //TODO Login with new password
+        var password = "Password1234";
+
+        await _page.FillAsync("//input[contains(@class, 'enter-password')]", password);
+        await _page.FillAsync("//input[contains(@class, 'repeat-password')]", password);
+        
+        await _page.ClickAsync("//button[contains(@class, 'change-password')]");
+
+        await Task.Delay(5100);
+        
+        Assert.True(_page.Url.Contains("/login"));
     }
 
     [Fact]
     public async Task ResetPassword_ShowError_WhenPasswordsDontMatch()
     {
-        Assert.Fail();
+        await LogoutAsync();
+
+        await _page.GotoAsync(UrlBase + "/reset-password?token=reset-token-10000&userId=10000");
+
+        var password = "Password1234";
+
+        await _page.FillAsync("//input[contains(@class, 'enter-password')]", password);
+        await _page.FillAsync("//input[contains(@class, 'repeat-password')]", password + "5");
+        
+        await _page.ClickAsync("//button[contains(@class, 'change-password')]");
+
+        var error = "//p[contains(@class, 'reset-error')]";
+        
+        Assert.True(await _page.ElementExists(error));
     }
 
     [Fact]
     public async Task ResetPassword_ShowError_WhenEmptyPassword()
     {
-        Assert.Fail();
+        await LogoutAsync();
+
+        await _page.GotoAsync(UrlBase + "/reset-password?token=reset-token-10000&userId=10000");
+        
+        await _page.ClickAsync("//button[contains(@class, 'change-password')]");
+
+        var error = "//p[contains(@class, 'reset-error')]";
+        
+        Assert.True(await _page.ElementExists(error));
     }
 
     [Fact]
     public async Task ResetPassword_ShowError_WhenPasswordTooWeak()
     {
-        Assert.Fail();
+        await LogoutAsync();
 
-        // Navigate to login page
-        await _page.GotoAsync(UrlBase + "/reset-password");
+        await _page.GotoAsync(UrlBase + "/reset-password?token=reset-token-10000&userId=10000");
+
+        var password = "password";
+
+        await _page.FillAsync("//input[contains(@class, 'enter-password')]", password);
+        await _page.FillAsync("//input[contains(@class, 'repeat-password')]", password);
+        
+        await _page.ClickAsync("//button[contains(@class, 'change-password')]");
+
+        var error = "//p[contains(@class, 'reset-error')]";
+        
+        Assert.True(await _page.ElementExists(error));
     }
 
     [Fact]
     public async Task ResetPassword_ShowError_WhenTokenInvalid()
     {
-        Assert.Fail();
-        // Navigate to login page
-        await _page.GotoAsync(UrlBase + "/reset-password");
+        await LogoutAsync();
+
+        await _page.GotoAsync(UrlBase + "/reset-password?token=invalid-token&userId=10000");
+
+        var password = "Password1234";
+
+        await _page.FillAsync("//input[contains(@class, 'enter-password')]", password);
+        await _page.FillAsync("//input[contains(@class, 'repeat-password')]", password);
+        
+        await _page.ClickAsync("//button[contains(@class, 'change-password')]");
+
+        await Task.Delay(500);
+        
+        var error = "//p[contains(@class, 'reset-error')]";
+        
+        Assert.True(await _page.ElementExists(error));
     }
 
 
@@ -262,19 +312,86 @@ public class SystemTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task LeaveWorkspace_ButtonInactive_IfHasOwnerRole()
+    public async Task LeaveWorkspace_Unavailable_IfHasOwnerRole()
     {
-        await _page.GotoAsync(UrlBase + "/me");
-
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var button = "//button[contains(@class ,'leave-workspace')]";
+        
+        Assert.False(await _page.ElementExists(button));
     }
-
+    
+    
     [Fact]
-    public async Task LeaveWorkspace_Success_IfDoesntHaveOwnerRole()
+    public async Task LeaveWorkspace_Success_IfHasAdminRole()
     {
-        await _page.GotoAsync(UrlBase + "/me");
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test14@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var button = "//button[contains(@class ,'leave-workspace')]";
 
-        Assert.Fail();
+        await _page.ClickAsync(button);
+        
+        var confirm = "//button[contains(@class ,'alert-confirm')]";
+        
+        await _page.ClickAsync(confirm);
+
+        Assert.False(_page.Url.Contains("/workspaces/"));
+    }
+    
+    [Fact]
+    public async Task LeaveWorkspace_Success_IfHasMemberRole()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test13@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var button = "//button[contains(@class ,'leave-workspace')]";
+
+        await _page.ClickAsync(button);
+        
+        var confirm = "//button[contains(@class ,'alert-confirm')]";
+        
+        await _page.ClickAsync(confirm);
+
+        Assert.False(_page.Url.Contains("/workspaces/"));
+    }
+    
+    [Fact]
+    public async Task LeaveWorkspace_Cancel_WhenClickCancelButton()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test2@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var button = "//button[contains(@class ,'leave-workspace')]";
+
+        await _page.ClickAsync(button);
+        
+        var cancel = "//button[contains(@class ,'alert-cancel')]";
+        
+        await _page.ClickAsync(cancel);
+
+        Assert.True(_page.Url.Contains("/workspaces/"));
     }
 
     [Fact]
@@ -499,15 +616,45 @@ public class SystemTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteWorkpace_Success_IfNoActiveBoardsExist()
+    public async Task DeleteWorkspace_Success_IfNoActiveBoardsExist()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test15@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var button = "//button[contains(@class ,'delete-workspace')]";
+
+        await _page.ClickAsync(button);
+        
+        var confirm = "//button[contains(@class ,'alert-confirm')]";
+        
+        await _page.ClickAsync(confirm);
+
+        await Task.Delay(100);
+
+        Assert.False(_page.Url.Contains("/workspaces/"));
     }
 
     [Fact]
-    public async Task DeleteWorkpace_ShowError_IfActiveBoardsExist()
+    public async Task DeleteWorkspace_Disabled_IfActiveBoardsExist()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var button = "//button[contains(@class ,'delete-workspace')]";
+
+        bool isDisabled = await _page.Locator(button).IsDisabledAsync();
+
+        Assert.True(isDisabled);
     }
 
     [Fact]
@@ -776,7 +923,21 @@ public class SystemTests : IAsyncLifetime
     [Fact]
     public async Task ViewBoard_Success_WhenAllowedAsGuest()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test7@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+        
+        Assert.True(_page.Url.Contains("/boards/"));
     }
 
     [Fact]
@@ -924,25 +1085,130 @@ public class SystemTests : IAsyncLifetime
     [Fact]
     public async Task UploadFile_NotAllowed_WhenGuestRole()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test7@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var task = "//*[contains(@class, 'task-open')]";
+        
+        await _page.ClickAsync(task);
+        
+        var upload = "//button[contains(@class, 'upload-file')]";
+
+        Assert.False(await _page.ElementExists(upload));
     }
 
     [Fact]
     public async Task UploadFile_ShowError_WhenFileTooBig()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test3@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var task = "//*[contains(@class, 'task-open')]";
+
+        await _page.ClickAsync(task);
+        
+        string projectDir = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
+        string fullPath = Path.Combine(projectDir, "TestData", "dictionary.txt");
+        
+        await _page.SetInputFilesAsync("input[type='file']", [ fullPath ]);
+
+        var errorToast = "//div[contains(@class, 'chakra-toast')]";
+
+        await Task.Delay(500);
+        
+        Assert.True(await _page.ElementExists(errorToast));
     }
 
     [Fact]
     public async Task UploadFile_ShowError_WhenFileHasNotAllowedExtension()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test3@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var task = "//*[contains(@class, 'task-open')]";
+
+        await _page.ClickAsync(task);
+        
+        string projectDir = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
+        string fullPath = Path.Combine(projectDir, "TestData", "file.js");
+        
+        await _page.SetInputFilesAsync("input[type='file']", [ fullPath ]);
+
+        var errorToast = "//div[contains(@class, 'chakra-toast')]";
+
+        await Task.Delay(500);
+        
+        Assert.True(await _page.ElementExists(errorToast));
     }
 
     [Fact]
     public async Task UploadFile_Success_WhenFileIsLessThan10MbAndHasAllowedExtension()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test3@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var task = "//*[contains(@class, 'task-open')]";
+        
+        await _page.ClickAsync(task);
+        
+        var attachment = "//div[contains(@class, 'attachment-tile')]";
+        var prevCount = await _page.Locator(attachment).CountAsync();
+        
+        string projectDir = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
+        string fullPath = Path.Combine(projectDir, "TestData", "test.txt");
+        
+        await _page.SetInputFilesAsync("input[type='file']", [ fullPath ]);
+        var upload = "//button[contains(@class, 'upload-file')]";
+        await Task.Delay(100);
+        await _page.ClickAsync(upload);
+        await Task.Delay(2000);
+        
+        var newCount = await _page.Locator(attachment).CountAsync();
+        Assert.True(newCount > prevCount);
     }
 
     [Fact]

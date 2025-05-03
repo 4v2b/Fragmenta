@@ -76,6 +76,7 @@ export function SortableTask({ id, task, disabled }) {
             </Portal>
             <Dialog.Trigger asChild>
               <Button
+              className="task-open"
                 variant="ghost"
                 size="sm"
                 fontWeight="medium" fontSize="md">{task.title}</Button>

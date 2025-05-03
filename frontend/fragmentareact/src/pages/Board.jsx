@@ -29,6 +29,7 @@ import { BoardProvider } from "@/utils/BoardContext"
 import { BiCog } from "react-icons/bi"
 import { ExtensionSelector } from "@/components/ExtensionSelector"
 import { ViewTaskDialog } from "@/components/ViewTaskDialog"
+import { useUser } from "@/utils/UserContext"
 
 export function Board() {
     const { role } = useWorkspace()
@@ -40,11 +41,11 @@ export function Board() {
     const [types, setTypes] = useState([])
     const [viewedTask, setViewedTask] = useState(null);
     const [open, setOpen] = useState(false);
+    const { userId } = useUser();
 
     // TODO Use useMemo for allowed types extensions, extracted from tree by ids
 
     // TODO Fetch actual user id (from /me endpoint)
-    const userId = 3;
 
     const [activeId, setActiveId] = useState(null);
     const [activeType, setActiveType] = useState(null);
@@ -74,16 +75,10 @@ export function Board() {
             const task = tasks.find(t => `task-${t.id}` === active.id);
             const canMove = (canManageBoardContent(role) && task.assigneeId == null) || (task.assigneeId != null && task.assigneeId == userId);
 
-            //console.log("user moves the task ", task)
-
             if (!canMove) {
-                //console.log("user cannot move the task");
                 setActiveId(null); return
             }
         }
-
-        //console.log("user moves the task")
-
     }
 
     function handleTitleChange(newTitle) {

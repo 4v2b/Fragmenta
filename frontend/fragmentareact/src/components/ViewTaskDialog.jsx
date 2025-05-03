@@ -15,18 +15,23 @@ import { useParams } from "react-router"
 import { MdOutlineFileDownload } from "react-icons/md"
 import { FaTrashCan } from "react-icons/fa6"
 import { AlertDialog } from "./AlertDialog"
+import { canManageBoardContent } from "@/utils/permissions"
+import { useTasks } from "@/utils/TaskContext"
+import { useTags } from "@/utils/TagContext"
 
 // BUG - Data in message box stays after exit
 
 export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
     const { t, i18n } = useTranslation()
     const { workspaceId, boardId } = useParams()
-    const { members } = useWorkspace()
+    const { members, role } = useWorkspace()
     const [error, setError] = useState(false)
     const [selectDueDate, setSelectDueDate] = useState(task?.dueDate ? true : false)
     const [selectedTags, setSelectedTags] = useState([])
     const [newTask, setNewTask] = useState(task)
     const [attachments, setAttachments] = useState([])
+    const { tasks } = useTasks()
+    const { removeTag } = useTags()
 
     useEffect(() => {
 
@@ -34,6 +39,16 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
     }, []);
 
     const priorities = [0, 1, 2, 3]
+
+    function handleRemove(tag) {
+
+        if (!tasks.some(e => e.id !== task.id && e.tagsId.some(t => t == tag.id))) {
+            removeTag(tag.id)
+        } else {
+            setSelectedTags(selectedTags.filter(e => e != tag.id))
+        }
+    }
+
 
     function handleAssigneeSelect() {
         onAddTask({
@@ -44,26 +59,15 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         })
     }
 
+    console.log(attachments)
+
     function handleFileUpload(file) {
 
         const formData = new FormData()
 
         formData.append("file", file);
         console.log(file)
-        api.postFormData(`/attachments?taskId=${task.id}`, formData, workspaceId).then(res => console.log(res))
-
-        // try {
-        //     const response = await fetch("/upload", {
-        //         method: "POST",
-        //         body: formData,
-        //     });
-
-        //     if (!response.ok) throw new Error("Upload failed");
-
-        //     toaster.create({ title: t("fields.labels.uploadSuccess"), type: "success" });
-        // } catch (error) {
-        //     toaster.create({ title: t("fields.labels.uploadError"), type: "error" });
-        // }
+        api.postFormData(`/attachments?taskId=${task.id}`, formData, workspaceId).then(res => setAttachments([...attachments, res]))
     }
 
     async function handleDownload(id) {
@@ -113,7 +117,11 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         </Field>
 
         <Field label={t("fields.labels.tags")}>
-            <TagSelector selectedTags={selectedTags} onSelect={tag => { console.log("Selected ", tag); setSelectedTags([...selectedTags, tag]) }}></TagSelector>
+            <TagSelector
+                selectedTags={selectedTags}
+                onRemove={tag => handleRemove(tag)}
+                onSelect={tag => setSelectedTags([...selectedTags, tag])}
+            />
         </Field>
 
         <Field label={t("fields.labels.priority")}>
@@ -160,30 +168,31 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         <Box>
             <Stack>
                 {attachments.map(a => (
-                    <Box key={a.id}>
+                    <Box key={a.id} className="attachment-tile">
                         <HStack spacing="2">
                             <Text fontWeight="bold">{a.originalName}</Text>
                             {/* <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString()}</Text> */}
                             <Text fontSize="sm">{(a.sizeBytes / 1024).toFixed(2)} KB</Text>
-                            <Button onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
+                            <Button className="download-file" onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
 
-                            <AlertDialog
-                                onConfirm={() => deleteAttachment(a.id)}
-                                base={<Button><FaTrashCan /></Button>}
-                                message="Are you sure you want to delete this status?"
-                                title="Confirm Deletion"
-                                confirmMessage="Delete"
-                                cancelMessage="Cancel"
-                            />
+                            {canManageBoardContent(role) &&
+                                <AlertDialog
+                                    onConfirm={() => deleteAttachment(a.id)}
+                                    base={<Button className="removeAttachment"><FaTrashCan /></Button>}
+                                    message="Are you sure you want to delete this status?"
+                                    title="Confirm Deletion"
+                                    confirmMessage="Delete"
+                                    cancelMessage="Cancel"
+                                />}
 
 
                         </HStack>
                     </Box>
                 ))}
             </Stack>
-            <FileManager allowedTypes={[".txt"]} onUpload={handleFileUpload} />
+            {canManageBoardContent(role) && <FileManager allowedTypes={[".txt", ".zip"]} onUpload={handleFileUpload} />}
         </Box>
-       
+
 
 
 

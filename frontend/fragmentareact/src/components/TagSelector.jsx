@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Input, Tag, Box, Flex, List } from "@chakra-ui/react";
 import { useTags } from "@/utils/TagContext"
 
-export function TagSelector({ selectedTags, onSelect }) {
+export function TagSelector({ selectedTags, onSelect, onRemove }) {
     const [suggestedTags, setSuggestedTags] = useState([])
     const [query, setQuery] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false)
@@ -14,6 +14,14 @@ export function TagSelector({ selectedTags, onSelect }) {
         setSuggestedTags([]);
         setQuery("");
         setShowSuggestions(false);
+    }
+
+    function handleRemove(item) {
+        console.log("removed", item);
+        onRemove(item);
+        // setSuggestedTags([]);
+        // setQuery("");
+        // setShowSuggestions(false);
     }
 
     useEffect(() => {
@@ -56,7 +64,7 @@ export function TagSelector({ selectedTags, onSelect }) {
                                 tags.filter(tag => !selectedTags?.some(i => i.id === tag.id))
                                     .map(item => (
                                         <List.Item
-                                        key={item.id}
+                                            key={item.id}
                                             onMouseDown={(e) => {
                                                 e.preventDefault(); // Prevent input from losing focus immediately
                                                 handleSelect(item);
@@ -71,6 +79,7 @@ export function TagSelector({ selectedTags, onSelect }) {
                             suggestedTags.length > 0 ?
                                 suggestedTags.map(item => (
                                     <List.Item
+                                    className="suggested-tag"
                                         onMouseDown={(e) => {
                                             e.preventDefault(); // Prevent input from losing focus immediately
                                             handleSelect(item);
@@ -86,6 +95,7 @@ export function TagSelector({ selectedTags, onSelect }) {
                                         fontStyle={"italic"}
                                     >{"No tags found"}</List.Item>
                                     <List.Item
+                                        className="create-tag"
                                         fontWeight="semibold"
                                         onMouseDown={(e) => {
                                             e.preventDefault(); // Prevent input from losing focus immediately
@@ -104,10 +114,10 @@ export function TagSelector({ selectedTags, onSelect }) {
                 )}
             </Box>
             <Flex gap="4" wrap="wrap">
-                {selectedTags.map(e => <Tag.Root key={e.id} size="md" colorPalette="white">
-                    <Tag.Label>{e.name}</Tag.Label>
+                {selectedTags.map(e => <Tag.Root className="tag-root" key={e.id} size="md" colorPalette="white">
+                    <Tag.Label className="tag-label" >{e.name}</Tag.Label>
                     <Tag.EndElement>
-                        <Tag.CloseTrigger />
+                        <Tag.CloseTrigger className="remove-tag" onClick={() => onRemove(e)} />
                     </Tag.EndElement>
                 </Tag.Root>)}
             </Flex>

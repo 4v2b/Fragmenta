@@ -17,6 +17,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { system } from "./theme"; // Ensure you import your theme
 import { Settings } from './pages/Settings';
+import { UserProvider } from './utils/UserContext';
 
 
 createRoot(document.getElementById('root')).render(
@@ -32,19 +33,20 @@ createRoot(document.getElementById('root')).render(
           </Route>
 
           <Route element={<MainLayout />}>
-            <Route index element={<Main />}/>
-            <Route path="workspaces/:workspaceId" element={<Workspace />}/>
-            <Route path="me" element={<Settings />}/>
-            <Route path="workspaces/:workspaceId/boards/:boardId" element={
-              <TasksProvider>
-                <TagsProvider>
-                  <Board />
-                </TagsProvider>
-              </TasksProvider>
-            }>
-            </Route>
-
+            
+              <Route index element={<Main />} />
+              <Route path="workspaces/:workspaceId" element={<Workspace />} />
+              <Route path="me" element={<Settings />} />
+              <Route path="workspaces/:workspaceId/boards/:boardId" element={
+                <TasksProvider>
+                  <TagsProvider>
+                    <Board />
+                  </TagsProvider>
+                </TasksProvider>
+              }>
+              </Route>
           </Route>
+
 
         </Routes>
       </BrowserRouter>

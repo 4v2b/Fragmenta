@@ -13,8 +13,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { SortableTask } from "@/components/SortableTask"
 import { useTranslation } from "react-i18next"
 import { RxDragHandleDots2 } from "react-icons/rx";
+import { useUser } from "@/utils/UserContext";
 
-export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
+export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: isDisabled
@@ -27,7 +28,8 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
     opacity: isDragging ? 0.5 : 1
   };
 
-  const { role, currentUser } = useWorkspace();
+  const { role } = useWorkspace();
+  const {userId} = useUser();
   const { addTask } = useTasks()
 
   function handleAddTask(task) {
@@ -44,7 +46,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
 
   // Check if user can drag tasks
   const canDragTask = (task) => {
-    return canManageBoardContent(role) && task.assignedUserId === currentUser?.id;
+    return canManageBoardContent(role) && (task.assignedUserId == null || task.assignedUserId === userId);
   };
 
   return (
