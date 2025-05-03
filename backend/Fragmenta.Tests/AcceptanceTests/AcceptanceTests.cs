@@ -462,8 +462,10 @@ public class AcceptanceTests : IAsyncLifetime
         await _page.ClickAsync(workspace);
         var members = "//button[@data-value=\"members\"]";
         await _page.ClickAsync(members);
+
+        var userToDelete = "test12@example.com";
         int count1 = await _page.Locator("//tr").CountAsync();
-        var button = "//tr[contains(.//td[contains(@class, 'chakra-table__cell css-4v8c5f')]/text(), 'Учасник') or contains(.//td[contains(@class, 'chakra-table__cell css-4v8c5f')]/text(), 'Member')]//button";
+        var button = $"//tr[contains(.//td[contains(@class, 'email-cell')]/text(), '{userToDelete}') ]//button[contains(@class, 'kick')]";
         
         await _page.ClickAsync(button);
         
@@ -494,7 +496,7 @@ public class AcceptanceTests : IAsyncLifetime
         var workspace = "//div[@data-part='item']";
         await _page.ClickAsync(workspace);
 
-        var button = "//tr[contains(.//p//text(), 'Власник') or contains(.//p//text(), 'Owner')]//button";
+        var button = "//tr[contains(.//p//text(), 'Власник') or contains(.//p//text(), 'Owner')]//button[contains(@class, 'kick')]";
         
         var members = "//button[@data-value=\"members\"]";
         await _page.ClickAsync(members);
@@ -519,7 +521,7 @@ public class AcceptanceTests : IAsyncLifetime
         var members = "//button[@data-value=\"members\"]";
         await _page.ClickAsync(members);
         int count1 = await _page.Locator("//tr").CountAsync();
-        var button = "//tr[contains(.//td[contains(@class, 'chakra-table__cell css-4v8c5f')]/text(), 'Учасник') or contains(.//td[contains(@class, 'chakra-table__cell css-4v8c5f')]/text(), 'Member')]//button";
+        var button = "//tr[contains(.//td[contains(@class, 'chakra-table__cell css-4v8c5f')]/text(), 'Учасник') or contains(.//td[contains(@class, 'chakra-table__cell css-4v8c5f')]/text(), 'Member')]//button[contains(@class, 'kick')]";
         
         await _page.ClickAsync(button);
         
@@ -790,7 +792,7 @@ public class AcceptanceTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test7@example.com", "Password1234");
+        await LoginAsync("test8@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);

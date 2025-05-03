@@ -21,6 +21,14 @@ export function WorkspaceProvider({ role, workspaceId, children }) {
         api.delete(`/members/${memberId}`, workspaceId).then(setMembers(members.filter(e => e.id != memberId))).catch(e => console.log(e))
     }
 
+    function grantAdmin(memberId) {
+        api.post("/members/" + memberId + "/grant", {}, workspaceId).then(() => setMembers(members.map(e => e.id == memberId ? {...e, role: "Admin"} : e)))
+    }
+
+    function revokeAdmin(memberId) {
+        api.post("/members/" + memberId + "/revoke", {}, workspaceId).then(() => setMembers(members.map(e => e.id == memberId ? {...e, role: "Member"} : e)))
+    }
+
     // Update member role
     async function updateMemberRole(memberId, newRole) {
         const response = await fetch(`/workspaces/${workspaceId}/members/${memberId}`, {
@@ -37,7 +45,7 @@ export function WorkspaceProvider({ role, workspaceId, children }) {
         }
     }
     return (
-        <WorkspaceContext.Provider value={{ role, members, addMembers, removeMember}}>
+        <WorkspaceContext.Provider value={{ role, members, addMembers, removeMember, grantAdmin, revokeAdmin}}>
             {children}
         </WorkspaceContext.Provider>
     );

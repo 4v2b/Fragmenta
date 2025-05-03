@@ -74,7 +74,7 @@ export function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
+              placeholder="email@example.com"
               size="md"
             />
           </Box>
@@ -91,7 +91,7 @@ export function Login() {
           <Link to={"/forgot-password"} color="blue">{t("auth.prompts.forgotPassword")}</Link>
         </Stack>
 
-        {error && <Text color="red.500" fontSize="sm">{error}</Text>}
+        {error && <Text color="red.500" fontSize="sm">{t(error)}</Text>}
 
         {lockoutUntil && (
           <Text color="red.500" fontSize="sm">

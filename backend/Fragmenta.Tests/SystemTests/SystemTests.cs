@@ -36,8 +36,6 @@ public class SystemTests : IAsyncLifetime
         await _page.FillAsync("//input[contains(@class, 'chakra-input css-eiee9d') and @type='password']", password);
 
         await _page.ClickAsync("//div[contains(@class, 'css-3fisqh')]//button[@type='submit']");
-
-        //await _page.GotoAsync(UrlBase + "/login");
     }
 
     private async Task RegisterAsync(string name, string email, string password, string repeatPassword)
@@ -95,7 +93,7 @@ public class SystemTests : IAsyncLifetime
 
         await _page.GotoAsync(UrlBase + "/login");
 
-        var email = "test3@example.com";
+        var email = "test8@example.com";
         var password = "Password4321";
 
         await LoginAsync(email, password);
@@ -395,13 +393,109 @@ public class SystemTests : IAsyncLifetime
     [Fact]
     public async Task GrantAdminRoleToMember_Success_IfOwnerOfWorkspace()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        var members = "//button[@data-value=\"members\"]";
+        await _page.ClickAsync(members);
+
+        var userToAdmin = "test8@example.com";
+        var button = $"//tr[contains(.//td[contains(@class, 'email-cell')]/text(), '{userToAdmin}') ]//button[contains(@class, 'grant')]";
+        
+        await _page.ClickAsync(button);
+        
+        var isAdmin = $"//tr[contains(.//td[contains(@class, 'email-cell') and contains(@class, 'admin')]/text(), '{userToAdmin}') ]";
+        
+        var confirm = "//button[contains(@class, 'chakra-button css-aoq1vx')]";
+        await _page.ClickAsync(confirm);
+
+        await Task.Delay(500);
+
+        Assert.True(await _page.ElementExists(isAdmin));
+    }
+    
+    [Fact]
+    public async Task GrantAdminRoleToMember_Cancel_IfClickedCancelButton()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        var members = "//button[@data-value=\"members\"]";
+        await _page.ClickAsync(members);
+
+        var userToAdmin = "test3@example.com";
+        var button = $"//tr[contains(.//td[contains(@class, 'email-cell')]/text(), '{userToAdmin}') ]//button[contains(@class, 'grant')]";
+        
+        await _page.ClickAsync(button);
+        
+        var isAdmin = $"//tr[contains(.//td[contains(@class, 'email-cell') and contains(@class, 'admin')]/text(), '{userToAdmin}') ]";
+        
+        var cancel = "//button[contains(@class, 'chakra-button css-y5du55')]";
+        await _page.ClickAsync(cancel);
+
+        Assert.False(await _page.ElementExists(isAdmin));
     }
 
     [Fact]
     public async Task RevokeAdminRoleOfAdmin_Success_IfOwnerOfWorkspace()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        var members = "//button[@data-value=\"members\"]";
+        await _page.ClickAsync(members);
+
+        var userToMember = "test5@example.com";
+        var button = $"//tr[contains(.//td[contains(@class, 'email-cell')]/text(), '{userToMember}') ]//button[contains(@class, 'revoke')]";
+        
+        await _page.ClickAsync(button);
+        
+        var isMember = $"//tr[contains(.//td[contains(@class, 'email-cell') and contains(@class, 'member')]/text(), '{userToMember}') ]";
+        
+        var confirm = "//button[contains(@class, 'chakra-button css-14str5r')]";
+        await _page.ClickAsync(confirm);
+
+        await Task.Delay(500);
+
+        Assert.True(await _page.ElementExists(isMember));
+    }
+    
+    [Fact]
+    public async Task RevokeAdminRoleToMember_Cancel_IfClickedCancelButton()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test1@example.com", "Password1234");
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        var members = "//button[@data-value=\"members\"]";
+        await _page.ClickAsync(members);
+
+        var userToAdmin = "test2@example.com";
+        var button = $"//tr[contains(.//td[contains(@class, 'email-cell')]/text(), '{userToAdmin}') ]//button[contains(@class, 'revoke')]";
+        
+        await _page.ClickAsync(button);
+        
+        var isMember = $"//tr[contains(.//td[contains(@class, 'email-cell') and contains(@class, 'member')]/text(), '{userToAdmin}') ]";
+        
+        var cancel = "//button[contains(@class, 'chakra-button css-y5du55')]";
+        await _page.ClickAsync(cancel);
+
+        Assert.False(await _page.ElementExists(isMember));
     }
 
     [Fact]
@@ -421,7 +515,7 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test8@example.com", "Password1234");
+        await LoginAsync("test3@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
@@ -507,16 +601,12 @@ public class SystemTests : IAsyncLifetime
         var n1 = await _page.Locator(archivedBoard).CountAsync();
         
         await _page.ClickAsync(archivedBoard);
+
+        await Task.Delay(500);
         
         var n2 = await _page.Locator(archivedBoard).CountAsync();
         
         Assert.True(n2 < n1);
-    }
-
-    [Fact]
-    public async Task ViewBoards_ShowsTimerUntilDeleting_WhenBoardArchived()
-    {
-        Assert.Fail();
     }
     
     [Fact]
@@ -524,7 +614,7 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test7@example.com", "Password1234");
+        await LoginAsync("test3@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
@@ -579,6 +669,8 @@ public class SystemTests : IAsyncLifetime
         
         await _page.ClickAsync(archivedBoard);
         
+        await Task.Delay(500);
+        
         var n2 = await _page.Locator(archivedBoard).CountAsync();
         
         Assert.True(n2 < n1);
@@ -589,7 +681,7 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test1@example.com", "Password1234");
+        await LoginAsync("test2@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
@@ -597,7 +689,7 @@ public class SystemTests : IAsyncLifetime
         var workspace = "//div[@data-part='item']";
         await _page.ClickAsync(workspace);
         
-        var openBoard = "(//button[contains(@class, 'chakra-card__body css-7b8ujn') and .//button[contains(@class, 'chakra-button css-o4f00r')]]//p)";
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn') and .//button[contains(@class, 'chakra-button css-o4f00r')]]//p";
         await _page.ClickAsync(openBoard);
 
         var types = "//button[contains(@class, 'allowedType')]";
@@ -610,7 +702,7 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test4@example.com", "Password1234");
+        await LoginAsync("test3@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
@@ -618,7 +710,7 @@ public class SystemTests : IAsyncLifetime
         var workspace = "//div[@data-part='item']";
         await _page.ClickAsync(workspace);
         
-        var openBoard = "(//button[contains(@class, 'chakra-card__body css-7b8ujn') and .//button[contains(@class, 'chakra-button css-o4f00r')]]//p)";
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
         
         await _page.ClickAsync(openBoard);
 
@@ -690,20 +782,89 @@ public class SystemTests : IAsyncLifetime
     [Fact]
     public async Task CreateStatus_Unavailable_WhenGuest()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test9@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var createStatus =
+            "//button[contains(@class, 'status-dialog')]";
+        
+        Assert.False(await _page.ElementExists(createStatus));
     }
 
     [Fact]
     public async Task CreateStatus_ShowError_WhenEmptyName()
     {
-        Assert.Fail();
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test3@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var statusDialog =
+            "//button[contains(@class, 'status-dialog')]";
+
+        await _page.ClickAsync(statusDialog);
+
+        var createStatus = "//button[contains(@class, 'create-status')]";
+        
+        await _page.ClickAsync(createStatus);
+
+        var error = "//span[contains(@class, 'error')]";
+        
+        Assert.True(await _page.ElementExists(error));
     }
 
     [Fact]
-    public async Task CreateStatus_Success_WhenEnteredCorrectName()
+    public async Task CreateStatus_Success_WhenEnteredName()
     {
-        var createStatus =
-            "//div[contains(@class, 'css-69i1ev')]//button[contains(@class, 'chakra-button chakra-dialog__trigger css-n9m7sp')]";
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test3@example.com", "Password1234");
+        
+        var workspaceSelect = "//button[@id='select::r5::trigger']";
+        await _page.ClickAsync(workspaceSelect);
+        
+        var workspace = "//div[@data-part='item']";
+        await _page.ClickAsync(workspace);
+        
+        var openBoard = "//div[contains(@class, 'chakra-card__body css-7b8ujn')]//p";
+        
+        await _page.ClickAsync(openBoard);
+
+        var statusDialog =
+            "//button[contains(@class, 'status-dialog')]";
+
+        await _page.ClickAsync(statusDialog);
+
+        var statusName = $"Status {Random.Shared.Next(1000)}";
+        await _page.FillAsync("//input[contains(@class, 'status-name')]", statusName);
+        
+        var createStatus = "//button[contains(@class, 'create-status')]";
+        
+        await _page.ClickAsync(createStatus);
+
+        var newStatus = $"//*[contains(@class, 'status-heading') and contains(text(),'{statusName}')]"; 
+        
+        Assert.True(await _page.ElementExists(newStatus));
     }
 
     [Fact]
@@ -881,24 +1042,66 @@ public class SystemTests : IAsyncLifetime
     }
     
     [Fact]
-    public async Task DeleteAccount_Success_IfNoWorkspacesExist()
+    public async Task DeleteAccount_ConfirmDisabled_WhenPasswordEmpty()
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
         await LoginAsync("test10@example.com", "Password1234");
         await _page.ClickAsync("//button[contains(@class, 'tome')]");
        
-        var button = "//button[contains(@class ,'chakra-button chakra-dialog__trigger css-zgepf1')]";
+        var button = "//button[contains(@class ,'delete-acc')]";
 
         await _page.ClickAsync(button);
 
         var dialog = "//div[contains(@class, 'chakra-dialog__content css-oedudq')]";
         
-        var delete = "//button[contains(@class ,'chakra-button css-1uynepj')]";
+        var delete = "//button[contains(@class ,'alert-confirm')]";
         
+        bool isDisabled = await _page.Locator(delete).IsDisabledAsync();
+
+        Assert.True(isDisabled);
+    }
+    
+    [Fact]
+    public async Task DeleteAccount_Success_WhenPasswordValid()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test4@example.com", "Password1234");
+        await _page.ClickAsync("//button[contains(@class, 'tome')]");
+       
+        var button = "//button[contains(@class ,'delete-acc')]";
+        await _page.ClickAsync(button);
+        var error = "//span[contains(@class, 'error')]";
+
+        var password = "Password1234";
+        await _page.FillAsync("//input[contains(@class, 'password')]", password);
+        
+        var delete = "//button[contains(@class ,'alert-confirm')]";
         await _page.ClickAsync(delete);
 
-        Assert.False(await _page.ElementExists("//button[contains(@class, 'chakra-button css-10ap741')]"));
+        await Task.Delay(500);
+        
+        Assert.True(_page.Url.Contains("login"));
+    }
+    
+    [Fact]
+    public async Task DeleteAccount_ShowError_WhenPasswordInvalid()
+    {
+        await LogoutAsync();
+        await _page.GotoAsync(UrlBase + "/login");
+        await LoginAsync("test10@example.com", "Password1234");
+        await _page.ClickAsync("//button[contains(@class, 'tome')]");
+       
+        var button = "//button[contains(@class ,'delete-acc')]";
+        await _page.ClickAsync(button);
+        var error = "//span[contains(@class, 'error')]";
+        await _page.FillAsync("//input[contains(@class, 'password')]", "password");
+        
+        var delete = "//button[contains(@class ,'alert-confirm')]";
+        await _page.ClickAsync(delete);
+
+        Assert.True(await _page.ElementExists(error));
     }
     
     [Fact]
@@ -909,15 +1112,15 @@ public class SystemTests : IAsyncLifetime
         await LoginAsync("test10@example.com", "Password1234");
         await _page.ClickAsync("//button[contains(@class, 'tome')]");
        
-        var button = "//button[contains(@class ,'chakra-button chakra-dialog__trigger css-zgepf1')]";
+        var button = "//button[contains(@class ,'delete-acc')]";
 
         await _page.ClickAsync(button);
         
-        var cancel = "//button[contains(@class ,'chakra-button css-y5du55')]";
+        var cancel = "//button[contains(@class ,'alert-cancel')]";
         
         await _page.ClickAsync(cancel);
-
-        Assert.True(await _page.ElementExists("//button[contains(@class, 'chakra-button css-10ap741')]"));
+        
+        Assert.True(_page.Url.Contains("/me"));
     }
 
     [Fact]
@@ -928,7 +1131,7 @@ public class SystemTests : IAsyncLifetime
         await LoginAsync("test10@example.com", "Password1234");
         await _page.ClickAsync("//button[contains(@class, 'tome')]");
 
-        var button = "//button[contains(@class ,'chakra-button chakra-dialog__trigger css-zgepf1')]";
+        var button = "//button[contains(@class ,'delete-acc')]";
 
         await _page.ClickAsync(button);
 
@@ -945,13 +1148,12 @@ public class SystemTests : IAsyncLifetime
         await LoginAsync("test1@example.com", "Password1234");
         await _page.ClickAsync("//button[contains(@class, 'tome')]");
 
-        var button = "//button[contains(@class ,'chakra-button chakra-dialog__trigger css-zgepf1')]";
+        var button = "//button[contains(@class ,'delete-acc')]";
 
         await Task.Delay(100);
         
         bool isDisabled = await _page.Locator(button).IsDisabledAsync();
         
         Assert.True(isDisabled);
-        
     }
 }

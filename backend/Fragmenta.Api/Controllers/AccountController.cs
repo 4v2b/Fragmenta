@@ -45,7 +45,7 @@ public class AccountController : ControllerBase
     }
     
     [HttpDelete]
-    public async Task<IActionResult> DeleteAccount([FromQuery] [Password] string password, [FromServices] IUserAccountService accountService)
+    public async Task<IActionResult> DeleteAccount([FromQuery] string password, [FromServices] IUserAccountService accountService)
     {
         var id = GetAuthenticatedUserId();
 

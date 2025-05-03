@@ -124,7 +124,7 @@ namespace Fragmenta.Api.Controllers
         /// <response code="400">If no member found for give workspace</response>
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
-        [HttpPost("/members/{memberId}/revoke")]
+        [HttpPost("{memberId}/revoke")]
         public async Task<IActionResult> RevokeAdmin(long memberId, [FromServices] IWorkspaceAccessService accessService)
         {
             var actorId = GetAuthenticatedUserId();
@@ -156,7 +156,7 @@ namespace Fragmenta.Api.Controllers
         /// <response code="400">If no member found for give workspace</response>
         /// <response code="401">If user is unauthorized</response>
         /// <response code="403">If user has no permission for the action</response>
-        [HttpPost("/members/{memberId}/grant")]
+        [HttpPost("{memberId}/grant")]
         public async Task<IActionResult> GrantAdmin(long memberId, [FromServices] IWorkspaceAccessService accessService)
         {
             var actorId = GetAuthenticatedUserId();

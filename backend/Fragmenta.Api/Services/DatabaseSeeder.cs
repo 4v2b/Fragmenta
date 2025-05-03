@@ -56,6 +56,7 @@ public class DatabaseSeeder
             new() { Name = "testuser8", Email = "test8@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser9", Email = "test9@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser10", Email = "test10@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
+            new() { Name = "testuser12", Email = "test12@example.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
             new() { Name = "testuser11", Email = "vitalijber2004@gmail.com", PasswordHash = _hasher.Hash("Password1234", salt), PasswordSalt = salt },
         };
 
@@ -77,17 +78,17 @@ public class DatabaseSeeder
         
         var accesses = new List<WorkspaceAccess>
         {
-            new() { Workspace = workspaces[1], RoleId = 1, User = users[0] },
-            new() { Workspace = workspaces[1], RoleId = 2, User = users[1] },
-            new() { Workspace = workspaces[2], RoleId = 3, User = users[0] },
-            new() { Workspace = workspaces[0], RoleId = 2, User = users[1] },
-            new() { Workspace = workspaces[0], RoleId = 1, User = users[4] },
-            new() { Workspace = workspaces[0], RoleId = 3, User = users[2] },
-            new() { Workspace = workspaces[1], RoleId = 4, User = users[2] },
-            new() { Workspace = workspaces[0], RoleId = 4, User = users[5] },
-            new() { Workspace = workspaces[1], RoleId = 3, User = users[6] },
-            new() { Workspace = workspaces[1], RoleId = 3, User = users[7] },
-            new() { Workspace = workspaces[1], RoleId = 4, User = users[8] },
+            new() { Workspace = workspaces[1], RoleId = 1, User = users[0] }, // Workspace 2 user1 owner
+            new() { Workspace = workspaces[2], RoleId = 3, User = users[0] }, 
+            new() { Workspace = workspaces[1], RoleId = 2, User = users[1] }, // Workspace 2 user2 admin
+            new() { Workspace = workspaces[1], RoleId = 2, User = users[4] }, // Workspace 2 user5 admin
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[2] }, // Workspace 2 user3 member
+            new() { Workspace = workspaces[1], RoleId = 4, User = users[5] }, // Workspace 2 user6 guest
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[6] }, // Workspace 2 user7 guest
+            new() { Workspace = workspaces[0], RoleId = 3, User = users[6] }, 
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[7] }, // Workspace 2 user8 member
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[11] }, // Workspace 2 user12 member
+            new() { Workspace = workspaces[1], RoleId = 4, User = users[8] }, // Workspace 2 user9 guest
         };
 
         _context.WorkspaceAccesses.AddRange(accesses);
@@ -150,8 +151,18 @@ public class DatabaseSeeder
             Tags = [],
             ArchivedAt = DateTime.UtcNow.AddDays(-1)
         };
+        
+        var board6 = new Board
+        {
+            Name = "Board 3",
+            AttachmentTypes = [],
+            Workspace = workspaces[1],
+            Statuses = [],
+            Tags = [],
+            ArchivedAt = DateTime.UtcNow.AddDays(-1)
+        };
 
-        _context.Boards.AddRange(board1, board2, board3, board4, board5);
+        _context.Boards.AddRange(board1, board2, board3, board4, board5, board6);
         await _context.SaveChangesAsync();
         
         _context.BoardAccesses.AddRange(

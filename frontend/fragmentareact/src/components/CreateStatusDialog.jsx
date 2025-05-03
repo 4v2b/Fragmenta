@@ -42,7 +42,7 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
 
     return (<DialogRoot>
         <DialogTrigger asChild>
-            <Button bg="primary">{t("fields.actions.newStatus")}</Button>
+            <Button className={"status-dialog"} bg="primary">{t("fields.actions.newStatus")}</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
@@ -54,6 +54,7 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
                     <InputField.Root invalid={error != null}>
                         <InputField.Label>{t("fields.labels.name")}</InputField.Label>
                         <Input
+                        className="status-name"
                             value={newStatus.name}
                             onChange={e => setNewStatus({ ...newStatus, name: e.target.value })} />
                         <InputField.ErrorText>{t(error)}</InputField.ErrorText>
@@ -79,7 +80,7 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
                             console.log(newStatus);}}
                             defaultValue="0" min={1} max={50}>
                             <NumberInput.Control />
-                            <NumberInput.Input value={newStatus?.maxTasks.toString()} />
+                            <NumberInput.Input value={newStatus?.maxTasks?.toString()} />
                         </NumberInput.Root>
 
                     </Field>
@@ -99,12 +100,12 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
                 </DialogActionTrigger>
                 {
                     newStatus?.name == "" ?
-                        (<Button onClick={() => setError("fields.labels.required")} bg="primary">{t("fields.actions.create")}</Button>)
+                        (<Button className="create-status" onClick={() => setError("fields.labels.required")} bg="primary">{t("fields.actions.create")}</Button>)
                         :
                         (statusNames.includes(newStatus?.name) ?
-                            (<Button onClick={() => setError("fields.labels.statusExists")} bg="primary">{t("fields.actions.create")}</Button>) :
+                            (<Button className="create-status" onClick={() => setError("fields.labels.statusExists")} bg="primary">{t("fields.actions.create")}</Button>) :
                             (<DialogActionTrigger asChild>
-                                <Button onClick={() => handleStatusCreate()} bg="primary">{t("fields.actions.create")}</Button>
+                                <Button className="create-status" onClick={() => handleStatusCreate()} bg="primary">{t("fields.actions.create")}</Button>
                             </DialogActionTrigger>)
                         )}
             </DialogFooter>

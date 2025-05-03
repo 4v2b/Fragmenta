@@ -40,9 +40,11 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
     addTask(task, status.id)
   }
 
+  console.log(role)
+
   // Check if user can drag tasks
   const canDragTask = (task) => {
-    return canManageBoardContent(role) || task.assignedUserId === currentUser.id;
+    return canManageBoardContent(role) && task.assignedUserId === currentUser?.id;
   };
 
   return (
@@ -61,7 +63,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
       overflow={"auto"}
     >
       <Flex
-        
         alignItems="center"
         // justify={"stretch"}
         bg={status.colorHex}
@@ -72,7 +73,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
         justify={"space-between"}
       >
         {/* <HStack spacing={3} > */}
-          <Heading size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
+          <Heading className="status-heading" size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
             {status.name}
           </Heading>
 
