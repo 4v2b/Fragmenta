@@ -32,7 +32,6 @@ export function MainLayout() {
     const handleWorkspaceSelect = (workspaceId) => navigate(workspaceId == null ? "/" : `/workspaces/${workspaceId}`)
 
     console.log("selected workspace ", selectedWorkspace)
-    console.log("workspace id ", workspaceId)
 
     useEffect(() => {
 

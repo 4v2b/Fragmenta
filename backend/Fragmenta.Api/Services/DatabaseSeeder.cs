@@ -120,7 +120,7 @@ public class DatabaseSeeder
             new() { Workspace = workspaces[1], RoleId = 4, User = users[6] }, // Workspace 2 user7 guest
             //new() { Workspace = workspaces[2], RoleId = 3, User = users[6] }, 
             new() { Workspace = workspaces[1], RoleId = 3, User = users[7] }, // Workspace 2 user8 member
-            new() { Workspace = workspaces[1], RoleId = 3, User = users[11] }, // Workspace 2 user12 member
+            new() { Workspace = workspaces[1], RoleId = 3, User = users[10] }, // Workspace 2 user12 member
             new() { Workspace = workspaces[1], RoleId = 4, User = users[8] }, // Workspace 2 user9 guest
             new() { Workspace = workspaces[1], RoleId = 3, User = users[12] }, // Workspace 2 user13 member
             new() { Workspace = workspaces[1], RoleId = 2, User = users[13] }, // Workspace 2 user14 admin
@@ -147,11 +147,19 @@ public class DatabaseSeeder
             Tags = [ board1Tag ],
         };
 
-        var board2Status1 = new Status { Name = "Status 1", ColorHex = "#FFFFFF", TaskLimit = 0, Weight = 0 };
-        var board2Status2 = new Status { Name = "Status 2", ColorHex = "#FAF", TaskLimit = 0, Weight = 10 };
-        var board2Task = new Dal.Models.Task { Title = "Task Board 2", Priority = 0, Status = board2Status2 };
-        var board2Tag = new Tag { Name = "QA", Tasks = [ board2Task ] };
+        var board2Status1 = new Status { Name = "Status 1", ColorHex = "#EABFFF", TaskLimit = 0, Weight = 50 };
+        var board2Status2 = new Status { Name = "Status 2", ColorHex = "#FAF", TaskLimit = 0, Weight = 100 };
+        var board2Status3 = new Status { Name = "Status 3", ColorHex = "#667788", TaskLimit = 0, Weight = 200 };
+        var board2Task1 = new Dal.Models.Task { Title = "Task 1", Priority = 0, Status = board2Status2, Weight = 0};
+        var board2Task2 = new Dal.Models.Task { Title = "Task 2", Priority = 0, Status = board2Status2 , Weight = 100};
+        var board2Task5 = new Dal.Models.Task { Title = "Task 5", Priority = 0, Status = board2Status2 , Weight = 150};
+        var board2Task3 = new Dal.Models.Task { Title = "Task 3", Priority = 0, Assignee = users[1], Status = board2Status1, Weight = 0};
+        var board2Task4 = new Dal.Models.Task { Title = "Task 4", Priority = 0, Status = board2Status1 , Weight = 100};
+        var board2Tag = new Tag { Name = "QA", Tasks = [ board2Task1, board2Task2, board2Task3, board2Task4, board2Task5 ] };
 
+        //await _context.Tasks.AddRangeAsync(board2Task1, board2Task2, board2Task3);
+        //await _context.SaveChangesAsync();
+        
         var type = await _context.AttachmentTypes.FirstOrDefaultAsync(a => a.Value == ".txt");
         
         var board2 = new Board
@@ -159,7 +167,7 @@ public class DatabaseSeeder
             Name = "Board",
             AttachmentTypes = [type],
             Workspace = workspaces[1],
-            Statuses = [ board2Status1, board2Status2 ],
+            Statuses = [ board2Status1, board2Status2, board2Status3 ],
             Tags = [ board2Tag ],
         };
 
@@ -215,7 +223,7 @@ public class DatabaseSeeder
         
         _context.BoardAccesses.AddRange(
             new BoardAccess { Board = board1, User = users[5] },
-            new BoardAccess { Board = board2, User = users[2] },
+            //new BoardAccess { Board = board2, User = users[2] },
             new BoardAccess { Board = board2, User = users[6] },
             new BoardAccess { Board = board2, User = users[8] });
         await _context.SaveChangesAsync();

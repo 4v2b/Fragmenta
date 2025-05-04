@@ -38,8 +38,6 @@ export function Settings() {
         api.delete("/me?password=" + password).then(() => logout()).catch(error => error.message == "403" && setError(true))
     }
 
-    console.log("any workspace", anyWorkpace)
-
     return <Box>
 
         <DialogRoot role="alertdialog">

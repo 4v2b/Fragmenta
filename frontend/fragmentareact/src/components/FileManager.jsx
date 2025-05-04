@@ -40,9 +40,9 @@ export function FileManager({ allowedTypes, onUpload }) {
                 <Toaster />
                 <FileUpload.HiddenInput />
                 <FileUpload.Dropzone>
-                    <Icon size="md" color="fg.muted">
+                    {/* <Icon size="md" color="fg.muted"> */}
                         <LuUpload />
-                    </Icon>
+                    {/* </Icon> */}
                     <FileUpload.DropzoneContent>
                         <Box>{t("fields.labels.dragFile")}</Box>
                         <Box color="fg.muted">{t("fields.labels.fileConstraint")}</Box>

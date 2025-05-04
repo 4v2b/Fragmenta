@@ -9,7 +9,6 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
     const { tags, addTag } = useTags();
 
     function handleSelect(item) {
-        console.log("selected", item);
         onSelect(item);
         setSuggestedTags([]);
         setQuery("");
@@ -24,6 +23,8 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
         // setShowSuggestions(false);
     }
 
+    console.log(selectedTags)
+
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             setSuggestedTags(tags.filter(e => e.name?.includes(query) && !selectedTags?.some(i => i.id == e.id)))
@@ -37,6 +38,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
         <Box>
             <Box position="relative" w="full">
                 <Input
+                    className="input-tag"
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                     value={query}
                     onFocus={() => setShowSuggestions(true)}
@@ -64,6 +66,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                 tags.filter(tag => !selectedTags?.some(i => i.id === tag.id))
                                     .map(item => (
                                         <List.Item
+                                        
                                             key={item.id}
                                             onMouseDown={(e) => {
                                                 e.preventDefault(); // Prevent input from losing focus immediately
@@ -79,7 +82,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                             suggestedTags.length > 0 ?
                                 suggestedTags.map(item => (
                                     <List.Item
-                                    className="suggested-tag"
+                                        className="suggested-tag"
                                         onMouseDown={(e) => {
                                             e.preventDefault(); // Prevent input from losing focus immediately
                                             handleSelect(item);

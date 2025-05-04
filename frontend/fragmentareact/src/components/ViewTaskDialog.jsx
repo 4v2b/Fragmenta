@@ -44,9 +44,8 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
 
         if (!tasks.some(e => e.id !== task.id && e.tagsId.some(t => t == tag.id))) {
             removeTag(tag.id)
-        } else {
-            setSelectedTags(selectedTags.filter(e => e != tag.id))
         }
+        setSelectedTags(selectedTags.filter(e => e.id != tag.id))
     }
 
 
@@ -58,8 +57,6 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             dueDate: selectDueDate ? newTask?.dueDate : null
         })
     }
-
-    console.log(attachments)
 
     function handleFileUpload(file) {
 

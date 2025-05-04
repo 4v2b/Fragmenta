@@ -42,8 +42,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
     addTask(task, status.id)
   }
 
-  console.log(role)
-
   // Check if user can drag tasks
   const canDragTask = (task) => {
     return canManageBoardContent(role) && (task.assignedUserId == null || task.assignedUserId === userId);
@@ -51,6 +49,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
 
   return (
     <Box
+    className="status-column"
       flexShrink={0}
       w="300px"
       height="100%" // important so children can fill vertical space
@@ -80,11 +79,12 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
           </Heading>
 
           {status.maxTasks && (
-            <Badge bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
+            <Badge className="task-limit-badge" bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
               {tasks.length} / {status.maxTasks}
             </Badge>
           )}
           <Box
+          className="column-drag-handle"
           textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
           cursor={"grab"}
             {...attributes}

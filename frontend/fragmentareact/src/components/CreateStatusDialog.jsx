@@ -63,7 +63,7 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
 
                     <Field label={t("fields.labels.taskLimit")}>
 
-                        <Checkbox.Root size={"sm"}>
+                        <Checkbox.Root className="set-limit-check" size={"sm"}>
                             <Checkbox.HiddenInput onInput={() => setSelectTaskLimit(prev => !prev)} />
                             <Checkbox.Control>
                                 <Checkbox.Indicator />
@@ -77,10 +77,10 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
                             onValueChange={e =>{
                                 setNewStatus({ ...newStatus, maxTasks: e.valueAsNumber }
                                 );
-                            console.log(newStatus);}}
+                            }}
                             defaultValue="0" min={1} max={50}>
                             <NumberInput.Control />
-                            <NumberInput.Input value={newStatus?.maxTasks?.toString()} />
+                            <NumberInput.Input className="set-limit-input" value={newStatus?.maxTasks?.toString()} />
                         </NumberInput.Root>
 
                     </Field>

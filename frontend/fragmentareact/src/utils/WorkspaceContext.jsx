@@ -11,7 +11,6 @@ export function WorkspaceProvider({ role, workspaceId, children }) {
     }, [workspaceId]);
 
     function addMembers(newMembers) {
-        console.log(newMembers, role, workspaceId)
         api.post(`/members`, { usersId: newMembers}, workspaceId)
             .then(addedMembers => { console.log(members, addedMembers); setMembers([...members, ...addedMembers]) })
     }

@@ -22,16 +22,21 @@ export function canDeleteMembers(role) {
     return role === "Owner" || role === "Admin";
 }
 
+export function canDeleteGuest(actorRole) {
+    return (actorRole == "Admin" || actorRole == "Owner")
+}
+
+
 export function canDeleteMember(actorRole, memberRole) {
-    return ((memberRole != "Owner" && memberRole != "Guest" ) && actorRole == "Owner") ||
+    return ((memberRole != "Owner" && memberRole != "Guest") && actorRole == "Owner") ||
         (actorRole == "Admin" && (memberRole == "Member"))
 }
 
-export function canGrantAdmin(actorRole, userRole){
+export function canGrantAdmin(actorRole, userRole) {
     return actorRole == "Owner" && userRole == "Member";
 }
 
-export function canRevokeAdmin(actorRole, userRole){
+export function canRevokeAdmin(actorRole, userRole) {
     return actorRole == "Owner" && userRole == "Admin";
 }
 

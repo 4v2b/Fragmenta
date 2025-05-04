@@ -24,7 +24,6 @@ export function TasksProvider({ children }) {
         .then(() => {
           console.log('Connected to SignalR');
           connection.on('TaskMoved', updatedTask => {
-            console.log("sync triggered")
             setTasks(prevTasks =>
               prevTasks.map(task =>
                 task.id === updatedTask.id ? { ...task, ...updatedTask } : task
@@ -39,7 +38,7 @@ export function TasksProvider({ children }) {
   }, []);
 
   function addTask(task, statusId) {
-    api.post(`/tasks?statusId=${statusId}`, task, workspaceId).then(res => setTasks(res));
+    api.post(`/tasks?statusId=${statusId}`, task, workspaceId).then(res => setTasks([...tasks, res]));
   }
 
   function shallowUpdateTask(task) {

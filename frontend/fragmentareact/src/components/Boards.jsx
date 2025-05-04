@@ -29,7 +29,6 @@ export function Boards({ id }) {
     const [types, setTypes] = useState([])
     const [error, setError] = useState(false);
 
-    //console.log(types)
 
     useEffect(() => {
         api.get(`/attachment-types`, id).then(res => setTypes(res[0].children));

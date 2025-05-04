@@ -55,8 +55,6 @@ export function Board() {
         useSensor(KeyboardSensor)
     );
 
-    //console.log(tasks);
-
     useEffect(() => {
         api.get(`/attachment-types`, workspaceId).then(res => setTypes(res[0].children));
     }, [])
@@ -126,8 +124,6 @@ export function Board() {
             ...newStatus,
             weight: weightToAdd
         }
-
-        console.log(statusToAdd)
 
         api.post(`/statuses?boardId=${boardId}`, statusToAdd, workspaceId)
             .then(res => {
@@ -335,7 +331,7 @@ export function Board() {
                                                     </Drawer.Body>
                                                     <Drawer.Footer>
                                                         <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
-                                                        <Button onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
+                                                        <Button className="submit-allowed-files" onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
                                                     </Drawer.Footer>
                                                 </>
                                             )}
@@ -389,7 +385,7 @@ export function Board() {
                                 key={`column-${status.id}`}
                                 id={`column-${status.id}`}
                                 status={status}
-                                tasks={tasks?.filter(e => e.statusId === status.id)}
+                                tasks={(tasks ?? []).filter(e => e.statusId === status.id)}
                                 isDisabled={!canManageBoardContent(role)}
                             />
                         ))}
