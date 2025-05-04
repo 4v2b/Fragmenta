@@ -1368,7 +1368,7 @@ public class SystemTests : IAsyncLifetime
         await _page.ClickAsync(dialogButton);
         var taskName = $"New task {Random.Shared.Next(1000)}";
         await _page.FillAsync("//input[contains(@class, 'title')]", taskName);
-        var newTag = "test";
+        var newTag = $"{Random.Shared.Next(10000)}-test";
         await _page.FillAsync("//input[contains(@class, 'input-tag ')]", newTag);
         await _page.ClickAsync("//*[contains(@class, 'create-tag')]");
         await _page.ClickAsync("//*[contains(@class, 'remove-tag')]");
@@ -1492,7 +1492,7 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test1@example.com", "Password1234");
+        await LoginAsync("test3@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
@@ -1797,17 +1797,13 @@ public class SystemTests : IAsyncLifetime
     }
     
     [Fact]
-    public async Task AllButtonHaveLabels_WhenNavigatedToWorkspacePage()
+    public async Task AllButtonHaveLabels_WhenNavigatedToSettings()
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
         await LoginAsync("test1@example.com", "Password1234");
         
-        var workspaceSelect = "//button[@id='select::r5::trigger']";
-        await _page.ClickAsync(workspaceSelect);
-        
-        var workspace = "//div[@data-part='item']";
-        await _page.ClickAsync(workspace);
+        await _page.ClickAsync("//button[contains(@class, 'tome')]");
         
         var buttons = await _page.QuerySelectorAllAsync("button");
         var buttonsWithoutText = new List<string>();
@@ -2556,7 +2552,7 @@ public class SystemTests : IAsyncLifetime
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test8@example.com", "Password1234");
+        await LoginAsync("test3@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
