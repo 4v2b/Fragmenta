@@ -693,7 +693,7 @@ public class SystemTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ArchiveBoard_Success_WhenOwnerRole()
+    public async Task ArchiveBoard_Success_WhenAdminRole()
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
@@ -789,11 +789,11 @@ public class SystemTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task RestoreBoard_Success_WhenOwnerRole()
+    public async Task RestoreBoard_Success_WhenAdminRole()
     {
         await LogoutAsync();
         await _page.GotoAsync(UrlBase + "/login");
-        await LoginAsync("test1@example.com", "Password1234");
+        await LoginAsync("test2@example.com", "Password1234");
         
         var workspaceSelect = "//button[@id='select::r5::trigger']";
         await _page.ClickAsync(workspaceSelect);
