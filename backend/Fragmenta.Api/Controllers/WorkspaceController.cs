@@ -91,14 +91,14 @@ namespace Fragmenta.Api.Controllers
                     return Forbid();
                 }
 
-                var result = await workspaceService.UpdateAsync(request.Name, userId.Value);
+                var result = await workspaceService.UpdateAsync(request.Name, id);
 
                 if (result != null)
                 {
                     return Ok(result);
                 }
 
-                return BadRequest();
+                return BadRequest("result is null");
             }
             return Unauthorized("User was not found");
         }

@@ -13,13 +13,14 @@ import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import { Checkbox } from "@chakra-ui/react"
 import { useTasks } from "@/utils/TaskContext"
+import { useTags } from "@/utils/TagContext"
 
 // BUG - Data in message box stays after exit
 
 export function CreateTaskDialog({ onAddTask }) {
     const { t, i18n } = useTranslation()
     const { members } = useWorkspace()
-    const {allowedAttachmentTypes} = useTasks()
+    const { allowedAttachmentTypes } = useTasks()
     const [error, setError] = useState(false)
     const [selectedMember, setSelectedMember] = useState(null)
     const [selectDueDate, setSelectDueDate] = useState(false)
@@ -32,6 +33,8 @@ export function CreateTaskDialog({ onAddTask }) {
         weight: 0,
         priority: 0,
     })
+    const { tasks } = useTasks();
+    const {removeTag} = useTags()
 
     const priorities = [0, 1, 2, 3]
 
@@ -44,9 +47,18 @@ export function CreateTaskDialog({ onAddTask }) {
         })
     }
 
+    function handleRemove(tag) {
+        if (!tasks.some(e => e.tagsId.some(t => t == tag.id))) {
+            removeTag(tag.id)
+           
+        }
+
+        setSelectedTags(selectedTags.filter(e => e.id != tag.id))
+    }
+
     return <DialogRoot>
         <DialogTrigger asChild>
-            <Button bg="primary">{t("fields.labels.addTask")}</Button>
+            <Button className="add-task" bg="primary">{t("fields.labels.addTask")}</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
@@ -58,6 +70,7 @@ export function CreateTaskDialog({ onAddTask }) {
                     <InputField.Root invalid={error}>
                         <InputField.Label>{t("fields.labels.title")}</InputField.Label>
                         <Input
+                            className="task-title"
                             value={newTask.title}
                             onChange={e => { setError(e.target.value == ""); setNewTask({ ...newTask, title: e.target.value }) }}
                         />
@@ -65,9 +78,9 @@ export function CreateTaskDialog({ onAddTask }) {
                     </InputField.Root>
 
                     <Field label={t("fields.labels.desc")}>
-                    <Textarea
-                    autoresize
-                    maxH="5lh"
+                        <Textarea
+                            autoresize
+                            maxH="5lh"
                             value={newTask.description}
                             placeholder="Optional"
                             onChange={e => setNewTask({ ...newTask, description: e.target.value == "" ? null : e.target.value })}
@@ -75,7 +88,10 @@ export function CreateTaskDialog({ onAddTask }) {
                     </Field>
 
                     <Field label={t("fields.labels.tags")}>
-                        <TagSelector selectedTags={selectedTags} onSelect={tag => { console.log("Selected ", tag); setSelectedTags([...selectedTags, tag]) }}></TagSelector>
+                        <TagSelector
+                            selectedTags={selectedTags}
+                            onRemove={tag => handleRemove(tag)}
+                            onSelect={tag => setSelectedTags([...selectedTags, tag])} />
                     </Field>
 
                     <Field label={t("fields.labels.priority")}>
@@ -87,7 +103,7 @@ export function CreateTaskDialog({ onAddTask }) {
                                         ...newTask,
                                         priority: Number(e.currentTarget.value) ?? 0
                                     })}
-                               >
+                            >
 
                                 {priorities.map(p => (
                                     <option key={p} value={p}>
@@ -102,7 +118,7 @@ export function CreateTaskDialog({ onAddTask }) {
 
                     <Field label={t("fields.labels.dueDate")}>
 
-                        <Checkbox.Root>
+                        <Checkbox.Root className="due-date-check">
                             <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
                             <Checkbox.Control>
                                 <Checkbox.Indicator />
@@ -123,7 +139,7 @@ export function CreateTaskDialog({ onAddTask }) {
                     </Field>
 
                     <Field label={t("fields.labels.assignee")}>
-                        {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
+                        {selectedMember == null ? <MemberSelector members={members?.filter(m => m.role != "Guest")} onSelect={(member) => { setSelectedMember(member) }}></MemberSelector>
                             :
                             <HStack key={selectedMember.email} gap="4">
                                 <Avatar.Root>
@@ -131,11 +147,11 @@ export function CreateTaskDialog({ onAddTask }) {
                                 </Avatar.Root>
                                 <Stack gap="0">
                                     <Text fontWeight="medium">{selectedMember.name}</Text>
-                                    <Text color="fg.muted" textStyle="sm">
+                                    <Text className="selected-email" color="fg.muted" textStyle="sm">
                                         {selectedMember.email}
                                     </Text>
                                 </Stack>
-                                <CloseButton onClick={() => setSelectedMember(null)} />
+                                <CloseButton className="remove-member" onClick={() => setSelectedMember(null)} />
                             </HStack>}
                     </Field>
                 </Stack>
@@ -148,9 +164,9 @@ export function CreateTaskDialog({ onAddTask }) {
                 {
                     newTask?.title != "" ?
                         (<DialogTrigger asChild>
-                            <Button onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>
+                            <Button className="create-task" onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>
                         </DialogTrigger>) :
-                        (<Button onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>)
+                        (<Button className="create-task" onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>)
                 }
 
             </DialogFooter>

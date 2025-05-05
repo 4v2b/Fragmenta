@@ -39,6 +39,13 @@ namespace Fragmenta.Api.Services
 
         public async Task<bool> DeleteTagAsync(long tagId)
         {
+            var taskTagsToRemove = await _context.TaskTags
+                .Where(tt => tt.TagId == tagId)
+                .ToListAsync();
+
+            _context.TaskTags.RemoveRange(taskTagsToRemove);
+            await _context.SaveChangesAsync();
+            
             var tag = await _context.Tags.FindAsync(tagId);
 
             if (tag == null)

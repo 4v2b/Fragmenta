@@ -11,13 +11,25 @@ import {
 import { FiHome, FiFolder, FiPlus, FiList } from "react-icons/fi"
 import { Portal, createListCollection } from "@chakra-ui/react"
 import { api } from "@/api/fetchClient.js"
-import { Select } from "@chakra-ui/react"
+import { Select, Stack, Field, Input } from "@chakra-ui/react"
+import { Field as InputField } from "@chakra-ui/react"
+import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog";
+import { useState } from "react"
+import { useNavigate, useParams } from "react-router"
 
 export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspace }) {
   const { t } = useTranslation()
+  const [newName, setNewName] = useState("");
+  const [error, setError] = useState(false);
+  const {workspaceId } = useParams();
   const workspacesSelect = createListCollection({
     items: workspaces.map(e => { return { label: e.name, value: e.id } })
   });
+  const navigate = useNavigate();
+
+  function createWorkspace(){
+    api.post("/workspaces", {name: newName}).then(res => navigate("/workspaces/" + res.id))
+  }
 
   return (
     <Box
@@ -30,27 +42,11 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
       top="0"
     >
       <VStack spacing={4} align="stretch" px={4}>
-        <Box>
+        <Heading size="sm" mb={2}>{t("common.workspaces")}</Heading>
 
-          <Select.Root
-            onValueChange={(item) => onWorkspaceSelect(item.value[0])}
-            value={selectedWorkspace?.name}
-            collection={workspacesSelect} size="sm" width="320px">
+        <DialogRoot role="dialog">
+          <DialogTrigger asChild>
 
-            <Select.ClearTrigger>
-              <Flex
-                alignItems="center"
-                p={2}
-                borderRadius="md"
-                cursor="pointer"
-                _hover={{ bg: "gray.100" }}
-                onClick={() => onWorkspaceSelect(null)}
-              >
-                <Icon as={FiHome} mr={2} />
-                <Text fontWeight="medium">{t("common.home")}</Text>
-              </Flex>
-            </Select.ClearTrigger>
-            <Heading size="sm" mb={2}>{t("common.workspaces")}</Heading>
             <Button gap={4}
               bg="success"
               size="sm"
@@ -59,28 +55,83 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
               <FiPlus />
               {t('common.createWorkspace')}
             </Button>
-            <Select.Control>
-              <Select.Trigger>
-                <Select.ValueText placeholder={t("common.workspaceStub")} />
-              </Select.Trigger>
-              <Select.IndicatorGroup>
-                <Select.Indicator />
-              </Select.IndicatorGroup>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner>
-                <Select.Content>
-                  {workspacesSelect.items.map((w) => (
-                    <Select.Item item={w} key={w.value}>
-                      {w.label}
-                      <Select.ItemIndicator />
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
-        </Box>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("common.createWorkspace")}</DialogTitle>
+            </DialogHeader>
+            <DialogBody pb="8">
+              <Stack gap="4">
+
+                <InputField.Root invalid={error}>
+                  <InputField.Label>{t("fields.labels.name")}</InputField.Label>
+                  <Input
+                    value={newName}
+                    onChange={e => { setError(e.target.value == "" ? "fields.labels.required" : false ); setNewName(e.target.value) }}
+                  />
+                  <InputField.ErrorText>{t(error)}</InputField.ErrorText>
+                </InputField.Root>
+              </Stack>
+
+            </DialogBody>
+            <DialogFooter>
+              <DialogActionTrigger asChild>
+                <Button variant="outline">{t("fields.actions.cancel")}</Button>
+              </DialogActionTrigger>
+              {
+                newName != "" && !workspaces.some(w => w.name == newName) ?
+                  (<DialogTrigger asChild>
+                    <Button onClick={() => { setError(newName == "" ? "fields.labels.required" : false); createWorkspace() }} bg="primary">{t("fields.actions.create")}</Button>
+                  </DialogTrigger>) :
+                  (<Button onClick={() => { setError(newName == "" ? "fields.labels.required" : "errors.workspaceExists"); }} bg="primary">{t("fields.actions.create")}</Button>)
+              }
+
+            </DialogFooter>
+            <DialogCloseTrigger />
+          </DialogContent>
+        </DialogRoot>
+
+
+        <Select.Root
+          onValueChange={(item) => onWorkspaceSelect(item.value[0])}
+          value={selectedWorkspace?.name}
+          collection={workspacesSelect} size="sm" width="320px">
+
+          <Select.ClearTrigger>
+            <Flex
+              alignItems="center"
+              p={2}
+              borderRadius="md"
+              cursor="pointer"
+              _hover={{ bg: "gray.100" }}
+              onClick={() => onWorkspaceSelect(null)}
+            >
+              <Icon as={FiHome} mr={2} />
+              <Text fontWeight="medium">{t("common.home")}</Text>
+            </Flex>
+          </Select.ClearTrigger>
+
+          <Select.Control>
+            <Select.Trigger>
+              <Select.ValueText placeholder={t("common.workspaceStub")} />
+            </Select.Trigger>
+            <Select.IndicatorGroup>
+              <Select.Indicator />
+            </Select.IndicatorGroup>
+          </Select.Control>
+          <Portal>
+            <Select.Positioner>
+              <Select.Content>
+                {workspacesSelect.items.map((w) => (
+                  <Select.Item item={w} key={w.value}>
+                    {w.label}
+                    <Select.ItemIndicator />
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Positioner>
+          </Portal>
+        </Select.Root>
 
         {
           selectedWorkspace && (
@@ -122,6 +173,9 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
           )
         }
       </VStack >
+
+
+      <Button className="tome" onClick={() => navigate("/me")}>Settings</Button>
     </Box >
   )
 }

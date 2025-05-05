@@ -7,7 +7,6 @@ export function MemberSelector({ members, onSelect }) {
     const [showSuggestions, setShowSuggestions] = useState(false)
 
     function handleSelect(item) {
-        console.log("selected", item);
         onSelect(item);
         setSelectedMembers([]);
         setQuery("")
@@ -24,6 +23,7 @@ export function MemberSelector({ members, onSelect }) {
     return (
         <Box position="relative" w="full">
             <Input
+            className="select-member"
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                 value={query}
                 onFocus={() => setShowSuggestions(true)}
@@ -46,6 +46,7 @@ export function MemberSelector({ members, onSelect }) {
                 >
                     {selectedMembers.map((item) => (
                         <List.Item
+                            className="suggested-member"
                             onMouseDown={(e) => {
                                 e.preventDefault(); // Prevent input from losing focus immediately
                                 handleSelect(item);

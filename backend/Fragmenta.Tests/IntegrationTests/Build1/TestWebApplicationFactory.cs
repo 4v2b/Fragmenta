@@ -32,8 +32,8 @@ namespace Fragmenta.Tests.IntegrationTests
             {
                 configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["MigrateDatabaseOnStartup"] = "false",
-                    ["UseMsSql"] = "false",
+                    ["DatabaseOptions:MigrateDatabaseOnStartup"] = "false",
+                    ["DatabaseOptions:UseMsSql"] = "false",
                 });
             });
 

@@ -5,6 +5,7 @@ using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Fragmenta.Api.Enums;
 
 namespace Fragmenta.Api.Controllers
 {
@@ -27,7 +28,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTags([FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> GetTags([FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IBoardAccessService boardAccessService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 
@@ -35,7 +36,7 @@ namespace Fragmenta.Api.Controllers
             {
                 var role = await accessService.GetRoleAsync(workspaceId, id.Value);
 
-                if (role == null || !AccessCheck.CanManageBoardContent(role.Value))
+                if (role == null || (role == Role.Guest && !await boardAccessService.CanViewBoardAsync(boardId, id.Value)))
                 {
                     return Forbid();
                 }

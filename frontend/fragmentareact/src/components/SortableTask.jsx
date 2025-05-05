@@ -39,14 +39,15 @@ export function SortableTask({ id, task, disabled }) {
       boxShadow={isDragging ? "md" : "sm"}
       w="full"
     >
-      <VStack align="start" spacing={2} w="full"
-      >
+      <VStack align="start" spacing={2} w="full">
 
         <HStack
+        className="task-head"
           alignItems="center"
           justify={"space-between"}
         >
           <Box
+          className="task-drag-handle"
             textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
             cursor={"grab"}
             {...attributes}
@@ -76,6 +77,7 @@ export function SortableTask({ id, task, disabled }) {
             </Portal>
             <Dialog.Trigger asChild>
               <Button
+              className="task-open"
                 variant="ghost"
                 size="sm"
                 fontWeight="medium" fontSize="md">{task.title}</Button>
@@ -88,7 +90,7 @@ export function SortableTask({ id, task, disabled }) {
         )}
 
         {
-          dueDate && <HStack justify="space-between" w="full">
+          dueDate && <HStack className="due-date"  justify="space-between" w="full">
             <Badge variant="solid" colorPalette="green">
               <HiCalendar />
               {dueDate}
@@ -98,7 +100,7 @@ export function SortableTask({ id, task, disabled }) {
 
         {assignee && (
 
-          <HStack>
+          <HStack className="assignee">
 
             <Avatar.Root size="xs">
               <Avatar.Fallback name={assignee.name} />

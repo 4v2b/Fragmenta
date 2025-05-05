@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Stack, Button, Wrap, Badge, CloseButton, Table} from "@chakra-ui/react"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import { Autocomplete } from "@/components/Autocomplete"
-import { canDeleteMember } from "@/utils/permissions"
+import { canDeleteGuest, canDeleteMember } from "@/utils/permissions"
 import { LiaDoorOpenSolid } from "react-icons/lia";
 import {
     DialogActionTrigger,
@@ -63,7 +63,7 @@ export function Guests({ workspaceId }) {
                                 <DialogRoot role="alertdialog">
                                     <DialogTrigger asChild>
                                         <Button 
-                                            disabled={!canDeleteMember(role, "Guest")} 
+                                            disabled={!canDeleteGuest(role)} 
                                             colorScheme="red" 
                                             size="sm"
                                         >

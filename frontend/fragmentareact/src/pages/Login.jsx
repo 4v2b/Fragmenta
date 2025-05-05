@@ -40,6 +40,12 @@ export function Login() {
 
   async function handleLogin() {
 
+    if(email == "" || password == ""){
+      setError(t("errors.fieldEmpty"))
+      return;
+    }
+
+
     const response = await login(email, password);
     if (response.status == 200) {
       setSkip(true);
@@ -68,7 +74,7 @@ export function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
+              placeholder="email@example.com"
               size="md"
             />
           </Box>
@@ -85,7 +91,7 @@ export function Login() {
           <Link to={"/forgot-password"} color="blue">{t("auth.prompts.forgotPassword")}</Link>
         </Stack>
 
-        {error && <Text color="red.500" fontSize="sm">{error}</Text>}
+        {error && <Text color="red.500" fontSize="sm">{t(error)}</Text>}
 
         {lockoutUntil && (
           <Text color="red.500" fontSize="sm">

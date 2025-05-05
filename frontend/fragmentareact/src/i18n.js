@@ -35,6 +35,8 @@ i18n
                         guest: "Guest"
                     },
                     errors: {
+                        workspaceExists: "Робочий простір з таким іменем вже існує",
+                        fieldEmpty: "Fields cannot be empty",
                         userNotFound: "Users not found",
                         fileTooLarge: "File '{{filename}}' is too large",
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
@@ -106,15 +108,22 @@ i18n
                             taskLimitInfo: "Limit amout of simultaneous tasks in the column",
                         },
                         actions: {
+                            leaveWorkspace: "Leave workspace",
+                            deleteWorkspace: "Delete workspace",
                             newStatus: "New status",
                             newBoard: "New board",
                             archive: "Archive",
+                            grant: "Are you sure you want to grant admin permissions to user {{user}}?",
+                            revoke: "Are you sure you want to revoke admin permissions from user {{user}}?",
+                            confirm: "Confirm",
                             restore: "Restore",
                             areYouSure: "Are you sure?",
+                            areYouSureAccount: "Are you sure you want to delete the account?",
                             cannotUndone: "This action cannot be undone",
                             cancel: "Cancel",
+                            
                             save: "Save",
-
+                            deleteAccount: "Delete account",
                             create: "Create",
                             login: "Login",
                             register: "Register",
@@ -168,6 +177,8 @@ i18n
                         guest: "Гість"
                     },
                     errors: {
+                        workspaceExists: "Робочий простір з таким іменем вже існує", 
+                        fieldEmpty: "Поле не може бути порожнім",
                         userNotFound: "Користувачів не знайдено",
                         fileTooLarge: "Файл '{{filename}}' завеликий",
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
@@ -241,6 +252,11 @@ i18n
                             statusExists: "Статус з таким іменем вже існує",
                         },
                         actions: {
+                            leaveWorkspace: "Покинути робочий простір",
+                            deleteWorkspace: "Видалити робочий простір",
+                            grant: "Ви впевнені, що хочете надати права адміністратора користувачу {{user}}?",
+                            revoke: "Ви впевнені, що хочете відкликати права адміністратора в користувача {{user}}?",
+                            confirm: "Підтвердити",
                             archive: "Архівувати",
                             restore: "Відновити",
                             areYouSure: "Ви впевнені?",
@@ -251,9 +267,11 @@ i18n
                             newBoard: "Нова дошка",
                             newStatus: "Новий статус",
                             login: "Увійти",
+                            areYouSureAccount: "Впевнені, що хочете видалити обліковий запис?",
                             register: "Зареєструватися",
                             logout: "Вийти",
                             delete: "Видалити",
+                            deleteAccount: "Видалити обліковий запис",
                             addMembers: "Додати учасників",
                             findUser: "Знайти користувача"
                         }

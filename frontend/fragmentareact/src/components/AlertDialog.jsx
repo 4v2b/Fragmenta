@@ -26,9 +26,9 @@ export function AlertDialog({ base, title, message, cancelMessage, confirmMessag
             </DialogBody>
             <DialogFooter>
                 <DialogActionTrigger asChild>
-                    <Button variant="outline">{cancelMessage}</Button>
+                    <Button  className={"alert-cancel"} variant="outline">{cancelMessage}</Button>
                 </DialogActionTrigger>
-                <Button onClick={onConfirm} colorPalette="red">{confirmMessage}</Button>
+                <Button onClick={onConfirm} className={"alert-confirm"} bg="danger">{confirmMessage}</Button>
             </DialogFooter>
             <DialogCloseTrigger />
         </DialogContent>

@@ -13,8 +13,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { SortableTask } from "@/components/SortableTask"
 import { useTranslation } from "react-i18next"
 import { RxDragHandleDots2 } from "react-icons/rx";
+import { useUser } from "@/utils/UserContext";
 
-export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
+export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: isDisabled
@@ -27,7 +28,8 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
     opacity: isDragging ? 0.5 : 1
   };
 
-  const { role, currentUser } = useWorkspace();
+  const { role } = useWorkspace();
+  const {userId} = useUser();
   const { addTask } = useTasks()
 
   function handleAddTask(task) {
@@ -42,11 +44,12 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
 
   // Check if user can drag tasks
   const canDragTask = (task) => {
-    return canManageBoardContent(role) || task.assignedUserId === currentUser.id;
+    return canManageBoardContent(role) && (task.assignedUserId == null || task.assignedUserId === userId);
   };
 
   return (
     <Box
+    className="status-column"
       flexShrink={0}
       w="300px"
       height="100%" // important so children can fill vertical space
@@ -61,7 +64,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
       overflow={"auto"}
     >
       <Flex
-        
         alignItems="center"
         // justify={"stretch"}
         bg={status.colorHex}
@@ -72,16 +74,17 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled}) {
         justify={"space-between"}
       >
         {/* <HStack spacing={3} > */}
-          <Heading size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
+          <Heading className="status-heading" size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
             {status.name}
           </Heading>
 
           {status.maxTasks && (
-            <Badge bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
+            <Badge className="task-limit-badge" bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
               {tasks.length} / {status.maxTasks}
             </Badge>
           )}
           <Box
+          className="column-drag-handle"
           textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
           cursor={"grab"}
             {...attributes}

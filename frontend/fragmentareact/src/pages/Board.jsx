@@ -1,6 +1,6 @@
 import { api } from "@/api/fetchClient"
 import { EditableTitle } from "@/components/EditableTitle"
-import { canManageBoardContent } from "@/utils/permissions"
+import { canCreateBoard, canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
@@ -29,6 +29,7 @@ import { BoardProvider } from "@/utils/BoardContext"
 import { BiCog } from "react-icons/bi"
 import { ExtensionSelector } from "@/components/ExtensionSelector"
 import { ViewTaskDialog } from "@/components/ViewTaskDialog"
+import { useUser } from "@/utils/UserContext"
 
 export function Board() {
     const { role } = useWorkspace()
@@ -40,11 +41,11 @@ export function Board() {
     const [types, setTypes] = useState([])
     const [viewedTask, setViewedTask] = useState(null);
     const [open, setOpen] = useState(false);
+    const { userId } = useUser();
 
     // TODO Use useMemo for allowed types extensions, extracted from tree by ids
 
     // TODO Fetch actual user id (from /me endpoint)
-    const userId = 3;
 
     const [activeId, setActiveId] = useState(null);
     const [activeType, setActiveType] = useState(null);
@@ -53,8 +54,6 @@ export function Board() {
         useSensor(PointerSensor),
         useSensor(KeyboardSensor)
     );
-
-    //console.log(tasks);
 
     useEffect(() => {
         api.get(`/attachment-types`, workspaceId).then(res => setTypes(res[0].children));
@@ -74,16 +73,10 @@ export function Board() {
             const task = tasks.find(t => `task-${t.id}` === active.id);
             const canMove = (canManageBoardContent(role) && task.assigneeId == null) || (task.assigneeId != null && task.assigneeId == userId);
 
-            //console.log("user moves the task ", task)
-
             if (!canMove) {
-                //console.log("user cannot move the task");
                 setActiveId(null); return
             }
         }
-
-        //console.log("user moves the task")
-
     }
 
     function handleTitleChange(newTitle) {
@@ -131,8 +124,6 @@ export function Board() {
             ...newStatus,
             weight: weightToAdd
         }
-
-        console.log(statusToAdd)
 
         api.post(`/statuses?boardId=${boardId}`, statusToAdd, workspaceId)
             .then(res => {
@@ -315,42 +306,45 @@ export function Board() {
                         </Drawer.Root>
                     </BoardProvider>
 
-                    <Drawer.Root size={"xs"}>
-                        <Drawer.Trigger asChild>
-                            <Button variant="outline" size="sm">
-                                {t("fields.labels.allowedAttachmentTypes")}
-                                <BiCog />
-                            </Button>
-                        </Drawer.Trigger>
-                        <Portal>
-                            <Drawer.Backdrop />
-                            <Drawer.Positioner>
-                                <Drawer.Content>
-                                    <Drawer.Context>
-                                        {(store) => (
-                                            <>
-                                                <Drawer.Header>
-                                                    <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
-                                                </Drawer.Header>
-                                                <Drawer.Body>
-                                                    <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
-                                                </Drawer.Body>
-                                                <Drawer.Footer>
-                                                    <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
-                                                    <Button onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
-                                                </Drawer.Footer>
-                                            </>
-                                        )}
-                                    </Drawer.Context>
+                    {
+                        canCreateBoard(role) &&
+
+                        <Drawer.Root size={"xs"}>
+                            <Drawer.Trigger asChild>
+                                <Button variant="outline" size="sm" className="allowedTypes">
+                                    {t("fields.labels.allowedAttachmentTypes")}
+                                    <BiCog />
+                                </Button>
+                            </Drawer.Trigger>
+                            <Portal>
+                                <Drawer.Backdrop />
+                                <Drawer.Positioner>
+                                    <Drawer.Content>
+                                        <Drawer.Context>
+                                            {(store) => (
+                                                <>
+                                                    <Drawer.Header>
+                                                        <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
+                                                    </Drawer.Header>
+                                                    <Drawer.Body>
+                                                        <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
+                                                    </Drawer.Body>
+                                                    <Drawer.Footer>
+                                                        <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
+                                                        <Button className="submit-allowed-files" onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
+                                                    </Drawer.Footer>
+                                                </>
+                                            )}
+                                        </Drawer.Context>
 
 
-                                    <Drawer.CloseTrigger asChild>
-                                        <CloseButton size="sm" />
-                                    </Drawer.CloseTrigger>
-                                </Drawer.Content>
-                            </Drawer.Positioner>
-                        </Portal>
-                    </Drawer.Root>
+                                        <Drawer.CloseTrigger asChild>
+                                            <CloseButton size="sm" />
+                                        </Drawer.CloseTrigger>
+                                    </Drawer.Content>
+                                </Drawer.Positioner>
+                            </Portal>
+                        </Drawer.Root>}
 
                 </Flex>
             )}
@@ -391,7 +385,7 @@ export function Board() {
                                 key={`column-${status.id}`}
                                 id={`column-${status.id}`}
                                 status={status}
-                                tasks={tasks?.filter(e => e.statusId === status.id)}
+                                tasks={(tasks ?? []).filter(e => e.statusId === status.id)}
                                 isDisabled={!canManageBoardContent(role)}
                             />
                         ))}

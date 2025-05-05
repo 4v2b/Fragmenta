@@ -65,6 +65,7 @@ export function ResetPassword() {
                 <Box>
                     <Text mb={2} fontWeight="medium">{t("fields.labels.newPassword")}</Text>
                     <Input
+                    className="enter-password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -76,6 +77,7 @@ export function ResetPassword() {
                 <Box>
                     <Text mb={2} fontWeight="medium">{t("fields.labels.repeatPassword")}</Text>
                     <Input
+                    className="repeat-password"
                         type="password"
                         value={passwordCopy}
                         onChange={(e) => setPasswordCopy(e.target.value)}
@@ -85,9 +87,10 @@ export function ResetPassword() {
                 </Box>
             </Stack>
 
-            {error && <Text color="red.500" fontSize="sm">{error}</Text>}
+            {error && <Text className="reset-error" color="red.500" fontSize="sm">{error}</Text>}
 
             <Button
+            className="change-password"
                 onClick={handleSubmit}
                 bg="primary"
                 type="submit"
