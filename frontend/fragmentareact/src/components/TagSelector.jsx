@@ -38,6 +38,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
         <Box>
             <Box position="relative" w="full">
                 <Input
+                maxLength={50}
                     className="input-tag"
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                     value={query}
@@ -98,6 +99,8 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                         fontStyle={"italic"}
                                     >{"No tags found"}</List.Item>
                                     <List.Item
+                                    textOverflow={"ellipsis"}
+                                    textWrap={"wrap"}
                                         className="create-tag"
                                         fontWeight="semibold"
                                         onMouseDown={(e) => {

@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(options: new WebApplicationOptions()
 {
-    EnvironmentName = "Testing"
+    EnvironmentName = "Staging"
 });
 
 Log.Logger = new LoggerConfiguration()
@@ -38,14 +38,6 @@ builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-/*builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });*/
 
 builder.Services.AddSwaggerGen(options =>
 {

@@ -1,5 +1,5 @@
 import { useWorkspace } from "@/utils/WorkspaceContext"
-import { HStack, Stack, Text, Button, Input, CloseButton, Textarea } from "@chakra-ui/react"
+import { HStack, Stack, Text, Button, Input, CloseButton, Textarea, InputGroup, Span } from "@chakra-ui/react"
 import { useState } from "react"
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogCloseTrigger } from "./ui/dialog"
 import { Field } from "./ui/field"
@@ -16,6 +16,9 @@ import { useTasks } from "@/utils/TaskContext"
 import { useTags } from "@/utils/TagContext"
 
 // BUG - Data in message box stays after exit
+
+const MAX_CHARACTERS_TITLE = 50
+const MAX_CHARACTERS_DESC = 150
 
 export function CreateTaskDialog({ onAddTask }) {
     const { t, i18n } = useTranslation()
@@ -34,7 +37,9 @@ export function CreateTaskDialog({ onAddTask }) {
         priority: 0,
     })
     const { tasks } = useTasks();
-    const {removeTag} = useTags()
+    const { removeTag } = useTags()
+    const [chars, setChars] = useState("")
+    const [charsDesc, setCharsDesc] = useState("")
 
     const priorities = [0, 1, 2, 3]
 
@@ -50,7 +55,7 @@ export function CreateTaskDialog({ onAddTask }) {
     function handleRemove(tag) {
         if (!tasks.some(e => e.tagsId.some(t => t == tag.id))) {
             removeTag(tag.id)
-           
+
         }
 
         setSelectedTags(selectedTags.filter(e => e.id != tag.id))
@@ -69,22 +74,51 @@ export function CreateTaskDialog({ onAddTask }) {
 
                     <InputField.Root invalid={error}>
                         <InputField.Label>{t("fields.labels.title")}</InputField.Label>
-                        <Input
-                            className="task-title"
-                            value={newTask.title}
-                            onChange={e => { setError(e.target.value == ""); setNewTask({ ...newTask, title: e.target.value }) }}
-                        />
+                        <InputGroup
+                            endElement={
+                                <Span color="fg.muted" textStyle="xs">
+                                    {chars.length} / {MAX_CHARACTERS_TITLE}
+                                </Span>
+                            }
+                        >
+                            <Input
+                                className="task-title"
+                                value={newTask.title}
+                                maxLength={MAX_CHARACTERS_TITLE}
+                                onChange={e => {
+                                    setError(e.target.value == "");
+                                    setNewTask({ ...newTask, title: e.target.value });
+                                    setChars(e.target.value.slice(0, MAX_CHARACTERS_TITLE))
+                                }}
+                            />
+                        </InputGroup>
+
+
                         <InputField.ErrorText>{t("fields.labels.required")}</InputField.ErrorText>
                     </InputField.Root>
 
                     <Field label={t("fields.labels.desc")}>
-                        <Textarea
-                            autoresize
-                            maxH="5lh"
-                            value={newTask.description}
-                            placeholder="Optional"
-                            onChange={e => setNewTask({ ...newTask, description: e.target.value == "" ? null : e.target.value })}
-                        />
+                        <InputGroup
+                        
+                            endAddon={
+                                <Span color="fg.muted" textStyle="xs">
+                                    {charsDesc.length} / {MAX_CHARACTERS_DESC}
+                                </Span>
+                            }>
+                            <Textarea
+                            size={"sm"}
+                                maxLength={MAX_CHARACTERS_DESC}
+                                autoresize
+                                maxH="5lh"
+                                value={newTask.description}
+                                placeholder="Optional"
+                                onChange={e => {
+                                    setNewTask({ ...newTask, description: e.target.value == "" ? null : e.target.value })
+                                    setCharsDesc(e.target.value.slice(0, MAX_CHARACTERS_DESC))
+                                }}
+                            />
+                        </InputGroup>
+
                     </Field>
 
                     <Field label={t("fields.labels.tags")}>

@@ -1,10 +1,12 @@
 import {
-     Stack, Button,
-    Input
+    Stack, Button,
+    Input,
+    InputGroup,
+    Span
 } from "@chakra-ui/react"
 import { NumberInput } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field";
-import {  useState} from "react"
+import { useState } from "react"
 import {
     DialogActionTrigger,
     DialogBody,
@@ -21,6 +23,8 @@ import { useDebounce } from "@/utils/useDebounce"
 import { Field as InputField } from "@chakra-ui/react"
 import { useTranslation } from "react-i18next"
 
+const MAX_CHARACTERS_TITLE = 50
+
 export function CreateStatusDialog({ onStatusCreate, statusNames }) {
     const { t, i18n } = useTranslation()
     const [selectTaskLimit, setSelectTaskLimit] = useState(false)
@@ -30,6 +34,7 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
         maxTasks: 1,
         colorHex: "#3182CE"
     })
+    const [chars, setChars] = useState("")
 
     const debouncedColorChange = useDebounce((value) => {
         setNewStatus(prev => ({ ...prev, colorHex: value }));
@@ -53,10 +58,26 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
 
                     <InputField.Root invalid={error != null}>
                         <InputField.Label>{t("fields.labels.name")}</InputField.Label>
-                        <Input
-                        className="status-name"
-                            value={newStatus.name}
-                            onChange={e => setNewStatus({ ...newStatus, name: e.target.value })} />
+
+                        <InputGroup
+                            endElement={
+                                <Span color="fg.muted" textStyle="xs">
+                                    {chars.length} / {MAX_CHARACTERS_TITLE}
+                                </Span>
+                            }
+                        >
+                            <Input
+                                className="status-name"
+                                value={newStatus.name}
+                                maxLength={MAX_CHARACTERS_TITLE}
+                                onChange={e => {
+                                    setNewStatus({ ...newStatus, name: e.target.value })
+                                    setChars(e.target.value.slice(0, MAX_CHARACTERS_TITLE))
+                                }
+                                } />
+
+                        </InputGroup>
+
                         <InputField.ErrorText>{t(error)}</InputField.ErrorText>
                     </InputField.Root>
 
@@ -73,8 +94,8 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
 
                         <NumberInput.Root
                             disabled={selectTaskLimit ? false : true}
-                            
-                            onValueChange={e =>{
+
+                            onValueChange={e => {
                                 setNewStatus({ ...newStatus, maxTasks: e.valueAsNumber }
                                 );
                             }}

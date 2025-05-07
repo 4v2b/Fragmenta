@@ -5,6 +5,7 @@ namespace Fragmenta.Api.Dtos
     public class RegisterRequest
     {
         [Required]
+        [MaxLength(100)]
         [EmailAddress(ErrorMessage = "auth.errors.emailInvalid")]
         public string Email { get; set; }
 
@@ -15,6 +16,8 @@ namespace Fragmenta.Api.Dtos
         public required string Password { get; set; }
 
         [Required]
+        [MinLength(1)]
+        [MaxLength(100)]
         public required string Name { get; set; }
     }
 }

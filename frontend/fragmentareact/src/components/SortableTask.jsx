@@ -31,7 +31,6 @@ export function SortableTask({ id, task, disabled }) {
 
   return (
     <Box ref={setNodeRef} style={style}
-      //{...attributes} {...listeners} Moved to a grabbing box
       p={3}
       borderWidth="1px"
       borderRadius="md"
@@ -42,12 +41,14 @@ export function SortableTask({ id, task, disabled }) {
       <VStack align="start" spacing={2} w="full">
 
         <HStack
-        className="task-head"
+          className="task-head"
           alignItems="center"
-          justify={"space-between"}
+          justify="space-between"
+          textOverflow={"ellipsis"}
+          // w="fit-content"
         >
           <Box
-          className="task-drag-handle"
+            className="task-drag-handle"
             textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
             cursor={"grab"}
             {...attributes}
@@ -77,20 +78,32 @@ export function SortableTask({ id, task, disabled }) {
             </Portal>
             <Dialog.Trigger asChild>
               <Button
-              className="task-open"
+                className="task-open"
                 variant="ghost"
-                size="sm"
-                fontWeight="medium" fontSize="md">{task.title}</Button>
+                textAlign={"left"}
+                size="xs"
+                fontSize="sm"
+                textWrap={"nowrap"}
+                textOverflow={"ellipsis"}
+                whiteSpace="normal"
+                overflow="hidden"
+                width="full"
+                sx={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: "2",
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "normal"
+                }}
+              >
+                {task.title}</Button>
             </Dialog.Trigger>
           </Dialog.Root>
         </HStack>
 
-        {task.description && (
-          <Text fontSize="sm" color="gray.600" noOfLines={2}>{task.description}</Text>
-        )}
-
         {
-          dueDate && <HStack className="due-date"  justify="space-between" w="full">
+          dueDate && <HStack className="due-date" justify="space-between" w="full">
             <Badge variant="solid" colorPalette="green">
               <HiCalendar />
               {dueDate}

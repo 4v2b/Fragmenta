@@ -1,4 +1,5 @@
-﻿using Fragmenta.Api.Contracts;
+﻿using System.ComponentModel.DataAnnotations;
+using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Middleware;
 using Fragmenta.Api.Utils;
@@ -50,7 +51,7 @@ namespace Fragmenta.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTag([FromQuery] string name, [FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
+        public async Task<IActionResult> CreateTag([FromQuery] [MinLength(1)] [MaxLength(50)] string name, [FromQuery] long boardId, [FromServices] ITagService tagService, [FromServices] IWorkspaceAccessService accessService)
         {
             var id = GetAuthenticatedUserId();
 

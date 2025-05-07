@@ -1,6 +1,6 @@
 import { api } from "@/api/fetchClient";
 import { canCreateBoard, canEditBoard } from "@/utils/permissions";
-import { Button, HStack, Box, Input, Stack, Text, Wrap } from "@chakra-ui/react";
+import { Button, HStack, Box, Input, Stack, Text, Wrap, InputGroup, Span } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LiaDoorOpenSolid } from "react-icons/lia";
 import { Heading, Badge, CloseButton } from "@chakra-ui/react";
@@ -18,6 +18,8 @@ import { HiMiniArchiveBox } from "react-icons/hi2";
 import { IoTrashBin } from "react-icons/io5";
 import { ExtensionSelector } from "./ExtensionSelector";
 
+const MAX_CHARACTERS_TITLE = 75
+
 export function Boards({ id }) {
     const navigate = useNavigate()
     const [boards, setBoards] = useState([])
@@ -28,7 +30,7 @@ export function Boards({ id }) {
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
     const [error, setError] = useState(false);
-
+    const [chars, setChars] = useState("")
 
     useEffect(() => {
         api.get(`/attachment-types`, id).then(res => setTypes(res[0].children));
@@ -122,7 +124,23 @@ export function Boards({ id }) {
                             <Stack gap="4">
                                 <InputField.Root invalid={error}>
                                     <InputField.Label>{t("fields.labels.name")}</InputField.Label>
-                                    <Input onChange={(e) => setForm({ ...form, name: e.target.value })} />
+
+                                    <InputGroup
+                                        endElement={
+                                            <Span color="fg.muted" textStyle="xs">
+                                                {chars.length} / {MAX_CHARACTERS_TITLE}
+                                            </Span>
+                                        }
+                                    >
+                                        <Input
+                                            maxLength={MAX_CHARACTERS_TITLE}
+                                            onChange={(e) => {
+                                                setChars(e.target.value.slice(0, MAX_CHARACTERS_TITLE))
+                                                setForm({ ...form, name: e.target.value })
+                                            }
+                                            } />
+                                    </InputGroup>
+
                                     <InputField.ErrorText>{t(error)}</InputField.ErrorText>
                                 </InputField.Root>
                                 <Field label={t("common.guests")}>
