@@ -20,22 +20,36 @@ import { ExtensionSelector } from "./ExtensionSelector";
 
 const MAX_CHARACTERS_TITLE = 75
 
+const defaultState = { name: "" };
+
 export function Boards({ id }) {
     const navigate = useNavigate()
     const [boards, setBoards] = useState([])
     const [archivedBoards, setArchivedBoards] = useState([])
-    const [form, setForm] = useState({ name: "" })
+    const [form, setForm] = useState(defaultState)
     const [chosenUsers, setChosenUsers] = useState([])
     const { role } = useWorkspace()
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
     const [error, setError] = useState(false);
     const [chars, setChars] = useState("")
+    const [immutableTypes, setImmutableTypes] = useState([])
+    const { members } = useWorkspace()
 
     useEffect(() => {
-        api.get(`/attachment-types`, id).then(res => setTypes(res[0].children));
+        api.get(`/attachment-types`, id).then(res => setImmutableTypes(res[0].children));
+        setTypes(immutableTypes)
+    }, [boards])
 
-    }, [])
+    function resetForm() {
+        setForm(defaultState)
+        setSelectTaskLimit(false)
+        setChars("")
+        setError(false)
+        setChosenUsers([])
+        setTypes(immutableTypes)
+    }
+
 
     useEffect(() => {
         api.get(`/boards`, id).then(res => {
@@ -53,6 +67,8 @@ export function Boards({ id }) {
             guestsId: chosenUsers.map(e => e.id),
             allowedTypeIds: allowedTypeIds
         }, id).then(res => setBoards(prev => [...prev, res]))
+
+        resetForm()
     }
 
     function archiveBoard(board) {
@@ -110,7 +126,11 @@ export function Boards({ id }) {
             <HStack justify={"space-between"} p={4}>
                 <Heading>{t("common.activeBoards")}</Heading>
 
-                {canCreateBoard(role) && <DialogRoot role="dialog">
+                {canCreateBoard(role) && <DialogRoot role="dialog"
+                    onOpenChange={(dialog) => {
+                        if (!dialog.open) resetForm()
+                    }}
+                >
                     <DialogTrigger asChild>
                         <Button bg="primary" size="sm">
                             <LiaDoorOpenSolid />{t("fields.actions.newBoard")}
@@ -141,10 +161,10 @@ export function Boards({ id }) {
                                             } />
                                     </InputGroup>
 
-                                    <InputField.ErrorText>{t(error)}</InputField.ErrorText>
+                                    {error && <InputField.ErrorText>{t(error)}</InputField.ErrorText>}
                                 </InputField.Root>
                                 <Field label={t("common.guests")}>
-                                    <Autocomplete addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} />
+                                    <Autocomplete membersBlacklist={members.filter(m => m.role != "Guest")} addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} />
                                     <Wrap>
                                         {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton onClick={() => { setChosenUsers(prev => prev.filter(i => i.id != e.id)) }} /></Badge>)}
                                     </Wrap>
@@ -155,16 +175,6 @@ export function Boards({ id }) {
                             </Stack>
 
                         </DialogBody>
-                        {/* <DialogFooter>
-                            <DialogActionTrigger asChild>
-                                <Button variant="outline">Cancel</Button>
-                            </DialogActionTrigger>
-                            <DialogActionTrigger asChild>
-                                <Button onClick={() => createBoard()} >Create</Button>
-                            </DialogActionTrigger>
-
-                        </DialogFooter> */}
-
 
                         <DialogFooter>
                             <DialogActionTrigger asChild>

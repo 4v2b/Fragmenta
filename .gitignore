@@ -9,6 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+appsettings.Staging.json
+appsettings.Production.json
 
 /shelf/
 /workspace.xml

@@ -31,7 +31,7 @@ export function Autocomplete({ addItem, membersBlacklist = [] }) {
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search..."
+        placeholder={t("fields.labels.searchUser")}
       />
       {loading && <Spinner position="absolute" top="50%" right="10px" size="sm" />}
       {!loading && suggestions.length > 0 && (

@@ -17,25 +17,26 @@ import { useTags } from "@/utils/TagContext"
 
 // BUG - Data in message box stays after exit
 
+const defaultTaskState = {
+    title: "",
+    description: "",
+    dueDate: new Date(),
+    assigneeId: null,
+    weight: 0,
+    priority: 0,
+}
+
 const MAX_CHARACTERS_TITLE = 50
 const MAX_CHARACTERS_DESC = 150
 
 export function CreateTaskDialog({ onAddTask }) {
     const { t, i18n } = useTranslation()
     const { members } = useWorkspace()
-    const { allowedAttachmentTypes } = useTasks()
     const [error, setError] = useState(false)
     const [selectedMember, setSelectedMember] = useState(null)
     const [selectDueDate, setSelectDueDate] = useState(false)
     const [selectedTags, setSelectedTags] = useState([])
-    const [newTask, setNewTask] = useState({
-        title: "",
-        description: "",
-        dueDate: new Date(),
-        assigneeId: null,
-        weight: 0,
-        priority: 0,
-    })
+    const [newTask, setNewTask] = useState(defaultTaskState)
     const { tasks } = useTasks();
     const { removeTag } = useTags()
     const [chars, setChars] = useState("")
@@ -43,25 +44,39 @@ export function CreateTaskDialog({ onAddTask }) {
 
     const priorities = [0, 1, 2, 3]
 
-    function handleAssigneeSelect() {
+    function resetForm() {
+        setNewTask(defaultTaskState)
+        setSelectedMember(null)
+        setSelectDueDate(false)
+        setSelectedTags([])
+        setChars("")
+        setCharsDesc("")
+        setError(false)
+    }
+
+    function handleTaskCreate() {
         onAddTask({
             ...newTask,
             assigneeId: selectedMember?.id ?? null,
             tagsId: selectedTags.map(e => e.id),
             dueDate: selectDueDate ? newTask.dueDate : null
         })
+
+        resetForm();
     }
 
     function handleRemove(tag) {
         if (!tasks.some(e => e.tagsId.some(t => t == tag.id))) {
             removeTag(tag.id)
-
         }
 
         setSelectedTags(selectedTags.filter(e => e.id != tag.id))
     }
 
-    return <DialogRoot>
+    return <DialogRoot
+        onOpenChange={(dialog) => {
+            if (!dialog.open) resetForm()
+        }}>
         <DialogTrigger asChild>
             <Button className="add-task" bg="primary">{t("fields.labels.addTask")}</Button>
         </DialogTrigger>
@@ -99,14 +114,14 @@ export function CreateTaskDialog({ onAddTask }) {
 
                     <Field label={t("fields.labels.desc")}>
                         <InputGroup
-                        
+
                             endAddon={
                                 <Span color="fg.muted" textStyle="xs">
                                     {charsDesc.length} / {MAX_CHARACTERS_DESC}
                                 </Span>
                             }>
                             <Textarea
-                            size={"sm"}
+                                size={"sm"}
                                 maxLength={MAX_CHARACTERS_DESC}
                                 autoresize
                                 maxH="5lh"
@@ -167,9 +182,6 @@ export function CreateTaskDialog({ onAddTask }) {
                             value={new Date(newTask.dueDate)}
                             minDate={new Date(Date.now())}
                         />
-
-
-
                     </Field>
 
                     <Field label={t("fields.labels.assignee")}>
@@ -198,9 +210,9 @@ export function CreateTaskDialog({ onAddTask }) {
                 {
                     newTask?.title != "" ?
                         (<DialogTrigger asChild>
-                            <Button className="create-task" onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>
+                            <Button className="create-task" onClick={() => { setError(newTask.title == ""); handleTaskCreate(); }} bg="primary">{t("fields.actions.save")}</Button>
                         </DialogTrigger>) :
-                        (<Button className="create-task" onClick={() => { setError(newTask.title == ""); handleAssigneeSelect(); }} bg="primary">{t("fields.actions.save")}</Button>)
+                        (<Button className="create-task" onClick={() => { setError(newTask.title == ""); handleTaskCreate(); }} bg="primary">{t("fields.actions.save")}</Button>)
                 }
 
             </DialogFooter>

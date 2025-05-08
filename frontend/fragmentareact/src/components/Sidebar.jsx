@@ -7,6 +7,8 @@ import {
   Heading,
   Icon,
   Flex,
+  InputGroup,
+  Span,
 } from "@chakra-ui/react"
 import { FiHome, FiFolder, FiPlus, FiList } from "react-icons/fi"
 import { Portal, createListCollection } from "@chakra-ui/react"
@@ -17,18 +19,22 @@ import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Di
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router"
 
+const MAX_CHARACTERS_TITLE = 75
+
 export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspace }) {
   const { t } = useTranslation()
   const [newName, setNewName] = useState("");
   const [error, setError] = useState(false);
-  const {workspaceId } = useParams();
+  const { workspaceId } = useParams();
   const workspacesSelect = createListCollection({
     items: workspaces.map(e => { return { label: e.name, value: e.id } })
   });
   const navigate = useNavigate();
+  const [chars, setChars] = useState("")
 
-  function createWorkspace(){
-    api.post("/workspaces", {name: newName}).then(res => navigate("/workspaces/" + res.id))
+  function createWorkspace() {
+    api.post("/workspaces", { name: newName }).then(res => navigate("/workspaces/" + res.id))
+    setNewName("")
   }
 
   return (
@@ -44,7 +50,10 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
       <VStack spacing={4} align="stretch" px={4}>
         <Heading size="sm" mb={2}>{t("common.workspaces")}</Heading>
 
-        <DialogRoot role="dialog">
+        <DialogRoot role="dialog"
+          onOpenChange={(open) => {
+            if (!open.open) setNewName("")
+          }}>
           <DialogTrigger asChild>
 
             <Button gap={4}
@@ -65,11 +74,27 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
 
                 <InputField.Root invalid={error}>
                   <InputField.Label>{t("fields.labels.name")}</InputField.Label>
-                  <Input
-                    value={newName}
-                    onChange={e => { setError(e.target.value == "" ? "fields.labels.required" : false ); setNewName(e.target.value) }}
-                  />
-                  <InputField.ErrorText>{t(error)}</InputField.ErrorText>
+
+                  <InputGroup
+                    endElement={
+                      <Span color="fg.muted" textStyle="xs">
+                        {chars.length} / {MAX_CHARACTERS_TITLE}
+                      </Span>
+                    }
+                  >
+                    <Input
+                      value={newName}
+                      onChange={e => {
+                        setError(e.target.value == "" ? "fields.labels.required" : false);
+                        setNewName(e.target.value)
+                        setChars(e.target.value.slice(0, MAX_CHARACTERS_TITLE))
+                      }}
+                    />
+
+                  </InputGroup>
+
+
+                  {error && <InputField.ErrorText>{t(error)}</InputField.ErrorText>}
                 </InputField.Root>
               </Stack>
 

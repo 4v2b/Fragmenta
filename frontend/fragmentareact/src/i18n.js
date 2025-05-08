@@ -68,6 +68,7 @@ i18n
                             priority3: "Low",
                         },
                         labels: {
+                            searchUser: "Find user by email",
                             Documents: "Documents",
                             Images : "Images",
                             Design: "Design",
@@ -213,6 +214,8 @@ i18n
                             priority3: "Низький",
                         },
                         labels: {
+                            searchUser: "Знайти користувача за ел. поштою",
+                            createBoard: "Створення дошки",
                             Documents: "Документи",
                             Images : "Зображення",
                             Design: "Дизайн",

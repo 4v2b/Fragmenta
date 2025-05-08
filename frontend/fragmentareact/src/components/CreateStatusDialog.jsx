@@ -25,16 +25,26 @@ import { useTranslation } from "react-i18next"
 
 const MAX_CHARACTERS_TITLE = 50
 
+const defaultState = {
+    name: "",
+    maxTasks: 1,
+    colorHex: "#3182CE"
+}
+
 export function CreateStatusDialog({ onStatusCreate, statusNames }) {
     const { t, i18n } = useTranslation()
     const [selectTaskLimit, setSelectTaskLimit] = useState(false)
     const [error, setError] = useState(null)
-    const [newStatus, setNewStatus] = useState({
-        name: "",
-        maxTasks: 1,
-        colorHex: "#3182CE"
-    })
+    const [newStatus, setNewStatus] = useState(defaultState)
     const [chars, setChars] = useState("")
+
+
+    function resetForm() {
+        setNewStatus(defaultState)
+        setSelectTaskLimit(false)
+        setChars("")
+        setError(null)
+    }
 
     const debouncedColorChange = useDebounce((value) => {
         setNewStatus(prev => ({ ...prev, colorHex: value }));
@@ -43,9 +53,15 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
     function handleStatusCreate() {
         if (!selectTaskLimit) newStatus.maxTasks = null;
         onStatusCreate(newStatus)
+
+        resetForm()
     }
 
-    return (<DialogRoot>
+    return (<DialogRoot
+        onOpenChange={(dialog) => {
+            if (!dialog.open) resetForm()
+        }}
+    >
         <DialogTrigger asChild>
             <Button className={"status-dialog"} bg="primary">{t("fields.actions.newStatus")}</Button>
         </DialogTrigger>
