@@ -167,21 +167,27 @@ export function CreateTaskDialog({ onAddTask }) {
 
                     <Field label={t("fields.labels.dueDate")}>
 
-                        <Checkbox.Root className="due-date-check">
-                            <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
-                            <Checkbox.Control>
-                                <Checkbox.Indicator />
-                            </Checkbox.Control>
-                            <Checkbox.Label />
-                        </Checkbox.Root>
-                        <DatePicker
-                            locale={i18n.language}
-                            className={"chakra-ignore"}
-                            disabled={selectDueDate ? false : true}
-                            onChange={value => setNewTask({ ...newTask, dueDate: value })}
-                            value={new Date(newTask.dueDate)}
-                            minDate={new Date(Date.now())}
-                        />
+                        <HStack>
+                            <Checkbox.Root className="due-date-check">
+                                <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
+                                <Checkbox.Control>
+                                    <Checkbox.Indicator />
+                                </Checkbox.Control>
+                                <Checkbox.Label>
+                                </Checkbox.Label>
+                            </Checkbox.Root>
+
+                            <DatePicker
+                                locale={i18n.language}
+                                className={"chakra-ignore"}
+                                disabled={selectDueDate ? false : true}
+                                onChange={value => setNewTask({ ...newTask, dueDate: value })}
+                                value={new Date(newTask.dueDate)}
+                                minDate={new Date(Date.now())}
+                            />
+                        </HStack>
+
+
                     </Field>
 
                     <Field label={t("fields.labels.assignee")}>

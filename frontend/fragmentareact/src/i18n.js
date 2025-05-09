@@ -27,7 +27,14 @@ i18n
         resources: {
             en: {
                 translation: {
-                    // Group related translations into more specific namespaces
+
+                    "greetings": {
+                        "morning": "Good morning, {{username}}!",
+                        "afternoon": "Good afternoon, {{username}}!",
+                        "evening": "Good evening, {{username}}!",
+                        "night": "Good night, {{username}}!"
+                    },
+
                     roles: {
                         admin: "Admin",
                         owner: "Owner",
@@ -43,8 +50,8 @@ i18n
                     },
                     common: {
                         autoDeletion: "Will be removed in {{count}} day",
-  autoDeletion_plural: "Will be removed in {{count}} days",
-  autoDeletion_0: "Will be removed today",
+                        autoDeletion_plural: "Will be removed in {{count}} days",
+                        autoDeletion_0: "Will be removed today",
                         workspaces: "Workspaces",
                         home: "Home",
                         archiveBoards: "Archived boards",
@@ -70,7 +77,7 @@ i18n
                         labels: {
                             searchUser: "Find user by email",
                             Documents: "Documents",
-                            Images : "Images",
+                            Images: "Images",
                             Design: "Design",
                             Code: "Code",
                             Audio: "Audio",
@@ -93,6 +100,7 @@ i18n
                             addStatus: "Add status",
                             selPriority: "Select prioirty",
                             title: "Title",
+                            settings: "Settings",
                             desc: "Description",
                             tags: "Tags",
                             upload: "Upload",
@@ -122,7 +130,7 @@ i18n
                             areYouSureAccount: "Are you sure you want to delete the account?",
                             cannotUndone: "This action cannot be undone",
                             cancel: "Cancel",
-                            
+
                             save: "Save",
                             deleteAccount: "Delete account",
                             create: "Create",
@@ -171,6 +179,14 @@ i18n
             },
             uk: {
                 translation: {
+
+
+                    greetings: {
+                        "morning": "Добрий ранок, {{username}}!",
+                        "afternoon": "Добрий день, {{username}}!",
+                        "evening": "Добрий вечір, {{username}}!",
+                        "night": "Доброї ночі, {{username}}!"
+                    },
                     roles: {
                         admin: "Адмін",
                         owner: "Власник",
@@ -178,7 +194,7 @@ i18n
                         guest: "Гість"
                     },
                     errors: {
-                        workspaceExists: "Робочий простір з таким іменем вже існує", 
+                        workspaceExists: "Робочий простір з таким іменем вже існує",
                         fieldEmpty: "Поле не може бути порожнім",
                         userNotFound: "Користувачів не знайдено",
                         fileTooLarge: "Файл '{{filename}}' завеликий",
@@ -190,7 +206,7 @@ i18n
                         autoDeletion_few: "Буде видалено через {{count}} дні",
                         autoDeletion_many: "Буде видалено через {{count}} днів",
                         autoDeletion_other: "Буде видалено через {{count}} дня",
-                        home: "Домашня сторінка",
+                        home: "Головна",
                         noTasksYet: "Поки що немає завдань",
                         emptyBoard: "Ця дошка поки що порожня",
                         greeting: "Вітаємо на головній сторінці 🤗",
@@ -214,10 +230,12 @@ i18n
                             priority3: "Низький",
                         },
                         labels: {
+                           
+                            settings: "Налаштування",
                             searchUser: "Знайти користувача за ел. поштою",
                             createBoard: "Створення дошки",
                             Documents: "Документи",
-                            Images : "Зображення",
+                            Images: "Зображення",
                             Design: "Дизайн",
                             Code: "Програмний код",
                             Audio: "Аудіо",
@@ -238,7 +256,7 @@ i18n
                             upload: "Завантажити",
                             allowedAttachmentTypes: "Дозволені файлові розширення",
                             tags: "Теги",
-                            dueDate: "Дедлайн",
+                            dueDate: "Дата виконання",
                             assignee: "Виконавець",
                             priority: "Приоритет",
                             name: "Ім'я",

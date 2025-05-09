@@ -5,7 +5,7 @@ import { useState } from "react"
 export function EditableTitle({ canEdit, content, onContentEdit }) {
     //const [value, setValue] = useState(content ?? "")
 
-    return <Heading> {canEdit ? (<Editable.Root  size={"xl"} submitMode="enter" width={"fit-content"} onValueCommit={e => onContentEdit(e.value) } defaultValue={content}>
+    return <Heading> {canEdit ? (<Editable.Root required  size={"xl"} submitMode="enter" width={"fit-content"} onValueCommit={e => e.value != "" && onContentEdit(e.value) } defaultValue={content}>
         <Editable.Preview />
         <Editable.Input />
         <Editable.Control>

@@ -18,6 +18,8 @@ import { Field as InputField } from "@chakra-ui/react"
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogActionTrigger, DialogCloseTrigger } from "./ui/dialog";
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router"
+import { LuCog } from "react-icons/lu"
+import { BiCog } from "react-icons/bi"
 
 const MAX_CHARACTERS_TITLE = 75
 
@@ -200,7 +202,7 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspa
       </VStack >
 
 
-      <Button className="tome" onClick={() => navigate("/me")}>Settings</Button>
+      <Button p={6} position={"absolute"} variant={"ghost"} bottom={0} width={"100%"} className="tome" onClick={() => navigate("/me")}>{t("fields.labels.settings")} <BiCog/></Button>
     </Box >
   )
 }

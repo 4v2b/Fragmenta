@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const WorkspaceContext = createContext(null);
 
-export function WorkspaceProvider({ role, workspaceId, children }) {
+export function WorkspaceProvider({ name, role, workspaceId, children }) {
     const [members, setMembers] = useState([]);
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export function WorkspaceProvider({ role, workspaceId, children }) {
         }
     }
     return (
-        <WorkspaceContext.Provider value={{ role, members, addMembers, removeMember, grantAdmin, revokeAdmin}}>
+        <WorkspaceContext.Provider value={{ name, role, members, addMembers, removeMember, grantAdmin, revokeAdmin}}>
             {children}
         </WorkspaceContext.Provider>
     );

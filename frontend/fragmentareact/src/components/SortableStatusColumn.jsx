@@ -1,12 +1,12 @@
 import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
-   Box, Badge, Flex, Heading
+  Box, Badge, Flex, Heading
 } from "@chakra-ui/react"
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { useTasks } from "@/utils/TaskContext"
 import {
-   SortableContext,
+  SortableContext,
   verticalListSortingStrategy, useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -29,7 +29,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   };
 
   const { role } = useWorkspace();
-  const {userId} = useUser();
+  const { userId } = useUser();
   const { addTask } = useTasks()
 
   function handleAddTask(task) {
@@ -49,10 +49,10 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
 
   return (
     <Box
-    className="status-column"
+      className="status-column"
       flexShrink={0}
       w="300px"
-      height="100%" // important so children can fill vertical space
+      maxHeight="calc(100vh - 190px)"
       display="flex"
       flexDirection="column"
       borderRadius="lg"
@@ -61,7 +61,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
       ref={setNodeRef}
       style={style}
 
-      overflow={"auto"}
     >
       <Flex
         alignItems="center"
@@ -74,27 +73,27 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
         justify={"space-between"}
       >
         {/* <HStack spacing={3} > */}
-          <Heading className="status-heading" size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
-            {status.name}
-          </Heading>
+        <Heading className="status-heading" size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
+          {status.name}
+        </Heading>
 
-          {status.maxTasks && (
-            <Badge className="task-limit-badge" bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
-              {tasks.length} / {status.maxTasks}
-            </Badge>
-          )}
-          <Box
+        {status.maxTasks && (
+          <Badge className="task-limit-badge" bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
+            {tasks.length} / {status.maxTasks}
+          </Badge>
+        )}
+        <Box
           className="column-drag-handle"
           textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)"
           cursor={"grab"}
-            {...attributes}
-            {...listeners}
-          ><RxDragHandleDots2/>
-          </Box>
+          {...attributes}
+          {...listeners}
+        ><RxDragHandleDots2 />
+        </Box>
       </Flex>
 
       <SortableContext
-        overflow="auto"
+        overflow="hidden"
         items={tasks?.map(task => `task-${task.id}`) || []}
         strategy={verticalListSortingStrategy}
       >
@@ -103,6 +102,24 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
           p={3}
           flex="1"
           overflowY="auto"
+          style={{
+            "&::-webkit-scrollbar": {
+              width: "4px"
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(160,160,160,0.3)",
+              borderRadius: "8px"
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "transparent"
+            },
+            "&:hover::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(160,160,160,0.5)"
+            },
+            // Додаємо тінь для переходу
+            maskImage: "linear-gradient(to bottom, transparent, black 1%, black 99%, transparent)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 1%, black 99%, transparent)"
+          }}
           overflowX="hidden"
         >
           {tasks?.length > 0 ? (

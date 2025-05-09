@@ -88,7 +88,7 @@ export function SortableTask({ id, task, disabled }) {
                 whiteSpace="normal"
                 overflow="hidden"
                 width="full"
-                sx={{
+                style={{
                   display: "-webkit-box",
                   WebkitLineClamp: "2",
                   WebkitBoxOrient: "vertical",
@@ -128,7 +128,7 @@ export function SortableTask({ id, task, disabled }) {
             {task.tagsId.map(t => {
               const tagName = tags.find(e => e.id == t)?.name || t;
               return (
-                <Tag.Root key={t} size="sm" color="primary" variant="outline">
+                <Tag.Root key={t} size="sm" color="green" variant="outline">
                   <Tag.StartElement>
                     <HiTag />
                   </Tag.StartElement>

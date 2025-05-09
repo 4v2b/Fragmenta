@@ -23,8 +23,6 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
         // setShowSuggestions(false);
     }
 
-    console.log(selectedTags)
-
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             setSuggestedTags(tags.filter(e => e.name?.includes(query) && !selectedTags?.some(i => i.id == e.id)))

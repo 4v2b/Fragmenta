@@ -66,7 +66,7 @@ export function MainLayout() {
                     </GridItem>
                     <GridItem colSpan={7}>
                         {workspaceId ?
-                            <WorkspaceProvider role={selectedWorkspace?.role} workspaceId={selectedWorkspace?.id}>
+                            <WorkspaceProvider name={selectedWorkspace?.name} role={selectedWorkspace?.role} workspaceId={selectedWorkspace?.id}>
                                 <Outlet context={{ name: selectedWorkspace?.name }} />
                             </WorkspaceProvider> : <Outlet />}
                     </GridItem>

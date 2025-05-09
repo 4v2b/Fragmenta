@@ -5,7 +5,9 @@ import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
     Input, Portal,
-    Dialog
+    Dialog,
+    Breadcrumb,
+    Span
 } from "@chakra-ui/react"
 import { Wrap, CloseButton, Table } from "@chakra-ui/react"
 import { CreateStatusDialog } from "@/components/CreateStatusDialog"
@@ -16,7 +18,8 @@ import { useTasks } from "@/utils/TaskContext"
 import {
     DndContext, closestCenter, KeyboardSensor,
     PointerSensor, useSensor, useSensors,
-    DragOverlay, MeasuringStrategy
+    DragOverlay, MeasuringStrategy,
+    rectIntersection
 } from '@dnd-kit/core';
 import {
     arrayMove, SortableContext, horizontalListSortingStrategy
@@ -30,9 +33,10 @@ import { BiCog } from "react-icons/bi"
 import { ExtensionSelector } from "@/components/ExtensionSelector"
 import { ViewTaskDialog } from "@/components/ViewTaskDialog"
 import { useUser } from "@/utils/UserContext"
+import { LuClipboardCheck, LuClipboardList, LuFolderOpen, LuHouse } from "react-icons/lu"
 
 export function Board() {
-    const { role } = useWorkspace()
+    const { role, name } = useWorkspace()
     const { workspaceId, boardId } = useParams()
     const [board, setBoard] = useState(null)
     const { tasks, setTasks, addTask, shallowUpdateTask } = useTasks()
@@ -42,10 +46,6 @@ export function Board() {
     const [viewedTask, setViewedTask] = useState(null);
     const [open, setOpen] = useState(false);
     const { userId } = useUser();
-
-    // TODO Use useMemo for allowed types extensions, extracted from tree by ids
-
-    // TODO Fetch actual user id (from /me endpoint)
 
     const [activeId, setActiveId] = useState(null);
     const [activeType, setActiveType] = useState(null);
@@ -66,7 +66,6 @@ export function Board() {
     function handleDragStart(event) {
         const { active } = event;
         setActiveId(active.id);
-        // Determine if we're dragging a column or task based on the id format
         setActiveType(active.id.includes('column-') ? 'column' : 'task');
 
         if (active.id.includes('task-')) {
@@ -269,7 +268,31 @@ export function Board() {
     }
 
     return (
-        <Stack spacing={4} p={8} overflow={"auto"}>
+        <Stack spacing={6} pl={8} pt={4} overflow={"auto"}>
+            <Breadcrumb.Root>
+                <Breadcrumb.List>
+                    <Breadcrumb.Item>
+                        <Breadcrumb.Link href="/">
+                            <LuHouse />
+                            {t("common.home")}
+                        </Breadcrumb.Link>
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Separator />
+
+                    <Breadcrumb.Item>
+                        <Breadcrumb.Link href={`/workspaces/${workspaceId}`}>
+                            <LuFolderOpen />{name}
+                        </Breadcrumb.Link>
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Separator />
+
+                    <Breadcrumb.Item>
+                        <Breadcrumb.CurrentLink whiteSpace={"nowrap"} display={"inline-flex"} alignItems={"center"}>
+                            <LuClipboardCheck m={2} />{board?.name}
+                        </Breadcrumb.CurrentLink>
+                    </Breadcrumb.Item>
+                </Breadcrumb.List>
+            </Breadcrumb.Root>
             {board && (
                 <Flex justifyContent="space-between" alignItems="center">
                     <EditableTitle
@@ -351,21 +374,19 @@ export function Board() {
 
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={rectIntersection}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
-                // Add these props for more responsive dragging
                 modifiers={[]}
                 measuring={{
                     droppable: {
                         strategy: MeasuringStrategy.Always
                     }
                 }}
-                // Reduce animation duration
                 activationConstraint={{
-                    distance: 5, // Require moving 5px before drag starts
-                    tolerance: 5
+                    distance: 3,
+                    tolerance: 10
                 }}
             >
                 <SortableContext
@@ -373,14 +394,33 @@ export function Board() {
                     strategy={horizontalListSortingStrategy}
                 >
                     <HStack
+                        style={{
+                            "&::-webkit-scrollbar": {
+                                height: "4px",
+                                width: "4px"
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                                backgroundColor: "rgba(223, 223, 223, 0.3)",
+                                borderRadius: "8px"
+                            },
+                            "&::-webkit-scrollbar-track": {
+                                backgroundColor: "transparent"
+                            },
+                            "&:hover::-webkit-scrollbar-thumb": {
+                                backgroundColor: "rgba(160,160,160,0.5)"
+                            },
+                            maskImage: "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
+                            WebkitMaskImage: "linear-gradient(to right, transparent, black 1%, black 99%, transparent)"
+                        }}
                         spacing={4}
+                        p={2}
                         justify="flex-start"
                         alignItems="flex-start"
                         overflowX="auto"
                         overflowY="hidden"
                         height="100%" // or a bounded height if not already
                     >
-                        {board?.statuses.map(status => (
+                        {board?.statuses.sort((a, b) => a.weight - b.weight).map(status => (
                             <SortableStatusColumn
                                 key={`column-${status.id}`}
                                 id={`column-${status.id}`}
