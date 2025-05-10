@@ -127,8 +127,10 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate }) {
                         (editStatus.name == status.name
                             && editStatus.colorHex == status.colorHex
                             && editStatus.maxTasks == status.maxTasks
-                            &&
-                            ((editStatus.maxTasks != null && selectTaskLimit) || (editStatus.maxTasks == null && !selectTaskLimit))) || status.name == ""} onClick={() => onStatusUpdate({ ...status, maxTasks: selectTaskLimit ? status.maxTasks : null })} bg="primary">{t("fields.actions.save")}</Button>
+                            &&((editStatus.maxTasks != null && selectTaskLimit) || (editStatus.maxTasks == null && !selectTaskLimit))) 
+                            || status.name == ""
+                        } 
+                        onClick={() => onStatusUpdate({ ...status, maxTasks: selectTaskLimit ? status.maxTasks : null })} bg="primary">{t("fields.actions.save")}</Button>
                 </DialogActionTrigger>
             </DialogFooter>
             <DialogCloseTrigger />

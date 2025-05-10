@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Dtos;
 using Fragmenta.Api.Middleware;
@@ -64,7 +65,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("name")]
-    public async Task<IActionResult> ChangeName([FromQuery] string newName, [FromServices] IUserAccountService accountService)
+    public async Task<IActionResult> ChangeName([FromQuery][MaxLength(100)] string newName, [FromServices] IUserAccountService accountService)
     {
         var id = GetAuthenticatedUserId();
 
@@ -96,7 +97,7 @@ public class AccountController : ControllerBase
                 return NoContent();
             }
             
-            return BadRequest();
+            return BadRequest(new { errors = new Dictionary<string, string>(){ ["OldPassword"] = "fields.labels.incorrectPassword" }});
         }
         return Unauthorized("User was not found");
     }

@@ -74,7 +74,7 @@
 //     }
 
 //     console.log(response)
-    
+
 //     return isBlob ? {blob: await response.blob(), contentDisposition: response.headers.get('Content-Disposition') } : await response.json()
 // };
 
@@ -164,13 +164,13 @@ export async function refreshToken() {
         });
 
         if (!response.ok) throw new Error("Refresh failed");
-        
+
         const newAccessToken = await response.json();
-        
+
         // Your API returns just the access token as a string
         localStorage.setItem("accessToken", newAccessToken);
         // Keep using the same refresh token, no need to update it
-        
+
         console.log("Token refreshed successfully");
         return true;
     } catch (error) {
@@ -188,40 +188,40 @@ function logout() {
 
 async function fetchWithAuth(url, options = {}, isBlob = false) {
     const accessToken = localStorage.getItem("accessToken");
-    
+
     if (!options.headers) options.headers = {};
     if (accessToken) {
         options.headers["Authorization"] = `Bearer ${accessToken}`;
     }
-    
+
     // Add workspace header if provided
     if (options.workspaceId) {
         options.headers["X-Workspace-Id"] = options.workspaceId;
         delete options.workspaceId;
     }
-    
+
     // Common content-type header unless it's FormData
     if (!options.isFormData) {
         options.headers["Content-Type"] = "application/json";
     }
-    
+
     try {
         let response = await fetch(BASE_URL + url, options);
-        
+
         // Handle token expiration
         if (response.status === 401) {
             console.log("Access token expired, attempting refresh");
             const refreshed = await refreshToken();
-            
+
             if (refreshed) {
                 // Update auth header with new token
                 const newAccessToken = localStorage.getItem("accessToken");
                 options.headers["Authorization"] = `Bearer ${newAccessToken}`;
-                
+
                 // Retry original request
                 console.log("Retrying request with new access token");
                 response = await fetch(BASE_URL + url, options);
-                
+
                 if (!response.ok) {
                     throw new Error(`Request failed after token refresh with status ${response.status}`);
                 }
@@ -231,23 +231,29 @@ async function fetchWithAuth(url, options = {}, isBlob = false) {
                 return null;
             }
         }
-        
+
         if (!response.ok) {
-           // return { status: response.status };
-            throw new Error(response.status);
+
+            const err = new Error(response.message);
+
+            console.log(response)
+            err.errors = (await response.json())["errors"];
+            err.status = response.status;
+            throw err;
+
         }
-        
+
         if (response.status === 204) {
             return { status: response.status };
         }
-        
+
         if (isBlob) {
             return {
                 blob: await response.blob(),
                 contentDisposition: response.headers.get('Content-Disposition')
             };
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error("API request failed:", error);
@@ -256,35 +262,35 @@ async function fetchWithAuth(url, options = {}, isBlob = false) {
 }
 
 export const api = {
-    get: (url, workspaceId = null) => 
+    get: (url, workspaceId = null) =>
         fetchWithAuth(url, { workspaceId }),
-        
-    getBlob: (url, workspaceId = null) => 
+
+    getBlob: (url, workspaceId = null) =>
         fetchWithAuth(url, { workspaceId }, true),
-        
-    post: (url, data, workspaceId = null) => 
+
+    post: (url, data, workspaceId = null) =>
         fetchWithAuth(url, {
             method: 'POST',
             body: JSON.stringify(data),
             workspaceId
         }),
-        
-    postFormData: (url, data, workspaceId = null) => 
+
+    postFormData: (url, data, workspaceId = null) =>
         fetchWithAuth(url, {
             method: 'POST',
             body: data,
             isFormData: true,
             workspaceId
         }),
-        
-    put: (url, data, workspaceId = null) => 
+
+    put: (url, data, workspaceId = null) =>
         fetchWithAuth(url, {
             method: 'PUT',
             body: JSON.stringify(data),
             workspaceId
         }),
-        
-    delete: (url, workspaceId = null) => 
+
+    delete: (url, workspaceId = null) =>
         fetchWithAuth(url, {
             method: 'DELETE',
             workspaceId

@@ -191,7 +191,7 @@ export function Board() {
                     newWeight = tasksInDestination[0].weight / 2;
                 } else if (overTaskIndex === tasksInDestination.length - 1) {
                     // Last position - add 500 to last task
-                    newWeight = tasksInDestination[overTaskIndex].weight + 500;
+                    newWeight = tasksInDestination[overTaskIndex].weight + 2000;
                 } else {
                     // Between two tasks - average weight
                     newWeight = (tasksInDestination[overTaskIndex - 1].weight +
@@ -204,7 +204,7 @@ export function Board() {
                     newWeight = 0;
                 } else {
                     // End of column - add 500 to last task
-                    newWeight = tasksInDestination[tasksInDestination.length - 1].weight + 500;
+                    newWeight = tasksInDestination[tasksInDestination.length - 1].weight + 2000;
                 }
             }
 

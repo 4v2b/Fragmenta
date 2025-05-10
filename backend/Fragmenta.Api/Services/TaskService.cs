@@ -10,6 +10,8 @@ namespace Fragmenta.Api.Services
 {
     public class TaskService : ITaskService
     {
+        const int MinGap = 1;
+        const int InitialGap = 2000;
         private readonly ILogger<TaskService> _logger;
         private readonly ApplicationContext _context;
 
@@ -124,16 +126,42 @@ namespace Fragmenta.Api.Services
         public async Task ShallowUpdateAsync(ShallowUpdateTaskRequest request)
         {
             var task = await _context.Tasks.FindAsync(request.Id);
-
-            if (task == null)
-                return;
+            if (task == null) return;
             
             task.Weight = request.Weight;
             task.StatusId = request.StatusId;
 
             _context.Update(task);
-
             await _context.SaveChangesAsync();
+
+            var prev = await _context.Tasks
+                .Where(t => t.StatusId == task.StatusId && t.Weight < task.Weight)
+                .OrderByDescending(t => t.Weight)
+                .FirstOrDefaultAsync();
+
+            var next = await _context.Tasks
+                .Where(t => t.StatusId == task.StatusId && t.Weight > task.Weight)
+                .OrderBy(t => t.Weight)
+                .FirstOrDefaultAsync();
+
+            var tooClose = (prev != null && task.Weight - prev.Weight < MinGap)
+                           || (next != null && next.Weight - task.Weight < MinGap);
+
+            if (tooClose)
+            {
+                _logger.LogInformation("Rebalance tasks with status {StatusId}", request.StatusId);
+                
+                var all = await _context.Tasks
+                    .Where(t => t.StatusId == task.StatusId)
+                    .OrderBy(t => t.Weight)
+                    .ToListAsync();
+
+                for (int i = 0; i < all.Count; i++)
+                    all[i].Weight = (i + 1) * InitialGap;
+
+                _context.UpdateRange(all);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> UpdateTaskAsync(long taskId, UpdateTaskRequest request)

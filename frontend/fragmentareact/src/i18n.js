@@ -49,6 +49,7 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        accountDeleteHint: "Cannot delete account if you are a member of any workspace or board",
                         autoDeletion: "Will be removed in {{count}} day",
                         autoDeletion_plural: "Will be removed in {{count}} days",
                         autoDeletion_0: "Will be removed today",
@@ -75,6 +76,11 @@ i18n
                             priority3: "Low",
                         },
                         labels: {
+                            changeName: "Change your name",
+                            incorrectPassword: "Incorrect password",
+                             passwordHelp: "Must include upper and lowercase letters, and either numbers or symbols @#$%^&*!?",
+                            changePassword: "Change password",
+                            oldPassword: "Old password",
                             display: "Відображення",
                             searchUser: "Find user by email",
                             Documents: "Documents",
@@ -146,7 +152,7 @@ i18n
                     },
                     auth: {
                         success: {
-                            resetPassword: "Password was successfully reset",
+                            resetPassword: "Password was successfully changed",
                             loginRedirect: "Redirecting to login page",
                         },
                         resetPassword: "Creating a new password",
@@ -203,6 +209,7 @@ i18n
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
                     common: {
+                        accountDeleteHint: "Неможливо видалити обліковий запис, якщо ви є учасником робочого простору або дошки",
                         autoDeletion_0: "Буде видалено сьогодні",
                         autoDeletion_one: "Буде видалено через {{count}} день",
                         autoDeletion_few: "Буде видалено через {{count}} дні",
@@ -232,6 +239,11 @@ i18n
                             priority3: "Низький",
                         },
                         labels: {
+                            incorrectPassword: "Невірний пароль",
+                            passwordHelp: "Має включати маленькі, великі літери, та числа або символи @#$%^&*!?",
+                            changePassword: "Змінити пароль",
+                            oldPassword: "Старий пароль",
+                            changeName: "Змінити ім'я",
                             display: "Відображення",
                             settings: "Налаштування",
                             searchUser: "Додати користувача за ел. поштою",
