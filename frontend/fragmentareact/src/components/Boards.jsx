@@ -17,6 +17,8 @@ import { EmptyState } from "@chakra-ui/react"
 import { HiMiniArchiveBox } from "react-icons/hi2";
 import { IoTrashBin } from "react-icons/io5";
 import { ExtensionSelector } from "./ExtensionSelector";
+import { FaPlus } from "react-icons/fa";
+import { FiPlus } from "react-icons/fi";
 
 const MAX_CHARACTERS_TITLE = 75
 
@@ -121,8 +123,8 @@ export function Boards({ id }) {
         return selectedIds;
     }
 
-    return <Stack>
-        <Box p={4} gap={4}>
+    return <Stack >
+        <Box p={4} gap={4} >
             <HStack justify={"space-between"} p={4}>
                 <Heading>{t("common.activeBoards")}</Heading>
 
@@ -133,7 +135,7 @@ export function Boards({ id }) {
                 >
                     <DialogTrigger asChild>
                         <Button bg="primary" size="sm">
-                            <LiaDoorOpenSolid />{t("fields.actions.newBoard")}
+                            <FiPlus />{t("fields.actions.newBoard")}
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -198,13 +200,15 @@ export function Boards({ id }) {
             <Stack p={4}>
                 {boards.map((item) => (
 
-                    <Card.Root key={item.id} size="sm">
+                    <Card.Root _hover={
+                        {"shadow" : "2px 2px 2px 3px rgba(0, 0, 53, 0.2)"}
+                    } key={item.id} size="sm" cursor={"pointer"} onClick={() => navigate(`/workspaces/${id}/boards/${item.id}`)}>
                         <Card.Body color="fg.muted">
-                            <HStack justify={"space-between"} >
-                                <Text onClick={() => navigate(`/workspaces/${id}/boards/${item.id}`)}>{item.name}</Text>
+                            <HStack justify={"space-between"}>
+                                <Text fontWeight={"semibold"} >{item.name}</Text>
 
                                 {canEditBoard(role) && <Button bg={"gray"}
-                                    onClick={() => archiveBoard(item)}
+                                    onClick={(e) => {e.stopPropagation(); archiveBoard(item)}}
                                 ><BiSolidArchiveIn />{t("fields.actions.archive")}</Button>}
                             </HStack>
                         </Card.Body>

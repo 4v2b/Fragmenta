@@ -17,7 +17,7 @@ export function ExtensionSelector({ types, setTypes, presetTypes = [] }) {
 
         const finalTypes = calculateNodeState(updatedTypes);
         setTypes(finalTypes);
-    }, [types]);
+    }, [presetTypes]);
 
     function updateNodeState(nodes, nodeId, checked) {
         return nodes?.map(node => {

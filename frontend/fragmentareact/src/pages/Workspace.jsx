@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { api } from "../api/fetchClient"
 import { Members } from "@/components/Members"
 import { useTranslation } from "react-i18next"
-import { Box, Spinner, HStack, Stack, Tabs, Input, Button, Wrap, Badge, CloseButton } from "@chakra-ui/react"
-import { LuFolder, LuCheck, LuPencilLine, LuX, LuUser } from "react-icons/lu"
+import { Box, Spinner, HStack, Stack, Tabs, Input, Button, Wrap, Badge, CloseButton, Breadcrumb, Span } from "@chakra-ui/react"
+import { LuFolder, LuCheck, LuPencilLine, LuX, LuUser, LuHouse, LuFolderOpen } from "react-icons/lu"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import { canEditWorkspace, canLeaveWorkspace } from "@/utils/permissions"
 import { Boards } from "@/components/Boards"
@@ -41,8 +41,23 @@ export function Workspace() {
     }
 
     return (
-        <Stack p={4} gap={4}>
-            <HStack>
+        <Stack p={4} gap={4} spacing={6}>
+                    <Breadcrumb.Root>
+                        <Breadcrumb.List>
+                            <Breadcrumb.Item>
+                                <Breadcrumb.Link href="/">
+                                    <LuHouse />
+                                    {t("common.home")}
+                                </Breadcrumb.Link>
+                            </Breadcrumb.Item>
+                            <Breadcrumb.Separator />
+            
+                            <Breadcrumb.Item>
+                                <LuFolderOpen /> <Span fontWeight={"semibold"} p={2} >{name}</Span>
+                            </Breadcrumb.Item>
+                        </Breadcrumb.List>
+                    </Breadcrumb.Root>
+            <HStack >
                 <EditableTitle content={name} canEdit={canEditWorkspace(role)} onContentEdit={handleTitleUpdate} />
 
                 {canLeaveWorkspace(role) &&
@@ -72,7 +87,7 @@ export function Workspace() {
             </HStack>
 
 
-            <Tabs.Root variant={"enclosed"} defaultValue="boards">
+            <Tabs.Root variant={"outline"} defaultValue="boards">
                 <Tabs.List>
                     <Tabs.Trigger value="boards">
                         <LuFolder />
@@ -83,10 +98,10 @@ export function Workspace() {
                         {t("common.members")}
                     </Tabs.Trigger>
                 </Tabs.List>
-                <Tabs.Content bg={"background"} value="members">
+                <Tabs.Content overflow={"auto"} bg={"background"} value="members" borderRadius={4}>
                     <Members workspaceId={workspaceId} />
                 </Tabs.Content>
-                <Tabs.Content bg={"background"} value="boards">
+                <Tabs.Content overflow={"auto"} bg={"background"} value="boards"  borderRadius={4}>
                     <Boards id={workspaceId} />
                 </Tabs.Content>
             </Tabs.Root>

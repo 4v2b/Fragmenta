@@ -82,7 +82,9 @@ builder.Services.AddDbContext<ApplicationContext>(
         var isTesting = builder.Environment.IsEnvironment("Testing");
         if (!isTesting || (isTesting && builder.Configuration.GetValue<bool>("DatabaseOptions:UseMsSql")))
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            options.UseSqlServer(
+                builder.Configuration.GetConnectionString("DefaultConnection"),
+                sqlOptions => sqlOptions.EnableRetryOnFailure());
         }
     }
 );

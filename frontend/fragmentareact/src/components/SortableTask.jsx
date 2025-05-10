@@ -7,9 +7,16 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RxDragHandleDots2 } from "react-icons/rx";
 import { ViewTaskDialog } from "./ViewTaskDialog";
+import { useDisplay } from "@/utils/DisplayContext";
+import { Tooltip } from "@/components/ui/tooltip"
+
+const priorityColorMap = [
+  "grey.400", "green.400", "yellow.400", "red.400",
+];
 
 export function SortableTask({ id, task, disabled }) {
   const { members } = useWorkspace();
+  const { visibleFields } = useDisplay()
   const { tags } = useTags();
   const { t, i18n } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -45,7 +52,7 @@ export function SortableTask({ id, task, disabled }) {
           alignItems="center"
           justify="space-between"
           textOverflow={"ellipsis"}
-          // w="fit-content"
+        // w="fit-content"
         >
           <Box
             className="task-drag-handle"
@@ -61,10 +68,7 @@ export function SortableTask({ id, task, disabled }) {
               <Dialog.Backdrop />
               <Dialog.Positioner>
                 <Dialog.Content>
-                  <Dialog.Header>
-                    <Dialog.Title>{t("fields.labels.addTask")}</Dialog.Title>
-                  </Dialog.Header>
-                  <Dialog.Body>
+                  <Dialog.Body pt={6}>
                     <ViewTaskDialog task={task} />
                   </Dialog.Body>
                   <Dialog.Footer>
@@ -103,7 +107,7 @@ export function SortableTask({ id, task, disabled }) {
         </HStack>
 
         {
-          dueDate && <HStack className="due-date" justify="space-between" w="full">
+          (dueDate && visibleFields?.includes("dueDate")) && <HStack className="due-date" justify="space-between" w="full">
             <Badge variant="solid" colorPalette="green">
               <HiCalendar />
               {dueDate}
@@ -111,7 +115,7 @@ export function SortableTask({ id, task, disabled }) {
           </HStack>
         }
 
-        {assignee && (
+        {(assignee && visibleFields?.includes("assignee")) && (
 
           <HStack className="assignee">
 
@@ -123,7 +127,21 @@ export function SortableTask({ id, task, disabled }) {
 
         )}
 
-        {task.tagsId.length > 0 && (
+        {(task?.priority > 0 && visibleFields?.includes("priority")) && (
+          <Badge px={2} py={1} borderRadius="md" variant="subtle" colorScheme="gray">
+            <HStack spacing={1}>
+              <Text fontSize="xm">{t("fields.labels.priority")}</Text>
+              <Tooltip
+                content={t("fields.priority.priority" + task?.priority)}
+              >
+                <Box boxSize={3.5} borderRadius="full" bg={priorityColorMap[task.priority]} />
+              </Tooltip>
+
+            </HStack>
+          </Badge>
+        )}
+
+        {(task.tagsId.length > 0 && visibleFields?.includes("tags")) && (
           <HStack spacing={1}>
             {task.tagsId.map(t => {
               const tagName = tags.find(e => e.id == t)?.name || t;

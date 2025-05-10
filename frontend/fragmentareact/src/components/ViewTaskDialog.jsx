@@ -18,23 +18,24 @@ import { AlertDialog } from "./AlertDialog"
 import { canManageBoardContent } from "@/utils/permissions"
 import { useTasks } from "@/utils/TaskContext"
 import { useTags } from "@/utils/TagContext"
-
-// BUG - Data in message box stays after exit
+import { EditableTitle } from "./EditableTitle"
 
 export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
+        const { removeTag, tags } = useTags()
     const { t, i18n } = useTranslation()
     const { workspaceId, boardId } = useParams()
     const { members, role } = useWorkspace()
     const [error, setError] = useState(false)
     const [selectDueDate, setSelectDueDate] = useState(task?.dueDate ? true : false)
-    const [selectedTags, setSelectedTags] = useState([])
+    const [selectedTags, setSelectedTags] = useState(tags.filter(t => task?.tagsId?.includes(t.id)))
     const [newTask, setNewTask] = useState(task)
     const [attachments, setAttachments] = useState([])
     const { tasks } = useTasks()
-    const { removeTag } = useTags()
+    const [selectedMember, setSelectedMember] = useState(null)
+
+    console.log(task)
 
     useEffect(() => {
-
         api.get(`/attachments?taskId=${task.id}`, workspaceId).then(res => setAttachments(res))
     }, []);
 
@@ -94,6 +95,10 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
 
     return <Stack spacing={4}>
 
+        <EditableTitle canEdit={true} onContentEdit={() => { }} content={newTask?.title}>
+
+        </EditableTitle>
+
         <InputField.Root invalid={error}>
             <InputField.Label>{t("fields.labels.title")}</InputField.Label>
             <Input
@@ -129,41 +134,58 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                         {
                             ...newTask,
                             priority: Number(e.currentTarget.value) ?? 0
-                        })}
-                >
-
+                        })}>
                     {priorities.map(p => (
                         <option key={p} value={p}>
                             {t(`fields.priority.priority${p}`)}
                         </option>
                     ))}
-
                 </NativeSelect.Field>
                 <NativeSelect.Indicator />
             </NativeSelect.Root>
         </Field>
 
         <Field label={t("fields.labels.dueDate")}>
+            <HStack>
+                <Checkbox.Root>
+                    <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
+                    <Checkbox.Control>
+                        <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <Checkbox.Label />
+                </Checkbox.Root>
+                <DatePicker
+                    locale={i18n.language}
+                    className={"chakra-ignore"}
+                    disabled={selectDueDate ? false : true}
+                    onChange={value => setNewTask({ ...newTask, dueDate: value })}
+                    value={new Date(newTask?.dueDate)}
+                    minDate={new Date(Date.now())}
+                />
+            </HStack>
 
-            <Checkbox.Root>
-                <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
-                <Checkbox.Control>
-                    <Checkbox.Indicator />
-                </Checkbox.Control>
-                <Checkbox.Label />
-            </Checkbox.Root>
-            <DatePicker
-                locale={i18n.language}
-                className={"chakra-ignore"}
-                disabled={selectDueDate ? false : true}
-                onChange={value => setNewTask({ ...newTask, dueDate: value })}
-                value={new Date(newTask?.dueDate)}
-                minDate={new Date(Date.now())}
-            />
         </Field>
+
+        {/* <Field label={t("fields.labels.assignee")}>
+                        {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
+                            :
+                            <HStack key={selectedMember.email} gap="4">
+                                <Avatar.Root>
+                                    <Avatar.Fallback name={selectedMember.name} />
+                                </Avatar.Root>
+                                <Stack gap="0">
+                                    <Text fontWeight="medium">{selectedMember.name}</Text>
+                                    <Text color="fg.muted" textStyle="sm">
+                                        {selectedMember.email}
+                                    </Text>
+                                </Stack>
+                                <CloseButton onClick={() => setSelectedMember(null)} />
+                            </HStack>}
+                    </Field> */}
 
         <Box>
             <Stack>
+                <Text mt={2} mb={3} fontWeight={"medium"}>{t("fields.labels.attachments")}</Text>
                 {attachments.map(a => (
                     <Box key={a.id} className="attachment-tile">
                         <HStack spacing="2">
@@ -190,25 +212,6 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             {canManageBoardContent(role) && <FileManager allowedTypes={[".txt", ".zip"]} onUpload={handleFileUpload} />}
         </Box>
 
-
-
-
-        {/* <Field label={t("fields.labels.assignee")}>
-                        {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
-                            :
-                            <HStack key={selectedMember.email} gap="4">
-                                <Avatar.Root>
-                                    <Avatar.Fallback name={selectedMember.name} />
-                                </Avatar.Root>
-                                <Stack gap="0">
-                                    <Text fontWeight="medium">{selectedMember.name}</Text>
-                                    <Text color="fg.muted" textStyle="sm">
-                                        {selectedMember.email}
-                                    </Text>
-                                </Stack>
-                                <CloseButton onClick={() => setSelectedMember(null)} />
-                            </HStack>}
-                    </Field> */}
     </Stack>
 
 }

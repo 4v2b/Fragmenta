@@ -58,7 +58,7 @@ export function TasksProvider({ children }) {
   }, [boardId]);
 
   return (
-    <TasksContext.Provider value={{ tasks, setTasks, addTask, allowedAttachmentTypes, shallowUpdateTask }}>
+    <TasksContext.Provider value={{ tasks, setTasks, addTask, allowedAttachmentTypes, setAllowedAttachmentTypes, shallowUpdateTask }}>
       {children}
     </TasksContext.Provider>
   );

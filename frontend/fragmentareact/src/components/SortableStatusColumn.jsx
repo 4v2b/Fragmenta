@@ -1,7 +1,8 @@
 import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
-  Box, Badge, Flex, Heading
+  Box, Badge, Flex, Heading,
+  HStack
 } from "@chakra-ui/react"
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { useTasks } from "@/utils/TaskContext"
@@ -14,6 +15,10 @@ import { SortableTask } from "@/components/SortableTask"
 import { useTranslation } from "react-i18next"
 import { RxDragHandleDots2 } from "react-icons/rx";
 import { useUser } from "@/utils/UserContext";
+import { EditStatusDialog } from "./EditStatusDialog";
+import { BiPencil } from "react-icons/bi";
+import { useParams } from "react-router";
+import { api } from "@/api/fetchClient";
 
 export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -28,6 +33,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
     opacity: isDragging ? 0.5 : 1
   };
 
+  const { workspaceId, boardId } = useParams()
   const { role } = useWorkspace();
   const { userId } = useUser();
   const { addTask } = useTasks()
@@ -42,7 +48,10 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
     addTask(task, status.id)
   }
 
-  // Check if user can drag tasks
+  function handleUpdateStatus(updatedStatus) {
+    api.put("/statuses/" + status.id, { ...updatedStatus, weight: status.weight }, workspaceId).then(res => console.log("success", res));
+  }
+
   const canDragTask = (task) => {
     return canManageBoardContent(role) && (task.assignedUserId == null || task.assignedUserId === userId);
   };
@@ -64,7 +73,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
     >
       <Flex
         alignItems="center"
-        // justify={"stretch"}
         bg={status.colorHex}
         p={3}
         borderTopRadius="lg"
@@ -72,10 +80,18 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
         fontWeight="bold"
         justify={"space-between"}
       >
-        {/* <HStack spacing={3} > */}
-        <Heading className="status-heading" size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
-          {status.name}
-        </Heading>
+        <HStack>
+          <Heading className="status-heading" size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
+            {status.name}
+          </Heading>
+          {canManageBoardContent(role) && <EditStatusDialog
+            editStatus={status}
+            onStatusUpdate={(updateStatus) => handleUpdateStatus(updateStatus)}
+            base={<BiPencil cursor={"pointer"} />}
+          />}
+        </HStack>
+
+
 
         {status.maxTasks && (
           <Badge className="task-limit-badge" bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">

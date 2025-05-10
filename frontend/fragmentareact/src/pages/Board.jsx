@@ -34,6 +34,8 @@ import { ExtensionSelector } from "@/components/ExtensionSelector"
 import { ViewTaskDialog } from "@/components/ViewTaskDialog"
 import { useUser } from "@/utils/UserContext"
 import { LuClipboardCheck, LuClipboardList, LuFolderOpen, LuHouse } from "react-icons/lu"
+import TaskFieldToggle from "@/components/TaskFieldToggle"
+import { DisplayProvider } from "@/utils/DisplayContext"
 
 export function Board() {
     const { role, name } = useWorkspace()
@@ -268,218 +270,219 @@ export function Board() {
     }
 
     return (
-        <Stack spacing={6} pl={8} pt={4} overflow={"auto"}>
-            <Breadcrumb.Root>
-                <Breadcrumb.List>
-                    <Breadcrumb.Item>
-                        <Breadcrumb.Link href="/">
-                            <LuHouse />
-                            {t("common.home")}
-                        </Breadcrumb.Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Separator />
+        <DisplayProvider>
+            <Stack spacing={6} pl={8} pt={4} overflow={"auto"}>
+                <Breadcrumb.Root>
+                    <Breadcrumb.List>
+                        <Breadcrumb.Item>
+                            <Breadcrumb.Link href="/">
+                                <LuHouse />
+                                {t("common.home")}
+                            </Breadcrumb.Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Separator />
 
-                    <Breadcrumb.Item>
-                        <Breadcrumb.Link href={`/workspaces/${workspaceId}`}>
-                            <LuFolderOpen />{name}
-                        </Breadcrumb.Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Separator />
+                        <Breadcrumb.Item>
+                            <Breadcrumb.Link href={`/workspaces/${workspaceId}`}>
+                                <LuFolderOpen />{name}
+                            </Breadcrumb.Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Separator />
 
-                    <Breadcrumb.Item>
-                        <Breadcrumb.CurrentLink whiteSpace={"nowrap"} display={"inline-flex"} alignItems={"center"}>
-                            <LuClipboardCheck m={2} />{board?.name}
-                        </Breadcrumb.CurrentLink>
-                    </Breadcrumb.Item>
-                </Breadcrumb.List>
-            </Breadcrumb.Root>
-            {board && (
-                <Flex justifyContent="space-between" alignItems="center">
-                    <EditableTitle
-                        content={board?.name}
-                        onContentEdit={handleTitleChange}
-                        canEdit={canManageBoardContent(role)}
-                        fontSize="2xl"
-                    />
+                        <Breadcrumb.Item>
+                            <LuClipboardCheck /> <Span fontWeight={"semibold"} p={2} >{board?.name}</Span>
+                        </Breadcrumb.Item>
+                    </Breadcrumb.List>
+                </Breadcrumb.Root>
+                {board && (
+                    <Flex justifyContent="space-between" alignItems="center">
+                        <EditableTitle
+                            content={board?.name}
+                            onContentEdit={handleTitleChange}
+                            canEdit={canManageBoardContent(role)}
+                            fontSize="2xl"
+                        />
 
-                    {canManageBoardContent(role) && <CreateStatusDialog statusNames={board?.statuses.map(e => e.name) || []} onStatusCreate={handleAddStatus} />}
-                    <BoardProvider>
-                        <Drawer.Root size={"lg"}>
-                            <Drawer.Trigger asChild>
-                                <Button variant="outline" size="sm">
-                                    {t("common.guests")}
-                                </Button>
-                            </Drawer.Trigger>
-                            <Portal>
-                                <Drawer.Backdrop />
-                                <Drawer.Positioner>
-                                    <Drawer.Content>
-                                        <Drawer.Header>
-                                            <Drawer.Title>{t("common.guests")}</Drawer.Title>
-                                        </Drawer.Header>
-                                        <Drawer.Body>
-                                            <Guests />
-                                        </Drawer.Body>
-                                        <Drawer.CloseTrigger asChild>
-                                            <CloseButton size="sm" />
-                                        </Drawer.CloseTrigger>
-                                    </Drawer.Content>
-                                </Drawer.Positioner>
-                            </Portal>
-                        </Drawer.Root>
-                    </BoardProvider>
+                        {canManageBoardContent(role) && <CreateStatusDialog statusNames={board?.statuses.map(e => e.name) || []} onStatusCreate={handleAddStatus} />}
+                        <BoardProvider>
+                            <Drawer.Root size={"lg"}>
+                                <Drawer.Trigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        {t("common.guests")}
+                                    </Button>
+                                </Drawer.Trigger>
+                                <Portal>
+                                    <Drawer.Backdrop />
+                                    <Drawer.Positioner>
+                                        <Drawer.Content>
+                                            <Drawer.Header>
+                                                <Drawer.Title>{t("common.guests")}</Drawer.Title>
+                                            </Drawer.Header>
+                                            <Drawer.Body>
+                                                <Guests />
+                                            </Drawer.Body>
+                                            <Drawer.CloseTrigger asChild>
+                                                <CloseButton size="sm" />
+                                            </Drawer.CloseTrigger>
+                                        </Drawer.Content>
+                                    </Drawer.Positioner>
+                                </Portal>
+                            </Drawer.Root>
+                        </BoardProvider>
 
-                    {
-                        canCreateBoard(role) &&
+                        {
+                            canCreateBoard(role) &&
 
-                        <Drawer.Root size={"xs"}>
-                            <Drawer.Trigger asChild>
-                                <Button variant="outline" size="sm" className="allowedTypes">
-                                    {t("fields.labels.allowedAttachmentTypes")}
-                                    <BiCog />
-                                </Button>
-                            </Drawer.Trigger>
-                            <Portal>
-                                <Drawer.Backdrop />
-                                <Drawer.Positioner>
-                                    <Drawer.Content>
-                                        <Drawer.Context>
-                                            {(store) => (
-                                                <>
-                                                    <Drawer.Header>
-                                                        <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
-                                                    </Drawer.Header>
-                                                    <Drawer.Body>
-                                                        <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
-                                                    </Drawer.Body>
-                                                    <Drawer.Footer>
-                                                        <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
-                                                        <Button className="submit-allowed-files" onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
-                                                    </Drawer.Footer>
-                                                </>
-                                            )}
-                                        </Drawer.Context>
+                            <Drawer.Root size={"xs"}>
+                                <Drawer.Trigger asChild>
+                                    <Button variant="outline" size="sm" className="allowedTypes">
+                                        {t("fields.labels.allowedAttachmentTypes")}
+                                        <BiCog />
+                                    </Button>
+                                </Drawer.Trigger>
+                                <Portal>
+                                    <Drawer.Backdrop />
+                                    <Drawer.Positioner>
+                                        <Drawer.Content>
+                                            <Drawer.Context>
+                                                {(store) => (
+                                                    <>
+                                                        <Drawer.Header>
+                                                            <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
+                                                        </Drawer.Header>
+                                                        <Drawer.Body>
+                                                            <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
+                                                        </Drawer.Body>
+                                                        <Drawer.Footer>
+                                                            <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
+                                                            <Button className="submit-allowed-files" onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
+                                                        </Drawer.Footer>
+                                                    </>
+                                                )}
+                                            </Drawer.Context>
 
 
-                                        <Drawer.CloseTrigger asChild>
-                                            <CloseButton size="sm" />
-                                        </Drawer.CloseTrigger>
-                                    </Drawer.Content>
-                                </Drawer.Positioner>
-                            </Portal>
-                        </Drawer.Root>}
+                                            <Drawer.CloseTrigger asChild>
+                                                <CloseButton size="sm" />
+                                            </Drawer.CloseTrigger>
+                                        </Drawer.Content>
+                                    </Drawer.Positioner>
+                                </Portal>
+                            </Drawer.Root>}
+                        <TaskFieldToggle></TaskFieldToggle>
 
-                </Flex>
-            )}
+                    </Flex>
+                )}
 
-            <DndContext
-                sensors={sensors}
-                collisionDetection={rectIntersection}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnd={handleDragEnd}
-                modifiers={[]}
-                measuring={{
-                    droppable: {
-                        strategy: MeasuringStrategy.Always
-                    }
-                }}
-                activationConstraint={{
-                    distance: 3,
-                    tolerance: 10
-                }}
-            >
-                <SortableContext
-                    items={board?.statuses.map(status => `column-${status.id}`) || []}
-                    strategy={horizontalListSortingStrategy}
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={rectIntersection}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                    modifiers={[]}
+                    measuring={{
+                        droppable: {
+                            strategy: MeasuringStrategy.Always
+                        }
+                    }}
+                    activationConstraint={{
+                        distance: 3,
+                        tolerance: 10
+                    }}
                 >
-                    <HStack
-                        style={{
-                            "&::-webkit-scrollbar": {
-                                height: "4px",
-                                width: "4px"
-                            },
-                            "&::-webkit-scrollbar-thumb": {
-                                backgroundColor: "rgba(223, 223, 223, 0.3)",
-                                borderRadius: "8px"
-                            },
-                            "&::-webkit-scrollbar-track": {
-                                backgroundColor: "transparent"
-                            },
-                            "&:hover::-webkit-scrollbar-thumb": {
-                                backgroundColor: "rgba(160,160,160,0.5)"
-                            },
-                            maskImage: "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
-                            WebkitMaskImage: "linear-gradient(to right, transparent, black 1%, black 99%, transparent)"
-                        }}
-                        spacing={4}
-                        p={2}
-                        justify="flex-start"
-                        alignItems="flex-start"
-                        overflowX="auto"
-                        overflowY="hidden"
-                        height="100%" // or a bounded height if not already
+                    <SortableContext
+                        items={board?.statuses.map(status => `column-${status.id}`) || []}
+                        strategy={horizontalListSortingStrategy}
                     >
-                        {board?.statuses.sort((a, b) => a.weight - b.weight).map(status => (
-                            <SortableStatusColumn
-                                key={`column-${status.id}`}
-                                id={`column-${status.id}`}
-                                status={status}
-                                tasks={(tasks ?? []).filter(e => e.statusId === status.id)}
-                                isDisabled={!canManageBoardContent(role)}
-                            />
-                        ))}
+                        <HStack
+                            style={{
+                                "&::-webkit-scrollbar": {
+                                    height: "4px",
+                                    width: "4px"
+                                },
+                                "&::-webkit-scrollbar-thumb": {
+                                    backgroundColor: "rgba(223, 223, 223, 0.3)",
+                                    borderRadius: "8px"
+                                },
+                                "&::-webkit-scrollbar-track": {
+                                    backgroundColor: "transparent"
+                                },
+                                "&:hover::-webkit-scrollbar-thumb": {
+                                    backgroundColor: "rgba(160,160,160,0.5)"
+                                },
+                                maskImage: "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
+                                WebkitMaskImage: "linear-gradient(to right, transparent, black 1%, black 99%, transparent)"
+                            }}
+                            spacing={4}
+                            p={2}
+                            justify="flex-start"
+                            alignItems="flex-start"
+                            overflowX="auto"
+                            overflowY="hidden"
+                            height="100%" // or a bounded height if not already
+                        >
+                            {board?.statuses.sort((a, b) => a.weight - b.weight).map(status => (
+                                <SortableStatusColumn
+                                    key={`column-${status.id}`}
+                                    id={`column-${status.id}`}
+                                    status={status}
+                                    tasks={(tasks ?? []).filter(e => e.statusId === status.id)}
+                                    isDisabled={!canManageBoardContent(role)}
+                                />
+                            ))}
 
-                        {board?.statuses.length < 1 && (
-                            <Box p={8} textAlign="center" width="100%">
-                                <Text fontSize="lg" color="gray.500">{t("common.emptyBoard")}</Text>
+                            {board?.statuses.length < 1 && (
+                                <Box p={8} textAlign="center" width="100%">
+                                    <Text fontSize="lg" color="gray.500">{t("common.emptyBoard")}</Text>
+                                </Box>
+                            )}
+                        </HStack>
+                    </SortableContext>
+
+                    <DragOverlay>
+                        {activeId && activeType === 'column' && (
+
+                            <Box
+                                minWidth="280px"
+                                borderWidth="1px"
+                                borderRadius="lg"
+                                bg="white"
+                                boxShadow="xl"
+                                opacity={0.8}
+                            >
+                                <Flex
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                    bg={board?.statuses.find(s => `column-${s.id}` === activeId).colorHex}
+                                    p={3}
+                                    borderTopRadius="lg"
+                                    color="white"
+                                    fontWeight="bold"
+                                >
+                                    <Heading size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
+                                        {board?.statuses.find(s => `column-${s.id}` === activeId)?.name}
+                                    </Heading>
+                                </Flex>
                             </Box>
                         )}
-                    </HStack>
-                </SortableContext>
-
-                <DragOverlay>
-                    {activeId && activeType === 'column' && (
-
-                        <Box
-                            minWidth="280px"
-                            borderWidth="1px"
-                            borderRadius="lg"
-                            bg="white"
-                            boxShadow="xl"
-                            opacity={0.8}
-                        >
-                            <Flex
-                                justifyContent="space-between"
-                                alignItems="center"
-                                bg={board?.statuses.find(s => `column-${s.id}` === activeId).colorHex}
+                        {activeId && activeType === 'task' && (
+                            <Box
                                 p={3}
-                                borderTopRadius="lg"
-                                color="white"
-                                fontWeight="bold"
+                                borderWidth="1px"
+                                borderRadius="md"
+                                bg="gray.100"
+                                boxShadow="md"
+                                opacity={0.8}
+                                width="250px"
                             >
-                                <Heading size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
-                                    {board?.statuses.find(s => `column-${s.id}` === activeId)?.name}
-                                </Heading>
-                            </Flex>
-                        </Box>
-                    )}
-                    {activeId && activeType === 'task' && (
-                        <Box
-                            p={3}
-                            borderWidth="1px"
-                            borderRadius="md"
-                            bg="gray.100"
-                            boxShadow="md"
-                            opacity={0.8}
-                            width="250px"
-                        >
-                            {tasks?.find(t => `task-${t.id}` === activeId)?.title}
-                        </Box>
-                    )}
-                </DragOverlay>
-            </DndContext>
+                                {tasks?.find(t => `task-${t.id}` === activeId)?.title}
+                            </Box>
+                        )}
+                    </DragOverlay>
+                </DndContext>
 
-        </Stack>
+            </Stack>
+        </DisplayProvider>
     )
 }

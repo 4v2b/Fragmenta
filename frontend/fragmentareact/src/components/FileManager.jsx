@@ -4,7 +4,7 @@ import { Box, Button, FileUpload, Icon, } from "@chakra-ui/react"
 import { LuUpload } from "react-icons/lu"
 import { useState } from "react";
 
-const maxFiles = 10;
+const maxFiles = 1;
 const maxFileSize = 10485760; // 10MB
 
 export function FileManager({ allowedTypes, onUpload }) {
@@ -36,7 +36,7 @@ export function FileManager({ allowedTypes, onUpload }) {
 
     return (
         <Box>
-            <FileUpload.Root onFileReject={fileRejected} validate={validateFileType} maxFileSize={maxFileSize} maxFiles={maxFiles} maxW="xl">
+            <FileUpload.Root onFileReject={fileRejected} validate={validateFileType} minFileSize={1} maxFileSize={maxFileSize} maxFiles={maxFiles} maxW="xl">
                 <Toaster />
                 <FileUpload.HiddenInput />
                 <FileUpload.Dropzone>
