@@ -1,5 +1,5 @@
 import { useWorkspace } from "@/utils/WorkspaceContext"
-import { Stack, Text, Button, Input, CloseButton, Textarea, Box, Card, HStack } from "@chakra-ui/react"
+import { Stack, Text, Button, Input, CloseButton, Textarea, Box, Card, HStack, Avatar } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Field } from "./ui/field"
 import { Field as InputField } from "@chakra-ui/react"
@@ -19,9 +19,12 @@ import { canManageBoardContent } from "@/utils/permissions"
 import { useTasks } from "@/utils/TaskContext"
 import { useTags } from "@/utils/TagContext"
 import { EditableTitle } from "./EditableTitle"
+import { MemberSelector } from "./MemberSelector"
+
+const priorities = [0, 1, 2, 3]
 
 export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
-        const { removeTag, tags } = useTags()
+    const { removeTag, tags } = useTags()
     const { t, i18n } = useTranslation()
     const { workspaceId, boardId } = useParams()
     const { members, role } = useWorkspace()
@@ -30,29 +33,36 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
     const [selectedTags, setSelectedTags] = useState(tags.filter(t => task?.tagsId?.includes(t.id)))
     const [newTask, setNewTask] = useState(task)
     const [attachments, setAttachments] = useState([])
-    const { tasks } = useTasks()
+    const { tasks, allowedExtensions } = useTasks()
     const [selectedMember, setSelectedMember] = useState(null)
+    const [permanentDelete, setPermanentDelete] = useState([])
 
-    console.log(task)
-
+    useEffect(() => {
+        setSelectedMember(members.find(m => m.id == task.assigneeId) ?? null)
+    }, [members, task])
+    
     useEffect(() => {
         api.get(`/attachments?taskId=${task.id}`, workspaceId).then(res => setAttachments(res))
     }, []);
 
-    const priorities = [0, 1, 2, 3]
-
     function handleRemove(tag) {
 
         if (!tasks.some(e => e.id !== task.id && e.tagsId.some(t => t == tag.id))) {
-            removeTag(tag.id)
+            setPermanentDelete([...permanentDelete, tag.id])
         }
         setSelectedTags(selectedTags.filter(e => e.id != tag.id))
     }
 
+    function handleUpdateTask() {
+        permanentDelete
+            .filter(p => !selectedTags.includes(p))
+            .forEach(p => removeTag(p));
 
-    function handleAssigneeSelect() {
-        onAddTask({
+        onUpdateTask({
             ...newTask,
+            priority: newTask.priority,
+            title: newTask.title,
+            description: newTask.description,
             assigneeId: selectedMember?.id ?? null,
             tagsId: selectedTags.map(e => e.id),
             dueDate: selectDueDate ? newTask?.dueDate : null
@@ -95,34 +105,18 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
 
     return <Stack spacing={4}>
 
-        <EditableTitle canEdit={true} onContentEdit={() => { }} content={newTask?.title}>
-
-        </EditableTitle>
-
-        <InputField.Root invalid={error}>
-            <InputField.Label>{t("fields.labels.title")}</InputField.Label>
-            <Input
-                value={newTask?.title}
-                onChange={e => { setError(e.target.value == ""); setNewTask({ ...newTask, title: e.target.value }) }}
-            />
-            <InputField.ErrorText>{t("fields.labels.required")}</InputField.ErrorText>
-        </InputField.Root>
+        <EditableTitle
+            canEdit={true}
+            onContentEdit={(value) => setNewTask({ ...newTask, title: value })}
+            content={newTask?.title} />
 
         <Field label={t("fields.labels.desc")}>
             <Textarea
                 autoresize
                 maxH="5lh"
                 value={newTask?.description}
-                placeholder="Optional"
+                placeholder={"(" + t("fields.labels.optional") + ")"}
                 onChange={e => setNewTask({ ...newTask, description: e.target.value == "" ? null : e.target.value })}
-            />
-        </Field>
-
-        <Field label={t("fields.labels.tags")}>
-            <TagSelector
-                selectedTags={selectedTags}
-                onRemove={tag => handleRemove(tag)}
-                onSelect={tag => setSelectedTags([...selectedTags, tag])}
             />
         </Field>
 
@@ -147,7 +141,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
 
         <Field label={t("fields.labels.dueDate")}>
             <HStack>
-                <Checkbox.Root>
+                <Checkbox.Root checked={selectDueDate} >
                     <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
                     <Checkbox.Control>
                         <Checkbox.Indicator />
@@ -160,28 +154,47 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                     disabled={selectDueDate ? false : true}
                     onChange={value => setNewTask({ ...newTask, dueDate: value })}
                     value={new Date(newTask?.dueDate)}
-                    minDate={new Date(Date.now())}
+                    // minDate={new Date(Date.now())}
                 />
             </HStack>
 
         </Field>
 
-        {/* <Field label={t("fields.labels.assignee")}>
-                        {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
-                            :
-                            <HStack key={selectedMember.email} gap="4">
-                                <Avatar.Root>
-                                    <Avatar.Fallback name={selectedMember.name} />
-                                </Avatar.Root>
-                                <Stack gap="0">
-                                    <Text fontWeight="medium">{selectedMember.name}</Text>
-                                    <Text color="fg.muted" textStyle="sm">
-                                        {selectedMember.email}
-                                    </Text>
-                                </Stack>
-                                <CloseButton onClick={() => setSelectedMember(null)} />
-                            </HStack>}
-                    </Field> */}
+        <Field label={t("fields.labels.assignee")}>
+            {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
+                :
+                <HStack key={selectedMember.email} gap="4">
+                    <Avatar.Root>
+                        <Avatar.Fallback name={selectedMember.name} />
+                    </Avatar.Root>
+                    <Stack gap="0">
+                        <Text fontWeight="medium">{selectedMember.name}</Text>
+                        <Text color="fg.muted" textStyle="sm">
+                            {selectedMember.email}
+                        </Text>
+                    </Stack>
+                    <CloseButton onClick={() => setSelectedMember(null)} />
+                </HStack>}
+        </Field>
+
+        <Field label={t("fields.labels.tags")}>
+            <TagSelector
+                selectedTags={selectedTags}
+                onRemove={tag => handleRemove(tag)}
+                onSelect={tag => setSelectedTags([...selectedTags, tag])}
+            />
+        </Field>
+
+        <Button disabled={
+            (newTask.title == task.title
+                && newTask.description == task.description
+                && newTask.priority == task.priority
+                && ((newTask.dueDate != null && selectDueDate) || (newTask.dueDate == null && !selectDueDate)))
+            || newTask.title == ""
+        }
+            onClick={() => handleUpdateTask()} bg="primary"
+        >{t("fields.actions.save")}</Button>
+
 
         <Box>
             <Stack>
@@ -190,14 +203,14 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                     <Box key={a.id} className="attachment-tile">
                         <HStack spacing="2">
                             <Text fontWeight="bold">{a.originalName}</Text>
-                            {/* <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString()}</Text> */}
+                            {a?.createdAt && <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString(i18n.locale, {dateStyle: "short", timeStyle: "short"})}</Text>}
                             <Text fontSize="sm">{(a.sizeBytes / 1024).toFixed(2)} KB</Text>
-                            <Button className="download-file" onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
+                            <Button size={"sm"} variant={"subtle"} className="download-file" onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
 
                             {canManageBoardContent(role) &&
                                 <AlertDialog
                                     onConfirm={() => deleteAttachment(a.id)}
-                                    base={<Button className="removeAttachment"><FaTrashCan /></Button>}
+                                    base={<Button size={"sm"} color={"danger"} className="removeAttachment"><FaTrashCan /></Button>}
                                     message="Are you sure you want to delete this status?"
                                     title="Confirm Deletion"
                                     confirmMessage="Delete"
@@ -209,9 +222,16 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                     </Box>
                 ))}
             </Stack>
-            {canManageBoardContent(role) && <FileManager allowedTypes={[".txt", ".zip"]} onUpload={handleFileUpload} />}
+            {canManageBoardContent(role) && <FileManager allowedTypes={allowedExtensions} onUpload={handleFileUpload} />}
         </Box>
-
+        <AlertDialog
+            base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteTask")}</Button>}
+            title={"A"}
+            message={"B"}
+            onConfirm={() => onStatusDelete()}
+            confirmMessage={t("fields.actions.delete")}
+            cancelMessage={t("fields.actions.cancel")}
+        />
     </Stack>
 
 }

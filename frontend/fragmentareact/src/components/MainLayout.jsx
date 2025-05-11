@@ -6,7 +6,7 @@ import { WorkspaceProvider } from '@/utils/WorkspaceContext'
 import { Outlet, Navigate, useNavigate, useParams } from 'react-router'
 import { logout } from '@/api/api'
 
-import { LanguageSwitch } from "@/components/LanguageSwitch/LanguageSwitch";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { Navbar } from "@/components/Navbar";
 import { refreshToken } from "@/api/fetchClient";
 import { Grid, GridItem, Stack, Button } from '@chakra-ui/react'
@@ -68,7 +68,7 @@ export function MainLayout() {
                         {workspaceId ?
                             <WorkspaceProvider name={selectedWorkspace?.name} role={selectedWorkspace?.role} workspaceId={selectedWorkspace?.id}>
                                 <Outlet context={{ name: selectedWorkspace?.name }} />
-                            </WorkspaceProvider> : <Outlet />}
+                            </WorkspaceProvider> : <Outlet context={{ items: workspaces }} />}
                     </GridItem>
                 </Grid>
             </UserProvider>

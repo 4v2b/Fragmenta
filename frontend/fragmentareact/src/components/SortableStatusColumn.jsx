@@ -52,6 +52,10 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
     api.put("/statuses/" + status.id, { ...updatedStatus, weight: status.weight }, workspaceId).then(res => console.log("success", res));
   }
 
+  function handleDeleteStatus() {
+    api.delete("/statuses/" + status.id, workspaceId).then(_ => console.log("successfully deleted"));
+  }
+
   const canDragTask = (task) => {
     return canManageBoardContent(role) && (task.assignedUserId == null || task.assignedUserId === userId);
   };
@@ -86,6 +90,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
           </Heading>
           {canManageBoardContent(role) && <EditStatusDialog
             editStatus={status}
+            onStatusDelete={handleDeleteStatus}
             onStatusUpdate={(updateStatus) => handleUpdateStatus(updateStatus)}
             base={<BiPencil cursor={"pointer"} />}
           />}

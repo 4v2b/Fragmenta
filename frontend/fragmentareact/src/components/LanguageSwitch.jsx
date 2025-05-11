@@ -1,10 +1,9 @@
-import './LanguageSwitch.css'
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '@/i18n';
 
 const lngs = {
-  en: { nativeName: 'English' },
-  uk: { nativeName: 'Українська' }
+  en: { nativeName: 'Eng' },
+  uk: { nativeName: 'Укр' }
 };
 
 export function LanguageSwitch() {
@@ -13,7 +12,7 @@ export function LanguageSwitch() {
 
     <div>
       {Object.keys(lngs).map((lng) => (
-        <button key={lng} style={{ fontWeight: i18n.resolvedLanguage === lng ? 'bold' : 'normal' }} type="submit" onClick={() => changeLanguage(lng)}>
+        <button key={lng} style={{ fontWeight: i18n.resolvedLanguage === lng ? 'bold' : 'normal', padding: '0.3em' }} type="submit" onClick={() => changeLanguage(lng)}>
           {lngs[lng].nativeName}
         </button>
       ))}

@@ -41,7 +41,7 @@ export function Board() {
     const { role, name } = useWorkspace()
     const { workspaceId, boardId } = useParams()
     const [board, setBoard] = useState(null)
-    const { tasks, setTasks, addTask, shallowUpdateTask } = useTasks()
+    const { tasks, setTasks, setTypesId, addTask, shallowUpdateTask } = useTasks()
     const { tags } = useTags()
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
@@ -62,7 +62,7 @@ export function Board() {
     }, [])
 
     useEffect(() => {
-        api.get(`/boards/${boardId}`, workspaceId).then(res => setBoard(res))
+        api.get(`/boards/${boardId}`, workspaceId).then(res => { setBoard(res); setTypesId(res.allowedTypeIds) })
     }, [])
 
     function handleDragStart(event) {
@@ -113,7 +113,10 @@ export function Board() {
             archivedAt: null,
             allowedTypeIds: getCheckedLeafTypeIds(types)
         }, workspaceId)
-            .then(res => setBoard(prev => ({ ...prev, allowedTypeIds: res.allowedTypeIds })))
+            .then(res => {
+                setBoard(prev => ({ ...prev, allowedTypeIds: res.allowedTypeIds }))
+                setTypesId(res.allowedTypeIds)
+            })
     }
 
     function handleAddStatus(newStatus) {
@@ -143,7 +146,6 @@ export function Board() {
                 const newIndex = board.statuses.findIndex(s => `column-${s.id}` === over.id);
                 const newStatuses = arrayMove(board.statuses, oldIndex, newIndex);
 
-                // Optimize weight calculations - use larger intervals (1000)
                 newStatuses.forEach((status, index) => {
                     status.weight = index * 1000;
                     api.put(`/statuses/${status.id}`, {
@@ -161,54 +163,42 @@ export function Board() {
                 ? tasks.find(t => `task-${t.id}` === over.id).statusId
                 : Number(over.id.replace('column-', ''));
 
-            // Check task limit
             const targetStatus = board.statuses.find(s => s.id === targetStatusId);
             const tasksInTargetStatus = tasks.filter(t =>
                 t.statusId === targetStatusId && `task-${t.id}` !== active.id
             );
 
-            // If column has a limit and is full, prevent dropping
             if (targetStatus.maxTasks && tasksInTargetStatus.length >= targetStatus.maxTasks) {
                 return;
             }
 
-            // Check permission
             const canMove = (canManageBoardContent(role) && task.assigneeId == null) ||
                 (task.assigneeId != null && task.assigneeId == userId);
             if (!canMove) return;
 
-            // Calculate new weight based on position
             let newWeight = 0;
             const tasksInDestination = tasks.filter(t => t.statusId === targetStatusId)
                 .sort((a, b) => a.weight - b.weight);
 
             if (over.id.startsWith('task-')) {
-                // Task is dropped on another task
                 const overTaskIndex = tasksInDestination.findIndex(t => `task-${t.id}` === over.id);
 
                 if (overTaskIndex === 0) {
-                    // First position - half of first task's weight
                     newWeight = tasksInDestination[0].weight / 2;
                 } else if (overTaskIndex === tasksInDestination.length - 1) {
-                    // Last position - add 500 to last task
                     newWeight = tasksInDestination[overTaskIndex].weight + 2000;
                 } else {
-                    // Between two tasks - average weight
                     newWeight = (tasksInDestination[overTaskIndex - 1].weight +
                         tasksInDestination[overTaskIndex].weight) / 2;
                 }
             } else {
-                // Task is dropped on a column
                 if (tasksInDestination.length === 0) {
-                    // Empty column
                     newWeight = 0;
                 } else {
-                    // End of column - add 500 to last task
                     newWeight = tasksInDestination[tasksInDestination.length - 1].weight + 2000;
                 }
             }
 
-            // Update backend
             shallowUpdateTask({
                 id: task.id,
                 statusId: Number(targetStatusId),
@@ -223,12 +213,10 @@ export function Board() {
     function handleDragOver(event) {
         const { active, over } = event;
 
-        // Only handle task dragging between columns
         if (!active || !over || !active.id.startsWith('task-')) return;
 
         const taskId = active.id.replace('task-', '');
 
-        // If over a column and not another task
         if (over.id.startsWith('column-')) {
             const newStatusId = over.id.replace('column-', '');
             const task = tasks.find(t => t.id.toString() === taskId);
@@ -236,28 +224,23 @@ export function Board() {
             const targetStatus = board.statuses.find(s => s.id.toString() === newStatusId);
             const tasksInTargetStatus = tasks.filter(t => t.statusId.toString() === newStatusId);
 
-            // Check if status has a maxTasks limit and if it's already reached
             if (targetStatus.maxTasks && tasksInTargetStatus.length >= targetStatus.maxTasks) {
-                return; // Don't allow the dragover if column is full
+                return;
             }
 
-            // Add this check to prevent moving assigned tasks
             const canMove = (canManageBoardContent(role) && task.assigneeId == null) ||
                 (task.assigneeId != null && task.assigneeId == userId);
             if (!canMove) {
-                return; // Don't allow the dragover if user can't move this task
+                return;
             }
 
-            // If task is already in a different column than its source
             if (task && task.statusId.toString() !== newStatusId) {
-                // Add backend update here
                 shallowUpdateTask({
                     id: task.id,
                     statusId: parseInt(newStatusId),
-                    weight: task.weight // Keep original weight or calculate new one
+                    weight: task.weight
                 });
 
-                // Update local state temporarily during drag
                 setTasks(current =>
                     current.map(t =>
                         t.id.toString() === taskId
@@ -420,7 +403,7 @@ export function Board() {
                             alignItems="flex-start"
                             overflowX="auto"
                             overflowY="hidden"
-                            height="100%" // or a bounded height if not already
+                            height="100%"
                         >
                             {board?.statuses.sort((a, b) => a.weight - b.weight).map(status => (
                                 <SortableStatusColumn
@@ -481,7 +464,6 @@ export function Board() {
                         )}
                     </DragOverlay>
                 </DndContext>
-
             </Stack>
         </DisplayProvider>
     )

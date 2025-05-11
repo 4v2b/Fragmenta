@@ -9,9 +9,32 @@ const TasksContext = createContext();
 
 export function TasksProvider({ children }) {
   const [tasks, setTasks] = useState([]);
+  const [types, setTypes] = useState([]);
   const { workspaceId, boardId } = useParams()
-  const [allowedAttachmentTypes, setAllowedAttachmentTypes] = useState([]);
+  const [allowedExtensions, setAllowedExtensions] = useState([]);
+  const [typesId, setTypesId] = useState([])
   const connectionRef = useRef(null);
+
+  console.log(types, allowedExtensions)
+
+  useEffect(() => {
+    const names = getLeafTypeName(types, typesId)
+    setAllowedExtensions(names);
+  }, [typesId, types])
+
+  function getLeafTypeName(nodes, ids) {
+    let selectedNames = [];
+    nodes.forEach(node => {
+      if (node.children?.length > 0) {
+        const childNames = getLeafTypeName(node.children, ids);
+        selectedNames = [...selectedNames, ...childNames];
+      } else if (ids.some(i => i == node.id)) {
+        selectedNames.push(node.value);
+      }
+    });
+
+    return selectedNames;
+  }
 
   useEffect(() => {
     if (!connectionRef.current) {
@@ -37,6 +60,10 @@ export function TasksProvider({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    api.get(`/attachment-types`, workspaceId).then(res => setTypes(res[0].children));
+  }, [])
+
   function addTask(task, statusId) {
     api.post(`/tasks?statusId=${statusId}`, task, workspaceId).then(res => setTasks([...tasks, res]));
   }
@@ -58,7 +85,7 @@ export function TasksProvider({ children }) {
   }, [boardId]);
 
   return (
-    <TasksContext.Provider value={{ tasks, setTasks, addTask, allowedAttachmentTypes, setAllowedAttachmentTypes, shallowUpdateTask }}>
+    <TasksContext.Provider value={{ tasks, setTasks, addTask, allowedExtensions, setTypesId, shallowUpdateTask }}>
       {children}
     </TasksContext.Provider>
   );

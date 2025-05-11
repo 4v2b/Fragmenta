@@ -23,7 +23,7 @@ import { BiCog } from "react-icons/bi"
 
 const MAX_CHARACTERS_TITLE = 75
 
-export function Sidebar({ boards, workspaces, onWorkspaceSelect, selectedWorkspace }) {
+export function Sidebar({ boards, workspaces, onWorkspaceSelect}) {
   const { t } = useTranslation()
   const [newName, setNewName] = useState("");
   const [error, setError] = useState(false);

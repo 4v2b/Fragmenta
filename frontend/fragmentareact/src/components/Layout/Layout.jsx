@@ -1,5 +1,5 @@
 import { Outlet, Navigate } from "react-router";
-import { LanguageSwitch } from "../LanguageSwitch/LanguageSwitch";
+import { LanguageSwitch } from "../LanguageSwitch";
 import { useEffect, useState } from "react";
 import { refreshToken } from "../../api/fetchClient";
 

@@ -25,10 +25,11 @@ import {
 import { useDebounce } from "@/utils/useDebounce"
 import { StatusColumn } from "@/components/StatusColumn"
 import { useTranslation } from "react-i18next";
+import { AlertDialog } from "./AlertDialog";
 
 const MAX_CHARACTERS_TITLE = 50
 
-export function EditStatusDialog({ base, editStatus, onStatusUpdate }) {
+export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDelete }) {
     const [status, setStatus] = useState({
         name: editStatus.name,
         maxTasks: editStatus.maxTasks,
@@ -117,6 +118,15 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate }) {
                         />
                     </Field>
                 </Stack>
+                <AlertDialog
+                    base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteStatus")}</Button>}
+                    title={"A"}
+                    message={"B"}
+                    onConfirm={() => onStatusDelete()}
+                    confirmMessage={t("fields.actions.delete")}
+                    cancelMessage={t("fields.actions.cancel")}
+                />
+
             </DialogBody>
             <DialogFooter>
                 <DialogActionTrigger asChild>
@@ -127,9 +137,9 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate }) {
                         (editStatus.name == status.name
                             && editStatus.colorHex == status.colorHex
                             && editStatus.maxTasks == status.maxTasks
-                            &&((editStatus.maxTasks != null && selectTaskLimit) || (editStatus.maxTasks == null && !selectTaskLimit))) 
-                            || status.name == ""
-                        } 
+                            && ((editStatus.maxTasks != null && selectTaskLimit) || (editStatus.maxTasks == null && !selectTaskLimit)))
+                        || status.name == ""
+                    }
                         onClick={() => onStatusUpdate({ ...status, maxTasks: selectTaskLimit ? status.maxTasks : null })} bg="primary">{t("fields.actions.save")}</Button>
                 </DialogActionTrigger>
             </DialogFooter>

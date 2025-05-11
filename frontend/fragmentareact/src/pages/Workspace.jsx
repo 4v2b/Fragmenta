@@ -78,8 +78,8 @@ export function Workspace() {
                         base={<Button disabled={!canDelete}  className="delete-workspace">{t("fields.actions.deleteWorkspace")}</Button>}
                         message="Are you sure you want to delete workspace?"
                         title="Confirm Deletion"
-                        confirmMessage="Delete"
-                        cancelMessage="Cancel"
+                        confirmMessage={t("fields.actions.delete")}
+                        cancelMessage={t("fields.actions.cancel")}
                     />
 
                 }
