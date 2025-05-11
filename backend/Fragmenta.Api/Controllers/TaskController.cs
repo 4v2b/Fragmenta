@@ -68,6 +68,13 @@ namespace Fragmenta.Api.Controllers
 
                 if (result != null)
                 {
+                    if (Request.Headers.TryGetValue("X-Board-Id", out var boardId) 
+                        && !string.IsNullOrWhiteSpace(boardId))
+                    {
+                        await hubContext.Clients.Group($"{boardId}")
+                            .SendAsync("TaskCreated", result);
+                    }
+                    
                     return CreatedAtAction(nameof(CreateTask), result);
                 }
 
@@ -121,6 +128,13 @@ namespace Fragmenta.Api.Controllers
 
                 if (result)
                 {
+                    if (Request.Headers.TryGetValue("X-Board-Id", out var boardId) 
+                        && !string.IsNullOrWhiteSpace(boardId))
+                    {
+                        await hubContext.Clients.Group($"{boardId}")
+                            .SendAsync("TaskUpdated", new {request, taskId});
+                    }
+                    
                     return NoContent();
                 }
 
@@ -148,6 +162,13 @@ namespace Fragmenta.Api.Controllers
 
                 if (result)
                 {
+                    if (Request.Headers.TryGetValue("X-Board-Id", out var boardId) 
+                        && !string.IsNullOrWhiteSpace(boardId))
+                    {
+                        await hubContext.Clients.Group($"{boardId}")
+                            .SendAsync("TaskDeleted", taskId);
+                    }
+                    
                     return NoContent();
                 }
 

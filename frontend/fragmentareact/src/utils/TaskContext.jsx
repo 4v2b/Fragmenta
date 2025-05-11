@@ -15,8 +15,6 @@ export function TasksProvider({ children }) {
   const [typesId, setTypesId] = useState([])
   const connectionRef = useRef(null);
 
-  console.log(types, allowedExtensions)
-
   useEffect(() => {
     const names = getLeafTypeName(types, typesId)
     setAllowedExtensions(names);
@@ -47,12 +45,20 @@ export function TasksProvider({ children }) {
         .then(() => {
           console.log('Connected to SignalR');
           connection.on('TaskMoved', updatedTask => {
-            setTasks(prevTasks =>
-              prevTasks.map(task =>
-                task.id === updatedTask.id ? { ...task, ...updatedTask } : task
-              )
-            );
+            setTasks(prevTasks => prevTasks.map(task =>
+              task.id === updatedTask.id ? { ...task, ...updatedTask } : task));
           });
+          connection.on('TaskDeleted', taskId => {
+            setTasks(prevTasks => prevTasks.filter(task => task.id != taskId));
+          });
+          connection.on('TaskCreated', task => {
+            setTasks(prev => [...prev, task])
+          });
+          connection.on('TaskUpdated', updatedTask =>
+            setTasks(prevTasks => prevTasks.map(task =>
+              task.id == updatedTask.taskId ? 
+              { ...updatedTask.request, id: task.id, weight: task.weight, statusId: task.statusId } : task))
+          );
         })
         .catch(err => console.error('SignalR Connection Error: ', err));
 
@@ -65,7 +71,7 @@ export function TasksProvider({ children }) {
   }, [])
 
   function addTask(task, statusId) {
-    api.post(`/tasks?statusId=${statusId}`, task, workspaceId).then(res => setTasks([...tasks, res]));
+    api.post(`/tasks?statusId=${statusId}`, task, workspaceId, boardId).then(res => console.log("created,", res));
   }
 
   function shallowUpdateTask(task) {

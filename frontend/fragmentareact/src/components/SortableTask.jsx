@@ -9,12 +9,15 @@ import { RxDragHandleDots2 } from "react-icons/rx";
 import { ViewTaskDialog } from "./ViewTaskDialog";
 import { useDisplay } from "@/utils/DisplayContext";
 import { Tooltip } from "@/components/ui/tooltip"
+import { api } from "@/api/fetchClient";
+import { useParams } from "react-router";
 
 const priorityColorMap = [
-  "grey.400", "green.400", "yellow.400", "red.400",
+  "grey.400", "red.400", "yellow.400", "green.400",
 ];
 
 export function SortableTask({ id, task, disabled }) {
+  const { workspaceId, boardId } = useParams();
   const { members } = useWorkspace();
   const { visibleFields } = useDisplay()
   const { tags } = useTags();
@@ -35,6 +38,10 @@ export function SortableTask({ id, task, disabled }) {
   const dueDate = task.dueDate ? new Intl.DateTimeFormat(i18n.language, {
     month: "short", day: "2-digit", year: "numeric"
   }).format(new Date(task.dueDate)) : null;
+
+  function handleUpdateTask(task) {
+    api.put("/tasks/" + task.id, task, workspaceId, boardId).then(() => console.log("task updated"))
+  }
 
   return (
     <Box ref={setNodeRef} style={style}
@@ -69,7 +76,7 @@ export function SortableTask({ id, task, disabled }) {
               <Dialog.Positioner>
                 <Dialog.Content>
                   <Dialog.Body pt={6}>
-                    <ViewTaskDialog task={task} />
+                    <ViewTaskDialog onUpdateTask={(task) => handleUpdateTask(task)} task={task} />
                   </Dialog.Body>
                   <Dialog.Footer>
                     <Dialog.Trigger asChild>

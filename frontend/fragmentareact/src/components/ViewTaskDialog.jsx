@@ -40,7 +40,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
     useEffect(() => {
         setSelectedMember(members.find(m => m.id == task.assigneeId) ?? null)
     }, [members, task])
-    
+
     useEffect(() => {
         api.get(`/attachments?taskId=${task.id}`, workspaceId).then(res => setAttachments(res))
     }, []);
@@ -51,6 +51,10 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             setPermanentDelete([...permanentDelete, tag.id])
         }
         setSelectedTags(selectedTags.filter(e => e.id != tag.id))
+    }
+
+    function handleDeleteTask() {
+        api.delete("/tasks/" + task.id, workspaceId, boardId).then(() => console.log("task delete successfully"))
     }
 
     function handleUpdateTask() {
@@ -67,6 +71,13 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             tagsId: selectedTags.map(e => e.id),
             dueDate: selectDueDate ? newTask?.dueDate : null
         })
+    }
+
+    function arraysEqualUnordered(a, b) {
+        if (a.length !== b.length) return false;
+        const sortedA = [...a].sort((x, y) => x - y);
+        const sortedB = [...b].sort((x, y) => x - y);
+        return sortedA.every((v, i) => v === sortedB[i]);
     }
 
     function handleFileUpload(file) {
@@ -153,8 +164,8 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                     className={"chakra-ignore"}
                     disabled={selectDueDate ? false : true}
                     onChange={value => setNewTask({ ...newTask, dueDate: value })}
-                    value={new Date(newTask?.dueDate)}
-                    // minDate={new Date(Date.now())}
+                    value={new Date(newTask?.dueDate ?? Date.now())}
+                    minDate={new Date(task?.dueDate ?? Date.now())}
                 />
             </HStack>
 
@@ -190,6 +201,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                 && newTask.description == task.description
                 && newTask.priority == task.priority
                 && ((newTask.dueDate != null && selectDueDate) || (newTask.dueDate == null && !selectDueDate)))
+                && selectedTags.length === task.tagsId.length && arraysEqualUnordered(selectedTags.map(e => e.id), task.tagsId)
             || newTask.title == ""
         }
             onClick={() => handleUpdateTask()} bg="primary"
@@ -201,34 +213,32 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                 <Text mt={2} mb={3} fontWeight={"medium"}>{t("fields.labels.attachments")}</Text>
                 {attachments.map(a => (
                     <Box key={a.id} className="attachment-tile">
-                        <HStack spacing="2">
+                        <HStack spacing="2" mb={3} p={2}>
                             <Text fontWeight="bold">{a.originalName}</Text>
-                            {a?.createdAt && <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString(i18n.locale, {dateStyle: "short", timeStyle: "short"})}</Text>}
+                            {a?.createdAt && <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString(i18n.locale, { dateStyle: "short", timeStyle: "short" })}</Text>}
                             <Text fontSize="sm">{(a.sizeBytes / 1024).toFixed(2)} KB</Text>
                             <Button size={"sm"} variant={"subtle"} className="download-file" onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
 
                             {canManageBoardContent(role) &&
                                 <AlertDialog
                                     onConfirm={() => deleteAttachment(a.id)}
-                                    base={<Button size={"sm"} color={"danger"} className="removeAttachment"><FaTrashCan /></Button>}
+                                    base={<Button variant={"subtle"} size={"sm"} color={"danger"} className="removeAttachment"><FaTrashCan /></Button>}
                                     message="Are you sure you want to delete this status?"
                                     title="Confirm Deletion"
                                     confirmMessage="Delete"
                                     cancelMessage="Cancel"
                                 />}
-
-
                         </HStack>
                     </Box>
                 ))}
             </Stack>
-            {canManageBoardContent(role) && <FileManager allowedTypes={allowedExtensions} onUpload={handleFileUpload} />}
+            {(canManageBoardContent(role) && attachments.length <= 10) && <FileManager allowedTypes={allowedExtensions} onUpload={handleFileUpload} />}
         </Box>
         <AlertDialog
             base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteTask")}</Button>}
             title={"A"}
             message={"B"}
-            onConfirm={() => onStatusDelete()}
+            onConfirm={() => handleDeleteTask()}
             confirmMessage={t("fields.actions.delete")}
             cancelMessage={t("fields.actions.cancel")}
         />

@@ -5,6 +5,7 @@ using Fragmenta.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Fragmenta.Api.Controllers
 {
@@ -12,7 +13,7 @@ namespace Fragmenta.Api.Controllers
     [ApiController]
     [ServiceFilter(typeof(WorkspaceFilter))]
     [Route("api/statuses")]
-    public class StatusController : ControllerBase
+    public class StatusController(IHubContext<BoardHub> hubContext)  : ControllerBase
     {
         private long? GetAuthenticatedUserId()
         {
@@ -44,6 +45,13 @@ namespace Fragmenta.Api.Controllers
 
                 if(result != null)
                 {
+                    if (Request.Headers.TryGetValue("X-Board-Id", out var hubId) 
+                        && !string.IsNullOrWhiteSpace(hubId))
+                    {
+                        await hubContext.Clients.Group($"{hubId}")
+                            .SendAsync("StatusCreated", result);
+                    }
+                    
                     return CreatedAtAction(nameof(CreateStatus), result);
                 }
 
@@ -71,6 +79,13 @@ namespace Fragmenta.Api.Controllers
 
                 if (result != null)
                 {
+                    if (Request.Headers.TryGetValue("X-Board-Id", out var boardId) 
+                        && !string.IsNullOrWhiteSpace(boardId))
+                    {
+                        await hubContext.Clients.Group($"{boardId}")
+                            .SendAsync("StatusUpdated", result);
+                    }
+                    
                     return Ok(result);
                 }
 
@@ -98,6 +113,13 @@ namespace Fragmenta.Api.Controllers
 
                 if (result)
                 {
+                    if (Request.Headers.TryGetValue("X-Board-Id", out var boardId) 
+                        && !string.IsNullOrWhiteSpace(boardId))
+                    {
+                        await hubContext.Clients.Group($"{boardId}")
+                            .SendAsync("StatusDeleted", statusId);
+                    }
+                    
                     return NoContent();
                 }
 

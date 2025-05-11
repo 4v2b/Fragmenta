@@ -121,7 +121,7 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect}) {
 
         <Select.Root
           onValueChange={(item) => onWorkspaceSelect(item.value[0])}
-          value={selectedWorkspace?.name}
+          // value={selectedWorkspace?.name}
           collection={workspacesSelect} size="sm" width="320px">
 
           <Select.ClearTrigger>
@@ -160,7 +160,7 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect}) {
           </Portal>
         </Select.Root>
 
-        {
+        {/* {
           selectedWorkspace && (
             <>
               <Box>
@@ -198,7 +198,7 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect}) {
               </Box>
             </>
           )
-        }
+        } */}
       </VStack >
 
 

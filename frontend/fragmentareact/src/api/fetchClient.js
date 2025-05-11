@@ -200,6 +200,11 @@ async function fetchWithAuth(url, options = {}, isBlob = false) {
         delete options.workspaceId;
     }
 
+    if (options.boardId) {
+        options.headers["X-Board-Id"] = options.boardId;
+        delete options.boardId;
+    }
+
     // Common content-type header unless it's FormData
     if (!options.isFormData) {
         options.headers["Content-Type"] = "application/json";
@@ -268,11 +273,12 @@ export const api = {
     getBlob: (url, workspaceId = null) =>
         fetchWithAuth(url, { workspaceId }, true),
 
-    post: (url, data, workspaceId = null) =>
+    post: (url, data, workspaceId = null, boardId = null) =>
         fetchWithAuth(url, {
             method: 'POST',
             body: JSON.stringify(data),
-            workspaceId
+            workspaceId,
+            boardId
         }),
 
     postFormData: (url, data, workspaceId = null) =>
@@ -283,16 +289,18 @@ export const api = {
             workspaceId
         }),
 
-    put: (url, data, workspaceId = null) =>
+    put: (url, data, workspaceId = null, boardId = null) =>
         fetchWithAuth(url, {
             method: 'PUT',
             body: JSON.stringify(data),
-            workspaceId
+            workspaceId,
+            boardId
         }),
 
-    delete: (url, workspaceId = null) =>
+    delete: (url, workspaceId = null, boardId = null) =>
         fetchWithAuth(url, {
             method: 'DELETE',
-            workspaceId
+            workspaceId,
+            boardId
         })
 };

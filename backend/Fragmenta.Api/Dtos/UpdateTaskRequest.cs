@@ -3,7 +3,7 @@
     public class UpdateTaskRequest
     {
         public required string Title { get; set; }
-        public required string Description { get; set; }
+        public string? Description { get; set; }
         public required DateTime? DueDate { get; set; }
         public required long? AssigneeId { get; set; }
         public required int Priority { get; set; }

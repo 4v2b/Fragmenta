@@ -166,6 +166,12 @@ namespace Fragmenta.Api.Services
 
         public async Task<bool> UpdateTaskAsync(long taskId, UpdateTaskRequest request)
         {
+            var taskTagsToRemove = await _context.TaskTags
+                .Where(tt => tt.TaskId == taskId)
+                .ToListAsync();
+            _context.TaskTags.RemoveRange(taskTagsToRemove);
+            await _context.SaveChangesAsync();
+            
             var task = await _context.Tasks.FindAsync(taskId);
 
             if (task == null)

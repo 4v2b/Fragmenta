@@ -35,8 +35,8 @@ export function FileManager({ allowedTypes, onUpload }) {
     }
 
     return (
-        <Box>
-            <FileUpload.Root onFileReject={fileRejected} validate={validateFileType} minFileSize={1} maxFileSize={maxFileSize} maxFiles={maxFiles} maxW="xl">
+        <Box w={"full"}>
+            <FileUpload.Root onFileReject={fileRejected} validate={validateFileType} minFileSize={1} maxFileSize={maxFileSize} maxFiles={maxFiles} w="full">
                 <Toaster />
                 <FileUpload.HiddenInput />
                 <FileUpload.Dropzone>
@@ -60,7 +60,7 @@ export function FileManager({ allowedTypes, onUpload }) {
                                         <FileUpload.ItemDeleteTrigger />
                                     </FileUpload.Item>
                                 ))}
-                                <Button mt={3} className="upload-file" bg="green" onClick={() => handleUpload(acceptedFiles)} isDisabled={!acceptedFiles.length}>
+                                <Button mt={3} className="upload-file" bg="primary" onClick={() => handleUpload(acceptedFiles)} isDisabled={!acceptedFiles.length}>
                                     {t("fields.labels.upload")}
                                 </Button>
                             </>
