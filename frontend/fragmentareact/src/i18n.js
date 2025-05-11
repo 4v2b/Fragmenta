@@ -49,6 +49,7 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        lastOpened: "Last opened",
                         accountDeleteHint: "Cannot delete account if you are a member of any workspace or board",
                         autoDeletion: "Will be removed in {{count}} day",
                         autoDeletion_plural: "Will be removed in {{count}} days",
@@ -66,7 +67,9 @@ i18n
                         boards: "Boards",
                         members: "Members",
                         guests: "Guests list",
-                        general: "General"
+                        general: "General",
+                        recent: "Recent Boards",
+                        myWorkspaces: "Your Workspaces",
                     },
                     fields: {
                         priority: {
@@ -210,6 +213,7 @@ i18n
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
                     common: {
+                        lastOpened: "Востаннє відкрито",
                         accountDeleteHint: "Неможливо видалити обліковий запис, якщо ви є учасником робочого простору або дошки",
                         autoDeletion_0: "Буде видалено сьогодні",
                         autoDeletion_one: "Буде видалено через {{count}} день",
@@ -230,6 +234,8 @@ i18n
                         guests: "Список гостей",
                         members: "Учасники",
                         general: "Загальне",
+                        recent: "Нещодавні дошки",
+                        myWorkspaces: "Ваші робочі простори",
 
                     },
                     fields: {

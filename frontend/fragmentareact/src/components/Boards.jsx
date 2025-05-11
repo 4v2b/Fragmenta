@@ -200,9 +200,8 @@ export function Boards({ id }) {
             <Stack p={4}>
                 {boards.map((item) => (
 
-                    <Card.Root _hover={
-                        {"shadow" : "2px 2px 2px 3px rgba(0, 0, 53, 0.2)"}
-                    } key={item.id} size="sm" cursor={"pointer"} onClick={() => navigate(`/workspaces/${id}/boards/${item.id}`)}>
+                    <Card.Root _hover={{ shadow: 'sm' }}
+                     key={item.id} size="sm" cursor={"pointer"} onClick={() => navigate(`/workspaces/${id}/boards/${item.id}`)}>
                         <Card.Body color="fg.muted">
                             <HStack justify={"space-between"}>
                                 <Text fontWeight={"semibold"} >{item.name}</Text>

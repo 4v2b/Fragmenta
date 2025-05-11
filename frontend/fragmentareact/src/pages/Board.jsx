@@ -40,13 +40,10 @@ import { DisplayProvider } from "@/utils/DisplayContext"
 export function Board() {
     const { role, name } = useWorkspace()
     const { workspaceId, boardId } = useParams()
-    const [board, setBoard] = useState(null)
-    const { tasks, setTasks, setTypesId, addTask, shallowUpdateTask } = useTasks()
-    const { tags } = useTags()
+    // const [board, setBoard] = useState(null)
+    const { tasks, setTasks, board, setBoard, setTypesId, addTask, shallowUpdateTask } = useTasks()
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
-    const [viewedTask, setViewedTask] = useState(null);
-    const [open, setOpen] = useState(false);
     const { userId } = useUser();
 
     const [activeId, setActiveId] = useState(null);
@@ -64,6 +61,16 @@ export function Board() {
     useEffect(() => {
         api.get(`/boards/${boardId}`, workspaceId).then(res => { setBoard(res); setTypesId(res.allowedTypeIds) })
     }, [])
+
+    useEffect(() => {
+        console.log("recent boards triggered")
+        if (!board?.name) return;
+        const recentBoards = JSON.parse(localStorage.getItem("recentBoards") || "[]");
+        const boardInfo = { role, boardId, boardName: board.name, workspaceId, openedAt: Date.now() };
+        const updated = [boardInfo, ...recentBoards.filter(b => b.boardId !== boardId)].slice(0, 5);
+        localStorage.setItem("recentBoards", JSON.stringify(updated));
+    }, [board?.name, role])
+
 
     function handleDragStart(event) {
         const { active } = event;
@@ -129,9 +136,10 @@ export function Board() {
             weight: weightToAdd
         }
 
-        api.post(`/statuses?boardId=${boardId}`, statusToAdd, workspaceId)
+        api.post(`/statuses?boardId=${boardId}`, statusToAdd, workspaceId, boardId)
             .then(res => {
-                setBoard({ ...board, statuses: [...board.statuses, res] })
+                console.log("status created")
+                // setBoard({ ...board, statuses: [...board.statuses, res] })
             })
     }
 
@@ -141,21 +149,40 @@ export function Board() {
         if (!active || !over || active.id === over.id) return;
 
         if (activeType === 'column') {
-            setBoard(board => {
-                const oldIndex = board.statuses.findIndex(s => `column-${s.id}` === active.id);
-                const newIndex = board.statuses.findIndex(s => `column-${s.id}` === over.id);
-                const newStatuses = arrayMove(board.statuses, oldIndex, newIndex);
+            const oldIndex = board.statuses.findIndex(s => `column-${s.id}` === active.id);
+            const newIndex = board.statuses.findIndex(s => `column-${s.id}` === over.id);
+            const newStatuses = arrayMove(board.statuses, oldIndex, newIndex);
 
-                newStatuses.forEach((status, index) => {
-                    status.weight = index * 1000;
-                    api.put(`/statuses/${status.id}`, {
-                        ...status,
-                        weight: status.weight
-                    }, workspaceId);
+            let newWeight;
+            const prev = newStatuses[newIndex - 1]?.weight ?? null;
+            const next = newStatuses[newIndex + 1]?.weight ?? null;
+
+            if (prev === null) {
+                newWeight = next !== null ? next / 2 : 0;
+            } else if (next === null) {
+                newWeight = prev + 1000;
+            } else if (next - prev < 1) {
+                const rebalanced = newStatuses.map((s, i) => ({
+                    ...s,
+                    weight: i * 1000
+                }));
+
+                setBoard(prev => ({ ...prev, statuses: rebalanced }))
+                rebalanced.forEach(status => {
+                    api.put(`/statuses/${status.id}`, status, workspaceId, boardId);
                 });
+                return;
+            } else {
+                newWeight = (prev + next) / 2;
+            }
 
-                return { ...board, statuses: newStatuses };
-            });
+            const movedStatus = newStatuses[newIndex];
+            const updatedStatus = { ...movedStatus, weight: newWeight };
+            newStatuses[newIndex] = updatedStatus;
+
+            setBoard(prev => ({ ...prev, statuses: newStatuses }))
+            api.put(`/statuses/${updatedStatus.id}`, updatedStatus, workspaceId, boardId);
+            return;
         }
         else if (activeType === 'task') {
             const task = tasks.find(t => `task-${t.id}` === active.id);
@@ -388,7 +415,7 @@ export function Board() {
                                     backgroundColor: "rgba(223, 223, 223, 0.3)",
                                     borderRadius: "8px"
                                 },
-                                "&::-webkit-scrollbar-track": {
+                                "&::-webkitScrollbarTrack": {
                                     backgroundColor: "transparent"
                                 },
                                 "&:hover::-webkit-scrollbar-thumb": {
@@ -418,30 +445,18 @@ export function Board() {
                             {board?.statuses.length < 1 && (
                                 <Box p={8} textAlign="center" width="100%">
                                     <Text fontSize="lg" color="gray.500">{t("common.emptyBoard")}</Text>
-                                </Box>
-                            )}
+                                </Box>)}
                         </HStack>
                     </SortableContext>
 
                     <DragOverlay>
                         {activeId && activeType === 'column' && (
-
-                            <Box
-                                minWidth="280px"
-                                borderWidth="1px"
-                                borderRadius="lg"
-                                bg="white"
-                                boxShadow="xl"
-                                opacity={0.8}
-                            >
+                            <Box minWidth="280px" borderWidth="1px" borderRadius="lg" bg="white" boxShadow="xl" opacity={0.8}>
                                 <Flex
                                     justifyContent="space-between"
                                     alignItems="center"
                                     bg={board?.statuses.find(s => `column-${s.id}` === activeId).colorHex}
-                                    p={3}
-                                    borderTopRadius="lg"
-                                    color="white"
-                                    fontWeight="bold"
+                                    p={3} borderTopRadius="lg" color="white" fontWeight="bold"
                                 >
                                     <Heading size="md" textShadow="0px 1px 2px rgba(0, 0, 0, 0.4)">
                                         {board?.statuses.find(s => `column-${s.id}` === activeId)?.name}
@@ -450,14 +465,7 @@ export function Board() {
                             </Box>
                         )}
                         {activeId && activeType === 'task' && (
-                            <Box
-                                p={3}
-                                borderWidth="1px"
-                                borderRadius="md"
-                                bg="gray.100"
-                                boxShadow="md"
-                                opacity={0.8}
-                                width="250px"
+                            <Box p={3} borderWidth="1px" borderRadius="md" bg="gray.100" boxShadow="md" opacity={0.8} width="250px"
                             >
                                 {tasks?.find(t => `task-${t.id}` === activeId)?.title}
                             </Box>

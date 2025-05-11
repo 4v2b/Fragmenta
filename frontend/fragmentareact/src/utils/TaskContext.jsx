@@ -14,6 +14,7 @@ export function TasksProvider({ children }) {
   const [allowedExtensions, setAllowedExtensions] = useState([]);
   const [typesId, setTypesId] = useState([])
   const connectionRef = useRef(null);
+  const [board, setBoard] = useState(null)
 
   useEffect(() => {
     const names = getLeafTypeName(types, typesId)
@@ -56,9 +57,24 @@ export function TasksProvider({ children }) {
           });
           connection.on('TaskUpdated', updatedTask =>
             setTasks(prevTasks => prevTasks.map(task =>
-              task.id == updatedTask.taskId ? 
-              { ...updatedTask.request, id: task.id, weight: task.weight, statusId: task.statusId } : task))
+              task.id == updatedTask.taskId ?
+                { ...updatedTask.request, id: task.id, weight: task.weight, statusId: task.statusId } : task))
           );
+
+          connection.on('StatusCreated', res => setBoard(prev => ({ ...prev, statuses: [...prev.statuses, res] })));
+          connection.on('StatusUpdated', res => {
+            console.log("triggered update for ", res)
+            setBoard(
+              prev => ({
+                ...prev, statuses:
+                  prev.statuses.map(s => s.id == res.id ? res : s)
+              }))
+          });
+          connection.on('StatusDeleted', res => setBoard(prev => (
+            {
+              ...prev, statuses:
+                prev.statuses.filter(s => s.id != res)
+            })));
         })
         .catch(err => console.error('SignalR Connection Error: ', err));
 
@@ -91,7 +107,7 @@ export function TasksProvider({ children }) {
   }, [boardId]);
 
   return (
-    <TasksContext.Provider value={{ tasks, setTasks, addTask, allowedExtensions, setTypesId, shallowUpdateTask }}>
+    <TasksContext.Provider value={{ board, setBoard, tasks, setTasks, addTask, allowedExtensions, setTypesId, shallowUpdateTask }}>
       {children}
     </TasksContext.Provider>
   );

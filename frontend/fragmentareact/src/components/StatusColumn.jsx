@@ -17,15 +17,13 @@ export function StatusColumn({ status, tasks }) {
     function handleAddTask(task) {
 
         const weightToAdd = tasks.length > 0
-        ? tasks[tasks.length - 1].weight + 500
+        ? tasks[tasks.length - 1].weight + 2000
         : 0
 
         task.weight = weightToAdd;
 
         addTask(task, status.id)
     }
-
-    
 
     return (
         <Box

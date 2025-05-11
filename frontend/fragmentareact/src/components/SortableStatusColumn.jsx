@@ -41,7 +41,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   function handleAddTask(task) {
 
     const weightToAdd = tasks.length > 0
-      ? tasks[tasks.length - 1].weight + 500
+      ? tasks[tasks.length - 1].weight + 2000
       : 0
 
     task.weight = weightToAdd;
@@ -49,11 +49,11 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   }
 
   function handleUpdateStatus(updatedStatus) {
-    api.put("/statuses/" + status.id, { ...updatedStatus, weight: status.weight }, workspaceId).then(res => console.log("success", res));
+    api.put("/statuses/" + status.id, { ...updatedStatus, weight: status.weight }, workspaceId, boardId).then(res => console.log("success", res));
   }
 
   function handleDeleteStatus() {
-    api.delete("/statuses/" + status.id, workspaceId).then(_ => console.log("successfully deleted"));
+    api.delete("/statuses/" + status.id, workspaceId, boardId).then(_ => console.log("successfully deleted"));
   }
 
   const canDragTask = (task) => {
@@ -65,7 +65,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
       className="status-column"
       flexShrink={0}
       w="300px"
-      maxHeight="calc(100vh - 190px)"
+      maxHeight="calc(100vh - 210px)"
       display="flex"
       flexDirection="column"
       borderRadius="lg"
@@ -95,8 +95,6 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
             base={<BiPencil cursor={"pointer"} />}
           />}
         </HStack>
-
-
 
         {status.maxTasks && (
           <Badge className="task-limit-badge" bg="white" color={status.colorHex} fontWeight="bold" px={2} py={1} borderRadius="md">
