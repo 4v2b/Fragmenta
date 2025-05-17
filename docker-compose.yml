@@ -1,0 +1,25 @@
+version: "1.0"
+services:
+  webapi:
+    build:
+      context: ./backend/Fragmenta.Api
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - app-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  reactapp:
+    build:
+      context: ./frontend/fragmentareact
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3000:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

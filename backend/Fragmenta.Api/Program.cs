@@ -17,16 +17,13 @@ using Fragmenta.Api.Middleware;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
 
-var builder = WebApplication.CreateBuilder(options: new WebApplicationOptions()
-{
-    EnvironmentName = "Staging"
-});
+var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .WriteTo.Console()
-    .WriteTo.File("log-.log",
+    .WriteTo.File("logs/log-.log",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7)
     .Enrich.FromLogContext()
@@ -120,7 +117,7 @@ builder.Services.AddAuthentication(options =>
 
 var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() ?? [];
 
-builder.WebHost.UseUrls("http://0.0.0.0:7241");
+//builder.WebHost.UseUrls("http://0.0.0.0:7241");
 
 builder.Services.AddCors(options =>
 {
@@ -177,7 +174,6 @@ var app = builder.Build();
 
 var migrate = builder.Configuration.GetValue<bool>("DatabaseOptions:MigrateDatabaseOnStartup");
 
-
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -206,8 +202,9 @@ app.UseRequestLocalization(localizationOptions);
 
 app.UseCors("AllowReactApp");
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
