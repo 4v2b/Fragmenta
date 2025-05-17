@@ -91,7 +91,7 @@ export async function register(name, email, password) {
     }
 }
 
-export async function requestResetPassword(email) {
+export async function requestResetPassword(email, locale = "us-EN") {
     const baseUrl = import.meta.env.VITE_API_URL;
     const url = `${baseUrl}/forgot-password?email=${email}`;
 
@@ -100,6 +100,7 @@ export async function requestResetPassword(email) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept-Language': locale
             }
         });
 

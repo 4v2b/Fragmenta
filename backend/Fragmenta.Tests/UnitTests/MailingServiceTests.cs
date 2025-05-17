@@ -1,10 +1,12 @@
 ﻿using System.Net;
+using Fragmenta.Api.Configuration;
 using Fragmenta.Api.Contracts;
 using Fragmenta.Api.Enums;
 using Fragmenta.Api.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Fragmenta.Tests.UnitTests;
@@ -30,7 +32,12 @@ public class MailingServiceTests
         _httpClientMock.Setup(c => c.SendEmailAsync(receiver, It.IsAny<string>(), It.IsAny<string>(), true))
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-        var service = new MailingService(new NullLogger<MailingService>(), _memoryCache, _httpClientMock.Object);
+        var frontendOptions = Options.Create(new FrontendOptions
+        {
+            BaseUrl = "http://localhost:5173"
+        });
+        
+        var service = new MailingService(new NullLogger<MailingService>(), _memoryCache, _httpClientMock.Object, frontendOptions);
 
         // Act
         var result = await service.SendResetTokenAsync(receiver, token, userId);
@@ -52,7 +59,12 @@ public class MailingServiceTests
         var value = (Attempts: 3, LockedUntil: (DateTime?)DateTime.UtcNow.AddMinutes(5));
         _memoryCache.Set(key, value);
         
-        var service = new MailingService(new NullLogger<MailingService>(), _memoryCache, _httpClientMock.Object);
+        var frontendOptions = Options.Create(new FrontendOptions
+        {
+            BaseUrl = "http://localhost:5173"
+        });
+        
+        var service = new MailingService(new NullLogger<MailingService>(), _memoryCache, _httpClientMock.Object, frontendOptions);
 
         // Act
         var result = await service.SendResetTokenAsync(receiver, token, userId);
@@ -73,7 +85,12 @@ public class MailingServiceTests
         _httpClientMock.Setup(c => c.SendEmailAsync(receiver, It.IsAny<string>(), It.IsAny<string>(), true))
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.InternalServerError));
 
-        var service = new MailingService(new NullLogger<MailingService>(), _memoryCache, _httpClientMock.Object);
+        var frontendOptions = Options.Create(new FrontendOptions
+        {
+            BaseUrl = "http://localhost:5173"
+        });
+        
+        var service = new MailingService(new NullLogger<MailingService>(), _memoryCache, _httpClientMock.Object, frontendOptions);
 
         // Act
         var result = await service.SendResetTokenAsync(receiver, token, userId);

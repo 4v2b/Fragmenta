@@ -92,7 +92,7 @@ builder.Services.AddDbContext<ApplicationContext>(
 var jwtOptionsSection = builder.Configuration.GetRequiredSection("Jwt");
 
 builder.Services.Configure<JwtOptions>(jwtOptionsSection);
-
+builder.Services.Configure<FrontendOptions>(builder.Configuration.GetSection("Frontend"));
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
 

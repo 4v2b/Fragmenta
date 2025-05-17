@@ -160,9 +160,10 @@ namespace Fragmenta.Api.Controllers
 
                 if (userId.HasValue)
                 {
+                    var culture = HttpContext.Request.Headers["Accept-Language"].ToString();
                     var token = await resetService.GenerateTokenAsync(userId.Value);
 
-                    var result = await mailingService.SendResetTokenAsync(email, token, userId.Value);
+                    var result = await mailingService.SendResetTokenAsync(email, token, userId.Value, culture);
 
                     if (result.IsLocked)
                         return StatusCode(423, new { message = "auth.errors.lockout", lockoutUntil = result.LockedUntil });

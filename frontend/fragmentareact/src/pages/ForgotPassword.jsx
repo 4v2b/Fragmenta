@@ -18,7 +18,7 @@ export function ForgotPassword() {
     const [error, setError] = useState("");
     const [lockoutUntil, setLockoutUntil] = useState(null);
     const [timeLeft, setTimeLeft] = useState(0);
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     console.log(error)
 
@@ -39,7 +39,7 @@ export function ForgotPassword() {
     }, [lockoutUntil]);
 
     async function handleSendEmail() {
-        const response = await requestResetPassword(email);
+        const response = await requestResetPassword(email, i18n.language);
         if (response.status == 200) {
             setLetterSent(true);
             return;

@@ -17,15 +17,17 @@ namespace Fragmenta.Api.Services
         private readonly TimeSpan lockoutTime = TimeSpan.FromMinutes(10);
         private const int MaxAttempts = 3;
         private readonly IEmailHttpClient _emailHttpClient;
+        private readonly FrontendOptions _frontendOptions;
 
-        public MailingService(ILogger<MailingService> logger,  IMemoryCache cache,  IEmailHttpClient emailHttpClient)
+        public MailingService(ILogger<MailingService> logger,  IMemoryCache cache,  IEmailHttpClient emailHttpClient, IOptions<FrontendOptions> frontendOptions)
         {
             _logger = logger;
             _emailHttpClient = emailHttpClient;
             _cache = cache;
+            _frontendOptions = frontendOptions.Value ?? throw new ArgumentNullException(nameof(frontendOptions));
         }
 
-        public async Task<EmailSendResult> SendResetTokenAsync(string receiver, string token, long userId)
+        public async Task<EmailSendResult> SendResetTokenAsync(string receiver, string token, long userId, string culture = "en-US")
         {
             var key = $"email_attempts_{receiver}";
             
@@ -41,7 +43,7 @@ namespace Fragmenta.Api.Services
                 entry = (0, null);
             }
             
-            var content = MailBodyFormer.CreateResetPasswordTextBody("http://localhost:5173", token, userId);
+            var content = MailBodyFormer.CreateResetPasswordTextBody(_frontendOptions.BaseUrl, token, userId, culture);
 
             var response = await _emailHttpClient.SendEmailAsync(receiver, "Password Reset", content);
 
