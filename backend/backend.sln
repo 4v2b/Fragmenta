@@ -13,6 +13,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{575DCA91-BD30-4CB2-8061-B67F058FFAF0}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yaml = docker-compose.yaml
+		Dockerfile = Dockerfile
+		.dockerignore = .dockerignore
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fragmenta.Tests", "Fragmenta.Tests\Fragmenta.Tests.csproj", "{80A0DB23-9AA9-4EF6-BFC7-7B0BBDC92BDF}"
