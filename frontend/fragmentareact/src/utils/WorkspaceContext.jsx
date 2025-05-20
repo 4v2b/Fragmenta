@@ -12,10 +12,9 @@ export function WorkspaceProvider({ name, role, workspaceId, children }) {
 
     function addMembers(newMembers) {
         api.post(`/members`, { usersId: newMembers}, workspaceId)
-            .then(addedMembers => { console.log(members, addedMembers); setMembers([...members, ...addedMembers]) })
+            .then(addedMembers => {  setMembers([...members, ...addedMembers]) })
     }
 
-    // Remove a member
     function removeMember(memberId) {
         api.delete(`/members/${memberId}`, workspaceId).then(setMembers(members.filter(e => e.id != memberId))).catch(e => console.log(e))
     }
@@ -28,7 +27,6 @@ export function WorkspaceProvider({ name, role, workspaceId, children }) {
         api.post("/members/" + memberId + "/revoke", {}, workspaceId).then(() => setMembers(members.map(e => e.id == memberId ? {...e, role: "Member"} : e)))
     }
 
-    // Update member role
     async function updateMemberRole(memberId, newRole) {
         const response = await fetch(`/workspaces/${workspaceId}/members/${memberId}`, {
             method: "PATCH",

@@ -64,8 +64,6 @@ export function Settings() {
         }).catch(error => error.status == 400 && setErrors(error.errors))
     }
 
-    console.log(errors)
-
     return (<Stack spacing={6} pl={8} pr={8} pt={4} overflow={"auto"} >
         <Breadcrumb.Root>
             <Breadcrumb.List>

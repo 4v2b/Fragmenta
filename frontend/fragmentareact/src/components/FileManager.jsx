@@ -30,7 +30,6 @@ export function FileManager({ allowedTypes, onUpload }) {
 
     async function handleUpload(files) {
         if (!files.length) return;
-        console.log(files)
         onUpload(files[0])
     }
 

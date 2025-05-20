@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Input, Box, List } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 
 export function MemberSelector({ members, onSelect }) {
     const [selectedMembers, setSelectedMembers] = useState([])
     const [query, setQuery] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false)
-
+const {t} = useTranslation()
     function handleSelect(item) {
         onSelect(item);
         setSelectedMembers([]);
@@ -28,7 +29,7 @@ export function MemberSelector({ members, onSelect }) {
                 value={query}
                 onFocus={() => setShowSuggestions(true)}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search..."
+                placeholder={t("common.search")}
             />
             {(selectedMembers.length > 0 && showSuggestions) && (
                 <List.Root
@@ -48,7 +49,7 @@ export function MemberSelector({ members, onSelect }) {
                         <List.Item
                             className="suggested-member"
                             onMouseDown={(e) => {
-                                e.preventDefault(); // Prevent input from losing focus immediately
+                                e.preventDefault(); 
                                 handleSelect(item);
                             }} key={item.id}
                             p="2"

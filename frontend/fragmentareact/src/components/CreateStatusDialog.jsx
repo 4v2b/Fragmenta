@@ -51,7 +51,8 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
     }, 200);
 
     function handleStatusCreate() {
-        if (!selectTaskLimit) newStatus.maxTasks = null;
+        if (!selectTaskLimit) 
+            newStatus.maxTasks = null;
         onStatusCreate(newStatus)
 
         resetForm()
@@ -115,7 +116,7 @@ export function CreateStatusDialog({ onStatusCreate, statusNames }) {
                                 setNewStatus({ ...newStatus, maxTasks: e.valueAsNumber }
                                 );
                             }}
-                            defaultValue="0" min={1} max={50}>
+                            min={1} max={50}>
                             <NumberInput.Control />
                             <NumberInput.Input className="set-limit-input" value={newStatus?.maxTasks?.toString()} />
                         </NumberInput.Root>

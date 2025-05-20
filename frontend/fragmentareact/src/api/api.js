@@ -51,11 +51,6 @@ export function logout(){
 export async function register(name, email, password) {
     const baseUrl = import.meta.env.VITE_API_URL;
     const url = `${baseUrl}/register`;
-    console.log({
-        "email": email,
-        "password": password,
-        "name": name
-    })
     try {
         const response = await fetch(url, {
             method: 'POST',

@@ -15,8 +15,6 @@ import { Checkbox } from "@chakra-ui/react"
 import { useTasks } from "@/utils/TaskContext"
 import { useTags } from "@/utils/TagContext"
 
-// BUG - Data in message box stays after exit
-
 const defaultTaskState = {
     title: "",
     description: "",

@@ -5,7 +5,6 @@ import { api } from "../api/fetchClient.js"
 import { WorkspaceProvider } from '@/utils/WorkspaceContext'
 import { Workspace } from './Workspace.jsx'
 import { useUser } from '@/utils/UserContext'
-// import { Box, Heading} from '@chakra-ui/react'
 import { useNavigate, useOutletContext } from 'react-router'
 import {
   Box, Heading, Text, Stack, Button,

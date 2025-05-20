@@ -9,6 +9,7 @@ import {
     HStack
 } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field";
+import { Field as InputField } from "@chakra-ui/react"
 import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
 import { useState } from "react"
 import {
@@ -23,7 +24,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { useDebounce } from "@/utils/useDebounce"
-import { StatusColumn } from "@/components/StatusColumn"
 import { useTranslation } from "react-i18next";
 import { AlertDialog } from "./AlertDialog";
 
@@ -46,7 +46,7 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDel
     function resetForm() {
         setStatus({
             name: editStatus.name,
-            maxTasks: editStatus.maxTasks,
+            maxTasks: selectTaskLimit ? (editStatus.maxTasks ?? 1) : null ,
             colorHex: editStatus.colorHex
         })
         setSelectTaskLimit(editStatus.maxTasks != null)
@@ -59,7 +59,7 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDel
         }}
     >
         <DialogTrigger asChild>
-            {base}
+            <span>{base}</span>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
@@ -67,15 +67,14 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDel
             </DialogHeader>
             <DialogBody>
                 <Stack spacing={4}>
-                    <Field label={t("fields.labels.name")}>
-
+                    <InputField.Root>
+                        <InputField.Label>{t("fields.labels.name")}</InputField.Label>
                         <InputGroup
                             endElement={
                                 <Span color="fg.muted" textStyle="xs">
                                     {chars.length} / {MAX_CHARACTERS_TITLE}
-                                </Span>
-                            }
-                        > <Input
+                                </Span>}
+                        ><Input
                                 maxLength={MAX_CHARACTERS_TITLE}
                                 value={status?.name}
                                 onChange={e => {
@@ -83,7 +82,7 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDel
                                     setStatus({ ...status, name: e.target.value })
                                 }}
                             /></InputGroup>
-                    </Field>
+                    </InputField.Root>
 
                     <Field label={t("fields.labels.taskLimit")}>
                         <HStack>
@@ -101,12 +100,11 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDel
                                     setStatus({ ...status, maxTasks: e.valueAsNumber }
                                     );
                                 }}
-                                defaultValue="0" min={1} max={50}>
+                                 min={1} max={50}>
                                 <NumberInput.Control />
                                 <NumberInput.Input className="set-limit-input" value={status?.maxTasks?.toString() ?? '1'} />
                             </NumberInput.Root>
                         </HStack>
-
 
                     </Field>
 
@@ -120,13 +118,12 @@ export function EditStatusDialog({ base, editStatus, onStatusUpdate, onStatusDel
                 </Stack>
                 <AlertDialog
                     base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteStatus")}</Button>}
-                    title={"A"}
-                    message={"B"}
+                    message={t("common.confirmDeleteStatus")}
+                    title={t("common.confirmDelete")}
                     onConfirm={() => onStatusDelete()}
                     confirmMessage={t("fields.actions.delete")}
                     cancelMessage={t("fields.actions.cancel")}
                 />
-
             </DialogBody>
             <DialogFooter>
                 <DialogActionTrigger asChild>

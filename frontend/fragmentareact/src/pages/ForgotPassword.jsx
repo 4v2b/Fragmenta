@@ -20,7 +20,6 @@ export function ForgotPassword() {
     const [timeLeft, setTimeLeft] = useState(0);
     const { t, i18n } = useTranslation();
 
-    console.log(error)
 
     useEffect(() => {
         if (lockoutUntil) {

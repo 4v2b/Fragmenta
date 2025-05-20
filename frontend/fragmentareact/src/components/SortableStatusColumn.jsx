@@ -2,7 +2,8 @@ import { canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
   Box, Badge, Flex, Heading,
-  HStack
+  HStack,
+  Button
 } from "@chakra-ui/react"
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { useTasks } from "@/utils/TaskContext"
@@ -19,6 +20,7 @@ import { EditStatusDialog } from "./EditStatusDialog";
 import { BiPencil } from "react-icons/bi";
 import { useParams } from "react-router";
 import { api } from "@/api/fetchClient";
+
 
 export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -92,7 +94,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
             editStatus={status}
             onStatusDelete={handleDeleteStatus}
             onStatusUpdate={(updateStatus) => handleUpdateStatus(updateStatus)}
-            base={<BiPencil cursor={"pointer"} />}
+            base={<Button cursor={"pointer"} boxShadow={"0 0 5px rgba(0, 0, 0, 0.1)"} bg={status?.colorHex} variant={"ghost"} size={"sm"} ><BiPencil color="white"/></Button>}
           />}
         </HStack>
 
@@ -122,20 +124,19 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
           flex="1"
           overflowY="auto"
           style={{
-            "&::-webkit-scrollbar": {
+            "&::WebkitScrollbar": {
               width: "4px"
             },
-            "&::-webkit-scrollbar-thumb": {
+            "&::WebkitScrollbarThumb": {
               backgroundColor: "rgba(160,160,160,0.3)",
               borderRadius: "8px"
             },
-            "&::-webkit-scrollbar-track": {
+            "&::WebkitScrollbarTrack": {
               backgroundColor: "transparent"
             },
-            "&:hover::-webkit-scrollbar-thumb": {
+            "&:hover::WebkitScrollbarThumb": {
               backgroundColor: "rgba(160,160,160,0.5)"
             },
-            // Додаємо тінь для переходу
             maskImage: "linear-gradient(to bottom, transparent, black 1%, black 99%, transparent)",
             WebkitMaskImage: "linear-gradient(to bottom, transparent, black 1%, black 99%, transparent)"
           }}

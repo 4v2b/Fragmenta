@@ -13,7 +13,6 @@ import { Grid, GridItem, Stack, Button } from '@chakra-ui/react'
 import { UserProvider } from '@/utils/UserContext'
 
 export function MainLayout() {
-    // TODO Normal auth verification
     const { t } = useTranslation()
     const [auth, setAuth] = useState(localStorage.getItem("accessToken") ? true : false)
     const [workspaces, setWorkspaces] = useState([])
@@ -30,8 +29,6 @@ export function MainLayout() {
         [workspaceId, workspaces])
 
     const handleWorkspaceSelect = (workspaceId) => navigate(workspaceId == null ? "/" : `/workspaces/${workspaceId}`)
-
-    console.log("selected workspace ", selectedWorkspace)
 
     useEffect(() => {
 
@@ -73,6 +70,5 @@ export function MainLayout() {
                 </Grid>
             </UserProvider>
         </Stack>
-        // : <>Loading</> 
         : <Navigate to="/login" replace />;
 }

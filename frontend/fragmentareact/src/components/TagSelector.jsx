@@ -1,26 +1,20 @@
 import { useState, useEffect } from "react";
 import { Input, Tag, Box, Flex, List } from "@chakra-ui/react";
 import { useTags } from "@/utils/TagContext"
+import { useTranslation } from "react-i18next";
 
 export function TagSelector({ selectedTags, onSelect, onRemove }) {
     const [suggestedTags, setSuggestedTags] = useState([])
     const [query, setQuery] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false)
     const { tags, addTag } = useTags();
+    const {t} = useTranslation()
 
     function handleSelect(item) {
         onSelect(item);
         setSuggestedTags([]);
         setQuery("");
         setShowSuggestions(false);
-    }
-
-    function handleRemove(item) {
-        console.log("removed", item);
-        onRemove(item);
-        // setSuggestedTags([]);
-        // setQuery("");
-        // setShowSuggestions(false);
     }
 
     useEffect(() => {
@@ -42,7 +36,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                     value={query}
                     onFocus={() => setShowSuggestions(true)}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search..."
+                    placeholder={t("common.search")}
                 />
 
                 {(showSuggestions) && (
@@ -60,7 +54,6 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                         zIndex="10"
                     >
                         {query === "" ? (
-                            // When query is empty, show all available tags
                             tags.length > 0 ?
                                 tags.filter(tag => !selectedTags?.some(i => i.id === tag.id))
                                     .map(item => (
@@ -68,7 +61,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                         
                                             key={item.id}
                                             onMouseDown={(e) => {
-                                                e.preventDefault(); // Prevent input from losing focus immediately
+                                                e.preventDefault();
                                                 handleSelect(item);
                                             }}
                                             p="2"
@@ -77,13 +70,12 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                     ))
                                 : <List.Item>{"No tags available"}</List.Item>
                         ) : (
-                            // When query has text
                             suggestedTags.length > 0 ?
                                 suggestedTags.map(item => (
                                     <List.Item
                                         className="suggested-tag"
                                         onMouseDown={(e) => {
-                                            e.preventDefault(); // Prevent input from losing focus immediately
+                                            e.preventDefault();
                                             handleSelect(item);
                                         }}
                                         p="2"
@@ -102,10 +94,10 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                         className="create-tag"
                                         fontWeight="semibold"
                                         onMouseDown={(e) => {
-                                            e.preventDefault(); // Prevent input from losing focus immediately
+                                            e.preventDefault(); 
                                             addTag(query).then(newTag => {
                                                 if (newTag) {
-                                                    handleSelect(newTag); // Automatically select the newly created tag
+                                                    handleSelect(newTag);
                                                 }
                                             });
                                         }}

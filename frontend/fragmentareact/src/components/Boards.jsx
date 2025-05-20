@@ -45,7 +45,6 @@ export function Boards({ id }) {
 
     function resetForm() {
         setForm(defaultState)
-        setSelectTaskLimit(false)
         setChars("")
         setError(false)
         setChosenUsers([])

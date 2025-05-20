@@ -40,7 +40,6 @@ import { DisplayProvider } from "@/utils/DisplayContext"
 export function Board() {
     const { role, name } = useWorkspace()
     const { workspaceId, boardId } = useParams()
-    // const [board, setBoard] = useState(null)
     const { tasks, setTasks, board, setBoard, setTypesId, addTask, shallowUpdateTask } = useTasks()
     const { t } = useTranslation()
     const [types, setTypes] = useState([])
@@ -139,7 +138,7 @@ export function Board() {
         api.post(`/statuses?boardId=${boardId}`, statusToAdd, workspaceId, boardId)
             .then(res => {
                 console.log("status created")
-                // setBoard({ ...board, statuses: [...board.statuses, res] })
+
             })
     }
 
@@ -306,81 +305,87 @@ export function Board() {
                 </Breadcrumb.Root>
                 {board && (
                     <Flex justifyContent="space-between" alignItems="center">
-                        <EditableTitle
-                            content={board?.name}
-                            onContentEdit={handleTitleChange}
-                            canEdit={canManageBoardContent(role)}
-                            fontSize="2xl"
-                        />
 
-                        {canManageBoardContent(role) && <CreateStatusDialog statusNames={board?.statuses.map(e => e.name) || []} onStatusCreate={handleAddStatus} />}
-                        <BoardProvider>
-                            <Drawer.Root size={"lg"}>
-                                <Drawer.Trigger asChild>
-                                    <Button variant="outline" size="sm">
-                                        {t("common.guests")}
-                                    </Button>
-                                </Drawer.Trigger>
-                                <Portal>
-                                    <Drawer.Backdrop />
-                                    <Drawer.Positioner>
-                                        <Drawer.Content>
-                                            <Drawer.Header>
-                                                <Drawer.Title>{t("common.guests")}</Drawer.Title>
-                                            </Drawer.Header>
-                                            <Drawer.Body>
-                                                <Guests />
-                                            </Drawer.Body>
-                                            <Drawer.CloseTrigger asChild>
-                                                <CloseButton size="sm" />
-                                            </Drawer.CloseTrigger>
-                                        </Drawer.Content>
-                                    </Drawer.Positioner>
-                                </Portal>
-                            </Drawer.Root>
-                        </BoardProvider>
+                        <Flex alignItems="center" gap={2}>
+                            <EditableTitle
+                                content={board?.name}
+                                onContentEdit={handleTitleChange}
+                                canEdit={canManageBoardContent(role)}
+                                fontSize="2xl"
+                            />
 
-                        {
-                            canCreateBoard(role) &&
-
-                            <Drawer.Root size={"xs"}>
-                                <Drawer.Trigger asChild>
-                                    <Button variant="outline" size="sm" className="allowedTypes">
-                                        {t("fields.labels.allowedAttachmentTypes")}
-                                        <BiCog />
-                                    </Button>
-                                </Drawer.Trigger>
-                                <Portal>
-                                    <Drawer.Backdrop />
-                                    <Drawer.Positioner>
-                                        <Drawer.Content>
-                                            <Drawer.Context>
-                                                {(store) => (
-                                                    <>
-                                                        <Drawer.Header>
-                                                            <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
-                                                        </Drawer.Header>
-                                                        <Drawer.Body>
-                                                            <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
-                                                        </Drawer.Body>
-                                                        <Drawer.Footer>
-                                                            <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
-                                                            <Button className="submit-allowed-files" onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
-                                                        </Drawer.Footer>
-                                                    </>
-                                                )}
-                                            </Drawer.Context>
+                            {canManageBoardContent(role)
+                                && <CreateStatusDialog statusNames={board?.statuses.map(e => e.name) || []} onStatusCreate={handleAddStatus} />}
+                        </Flex>
+                        <Flex justifyContent="space-between" alignItems="center" gap={2} mr={4}>
+                            <BoardProvider>
+                                <Drawer.Root size={"lg"}>
+                                    <Drawer.Trigger asChild>
+                                        <Button variant="outline" size="sm">
+                                            {t("common.guests")}
+                                        </Button>
+                                    </Drawer.Trigger>
+                                    <Portal>
+                                        <Drawer.Backdrop />
+                                        <Drawer.Positioner>
+                                            <Drawer.Content>
+                                                <Drawer.Header>
+                                                    <Drawer.Title>{t("common.guests")}</Drawer.Title>
+                                                </Drawer.Header>
+                                                <Drawer.Body>
+                                                    <Guests />
+                                                </Drawer.Body>
+                                                <Drawer.CloseTrigger asChild>
+                                                    <CloseButton size="sm" />
+                                                </Drawer.CloseTrigger>
+                                            </Drawer.Content>
+                                        </Drawer.Positioner>
+                                    </Portal>
+                                </Drawer.Root>
+                            </BoardProvider>
 
 
-                                            <Drawer.CloseTrigger asChild>
-                                                <CloseButton size="sm" />
-                                            </Drawer.CloseTrigger>
-                                        </Drawer.Content>
-                                    </Drawer.Positioner>
-                                </Portal>
-                            </Drawer.Root>}
-                        <TaskFieldToggle></TaskFieldToggle>
+                            {
+                                canCreateBoard(role) &&
 
+                                <Drawer.Root size={"xs"}>
+                                    <Drawer.Trigger asChild>
+                                        <Button variant="outline" size="sm" className="allowedTypes">
+                                            {t("fields.labels.allowedAttachmentTypes")}
+                                            <BiCog />
+                                        </Button>
+                                    </Drawer.Trigger>
+                                    <Portal>
+                                        <Drawer.Backdrop />
+                                        <Drawer.Positioner>
+                                            <Drawer.Content>
+                                                <Drawer.Context>
+                                                    {(store) => (
+                                                        <>
+                                                            <Drawer.Header>
+                                                                <Drawer.Title>{t("fields.labels.allowedAttachmentTypes")}</Drawer.Title>
+                                                            </Drawer.Header>
+                                                            <Drawer.Body>
+                                                                <ExtensionSelector types={types} setTypes={setTypes} presetTypes={board.allowedTypeIds} ></ExtensionSelector>
+                                                            </Drawer.Body>
+                                                            <Drawer.Footer>
+                                                                <Button onClick={() => store.setOpen(false)} color="primary" variant="outline">{t("fields.actions.cancel")}</Button>
+                                                                <Button className="submit-allowed-files" onClick={() => { handleAllowedTypesChange(); store.setOpen(false) }} bg="primary" >{t("fields.actions.save")}</Button>
+                                                            </Drawer.Footer>
+                                                        </>
+                                                    )}
+                                                </Drawer.Context>
+
+
+                                                <Drawer.CloseTrigger asChild>
+                                                    <CloseButton size="sm" />
+                                                </Drawer.CloseTrigger>
+                                            </Drawer.Content>
+                                        </Drawer.Positioner>
+                                    </Portal>
+                                </Drawer.Root>}
+                            <TaskFieldToggle></TaskFieldToggle>
+                        </Flex>
                     </Flex>
                 )}
 

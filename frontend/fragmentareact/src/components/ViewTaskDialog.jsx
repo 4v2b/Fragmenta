@@ -20,6 +20,7 @@ import { useTasks } from "@/utils/TaskContext"
 import { useTags } from "@/utils/TagContext"
 import { EditableTitle } from "./EditableTitle"
 import { MemberSelector } from "./MemberSelector"
+import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils"
 
 const priorities = [0, 1, 2, 3]
 
@@ -69,7 +70,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             description: newTask.description,
             assigneeId: selectedMember?.id ?? null,
             tagsId: selectedTags.map(e => e.id),
-            dueDate: selectDueDate ? newTask?.dueDate : null
+            dueDate: selectDueDate ? (newTask?.dueDate ?? new Date()) : null
         })
     }
 
@@ -172,7 +173,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         </Field>
 
         <Field label={t("fields.labels.assignee")}>
-            {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { console.log("Selected ", member); setSelectedMember(member) }}></MemberSelector>
+            {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { setSelectedMember(member) }}></MemberSelector>
                 :
                 <HStack key={selectedMember.email} gap="4">
                     <Avatar.Root>
@@ -200,7 +201,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             (newTask.title == task.title
                 && newTask.description == task.description
                 && newTask.priority == task.priority
-                && ((newTask.dueDate != null && selectDueDate) || (newTask.dueDate == null && !selectDueDate)))
+                && ((selectDueDate && (newTask.dueDate ?? new Date()) == task.dueDate ) || (newTask.dueDate == null && task.dueDate == newTask.dueDate && !selectDueDate)))
                 && selectedTags.length === task.tagsId.length && arraysEqualUnordered(selectedTags.map(e => e.id), task.tagsId)
             || newTask.title == ""
         }
@@ -223,10 +224,10 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                                 <AlertDialog
                                     onConfirm={() => deleteAttachment(a.id)}
                                     base={<Button variant={"subtle"} size={"sm"} color={"danger"} className="removeAttachment"><FaTrashCan /></Button>}
-                                    message="Are you sure you want to delete this status?"
-                                    title="Confirm Deletion"
-                                    confirmMessage="Delete"
-                                    cancelMessage="Cancel"
+                                    message={t("common.confirmDeleteAttachment")}
+                                    title={t("common.confirmDelete")}
+                                    confirmMessage={t("fields.actions.delete")}
+                                    cancelMessage={t("fields.actions.cancel")}
                                 />}
                         </HStack>
                     </Box>
@@ -236,8 +237,8 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         </Box>
         <AlertDialog
             base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteTask")}</Button>}
-            title={"A"}
-            message={"B"}
+            title={t("common.confirmDelete")}
+            message={t("common.confirmDeleteTask")}
             onConfirm={() => handleDeleteTask()}
             confirmMessage={t("fields.actions.delete")}
             cancelMessage={t("fields.actions.cancel")}

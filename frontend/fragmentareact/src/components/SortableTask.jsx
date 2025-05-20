@@ -34,6 +34,8 @@ export function SortableTask({ id, task, disabled }) {
     marginBottom: '8px'
   };
 
+  console.log(task.dueDate)
+
   const assignee = members.find(e => e.id == task?.assigneeId) ?? null;
   const dueDate = task.dueDate ? new Intl.DateTimeFormat(i18n.language, {
     month: "short", day: "2-digit", year: "numeric"
@@ -59,7 +61,6 @@ export function SortableTask({ id, task, disabled }) {
           alignItems="center"
           justify="space-between"
           textOverflow={"ellipsis"}
-        // w="fit-content"
         >
           <Box
             className="task-drag-handle"

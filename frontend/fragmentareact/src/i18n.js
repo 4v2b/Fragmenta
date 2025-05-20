@@ -1,28 +1,19 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// import Backend from 'i18next-http-backend';
-// import LanguageDetector from 'i18next-browser-languagedetector';
-// don't want to use this?
-// have a look at the Quick start guide 
-// for passing in lng and translations on init
-
 export function changeLanguage(lng) {
     i18n.changeLanguage(lng);
     localStorage.setItem('userLanguage', lng);
 };
 
 i18n
-    // .use(Backend)
-
-    // .use(LanguageDetector)
     .use(initReactI18next)
     .init({
         fallbackLng: 'en',
         debug: true,
         lng: localStorage.getItem('userLanguage') || 'en',
         interpolation: {
-            escapeValue: false, // not needed for react as it escapes by default
+            escapeValue: false,
         },
         resources: {
             en: {
@@ -49,6 +40,14 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        search: "Search",
+                        confirmDelete: "Confirm action",
+                        confirmAction: "Confirm action",
+                        confirmDeleteAttachment: "Are you sure you want to delete this attachment?",
+                        confirmDeleteTask: "Are you sure you want to delete this task?",
+                        confirmDeleteStatus: "Are you sure you want to delete this status?",
+                        confirmDeleteWorkspace: "Are you sure you want to delete this workspace?",
+                        confirmLeaveWorkspace: "Are you sure you want to leave this workspace?",
                         lastOpened: "Last opened",
                         accountDeleteHint: "Cannot delete account if you are a member of any workspace or board",
                         autoDeletion: "Will be removed in {{count}} day",
@@ -79,6 +78,8 @@ i18n
                             priority3: "Low",
                         },
                         labels: {
+                            deleteStatus: "Delete status",
+                            deleteTask: "Delete task",
                             changeName: "Change your name",
                             incorrectPassword: "Incorrect password",
                              passwordHelp: "Must include upper and lowercase letters, and either numbers or symbols @#$%^&*!?",
@@ -213,6 +214,14 @@ i18n
                         forbiddenFileType: "Розширення файлу '{{filename}}' заборонене на цій дошці"
                     },
                     common: {
+                        search: "Пошук",
+                        confirmDelete: "Підтведити видалення",
+                        confirmAction: "Підтведити дію",
+                        confirmDeleteAttachment: "Точно бажаєте видалити це вкладення",
+                        confirmDeleteTask: "Точно бажаєте видалити це завдання",
+                        confirmDeleteStatus: "Точно бажаєте видалити цей статус",
+                        confirmDeleteWorkspace: "Точно бажаєте видалити цей робочий простір",
+                        confirmLeaveWorkspace: "Точно бажаєте покинути робочий простір",
                         lastOpened: "Востаннє відкрито",
                         accountDeleteHint: "Неможливо видалити обліковий запис, якщо ви є учасником робочого простору або дошки",
                         autoDeletion_0: "Буде видалено сьогодні",

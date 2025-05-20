@@ -64,10 +64,10 @@ export function Workspace() {
                     <AlertDialog
                         onConfirm={() => handleLeave()}
                         base={<Button className="leave-workspace">{t("fields.actions.leaveWorkspace")}</Button>}
-                        message="Are you sure you want to leave this workspace?"
-                        title="Confirm Deletion"
-                        confirmMessage="Delete"
-                        cancelMessage="Cancel"
+                        message={t("common.confirmLeaveWorkspace")}
+                        title={t("common.confirmAction")}
+                        confirmMessage={t("fields.actions.confirm")}
+                        cancelMessage={t("fields.actions.cancel")}
                     />
 
                 }
@@ -76,8 +76,8 @@ export function Workspace() {
                     <AlertDialog
                         onConfirm={() => handleDelete()}
                         base={<Button disabled={!canDelete}  className="delete-workspace">{t("fields.actions.deleteWorkspace")}</Button>}
-                        message="Are you sure you want to delete workspace?"
-                        title="Confirm Deletion"
+                        message={t("common.confirmDeleteWorkspace")}
+                        title={t("common.confirmDelete")}
                         confirmMessage={t("fields.actions.delete")}
                         cancelMessage={t("fields.actions.cancel")}
                     />

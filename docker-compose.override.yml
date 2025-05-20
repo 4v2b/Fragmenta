@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  webapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - app-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  reactapp:
+    build:
+      context: ./frontend/fragmentareact
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3000:80"
+    networks:
+      - app-network
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: Password1234
+    ports:
+      - "1433:1433"
+    volumes:
+      - fragmenta-db-data:/var/lib/mssql
+    networks:
+      - app-network
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    command: 'azurite --loose --blobHost 0.0.0.0 --blobPort 10000 --location /blobs --debug /blobs/debug.log'
+    ports:
+      - 10000:10000
+    volumes:
+      - fragmenta-blob-data:/blobs
+    networks:
+      - app-network
+
+volumes:
+  fragmenta-db-data:
+  fragmenta-blob-data:
+
+networks:
+  app-network:
+    driver: bridge

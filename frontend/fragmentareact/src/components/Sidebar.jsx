@@ -121,7 +121,6 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect}) {
 
         <Select.Root
           onValueChange={(item) => onWorkspaceSelect(item.value[0])}
-          // value={selectedWorkspace?.name}
           collection={workspacesSelect} size="sm" width="320px">
 
           <Select.ClearTrigger>
@@ -159,46 +158,6 @@ export function Sidebar({ boards, workspaces, onWorkspaceSelect}) {
             </Select.Positioner>
           </Portal>
         </Select.Root>
-
-        {/* {
-          selectedWorkspace && (
-            <>
-              <Box>
-                <Heading size="sm" mb={2}>{t("common.boards")}</Heading>
-                <VStack align="stretch" spacing={1}>
-                  {boards?.length > 0 ? (
-                    boards.map(board => (
-                      <Flex
-                        key={board.id}
-                        alignItems="center"
-                        p={2}
-                        borderRadius="md"
-                        cursor="pointer"
-                        _hover={{ bg: "gray.100" }}
-                      >
-                        <Icon as={FiList} mr={2} />
-                        <Text>{board.name}</Text>
-                      </Flex>
-                    ))
-                  ) : (
-                    <Text fontSize="sm" color="gray.500">
-                      {t("common.noBoards")}
-                    </Text>
-                  )}
-                  <Button
-                    leftIcon={<FiPlus />}
-                    variant="ghost"
-                    size="sm"
-                    justifyContent="flex-start"
-                    mt={1}
-                  >
-                    {t('common.createBoard')}
-                  </Button>
-                </VStack>
-              </Box>
-            </>
-          )
-        } */}
       </VStack >
 
 
