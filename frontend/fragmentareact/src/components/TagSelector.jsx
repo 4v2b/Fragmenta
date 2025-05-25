@@ -68,7 +68,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                             _hover={{ bg: "gray.100", cursor: "pointer" }}
                                         >{item.name}</List.Item>
                                     ))
-                                : <List.Item>{"No tags available"}</List.Item>
+                                : <List.Item>{t("common.noTags")}</List.Item>
                         ) : (
                             suggestedTags.length > 0 ?
                                 suggestedTags.map(item => (
@@ -87,7 +87,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                     <List.Item
                                         p="2"
                                         fontStyle={"italic"}
-                                    >{"No tags found"}</List.Item>
+                                    >{t("common.noTags")}</List.Item>
                                     <List.Item
                                     textOverflow={"ellipsis"}
                                     textWrap={"wrap"}
@@ -103,7 +103,7 @@ export function TagSelector({ selectedTags, onSelect, onRemove }) {
                                         }}
                                         p="2"
                                         _hover={{ bg: "gray.100", cursor: "pointer" }}
-                                    >{`Create tag "${query}"`}</List.Item>
+                                    >{t("common.createTag") + ` "${query}"`}</List.Item>
                                 </>
                         )}
                     </List.Root>

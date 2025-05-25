@@ -54,7 +54,6 @@ namespace Fragmenta.Api.Services
                 entry = (entry.Attempts + 1, entry.Attempts + 1 >= MaxAttempts ? DateTime.UtcNow.Add(lockoutTime) : null);
                 _cache.Set(key, entry, new MemoryCacheEntryOptions
                 {
-                    //TODO remove reset lockout time literals 
                     AbsoluteExpirationRelativeToNow = entry.LockedUntil.HasValue ? lockoutTime : TimeSpan.FromMinutes(15)
                 });
 

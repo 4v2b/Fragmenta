@@ -59,7 +59,7 @@ export function FileManager({ allowedTypes, onUpload }) {
                                         <FileUpload.ItemDeleteTrigger />
                                     </FileUpload.Item>
                                 ))}
-                                <Button mt={3} className="upload-file" bg="primary" onClick={() => handleUpload(acceptedFiles)} isDisabled={!acceptedFiles.length}>
+                                <Button mt={3} className="upload-file" bg="primary" onClick={() => handleUpload(acceptedFiles)} disabled={acceptedFiles.length < 0}>
                                     {t("fields.labels.upload")}
                                 </Button>
                             </>

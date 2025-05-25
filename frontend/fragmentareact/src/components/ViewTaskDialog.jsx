@@ -86,7 +86,6 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         const formData = new FormData()
 
         formData.append("file", file);
-        console.log(file)
         api.postFormData(`/attachments?taskId=${task.id}`, formData, workspaceId).then(res => setAttachments([...attachments, res]))
     }
 
@@ -118,12 +117,13 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
     return <Stack spacing={4}>
 
         <EditableTitle
-            canEdit={true}
+            canEdit={canManageBoardContent(role)}
             onContentEdit={(value) => setNewTask({ ...newTask, title: value })}
             content={newTask?.title} />
 
         <Field label={t("fields.labels.desc")}>
             <Textarea
+                disabled={!canManageBoardContent(role)}
                 autoresize
                 maxH="5lh"
                 value={newTask?.description}
@@ -136,6 +136,8 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
 
             <NativeSelect.Root size="sm" width="240px">
                 <NativeSelect.Field
+                    disabled={!canManageBoardContent(role)}
+                    value={newTask.priority}
                     onChange={(e) => setNewTask(
                         {
                             ...newTask,
@@ -154,7 +156,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         <Field label={t("fields.labels.dueDate")}>
             <HStack>
                 <Checkbox.Root checked={selectDueDate} >
-                    <Checkbox.HiddenInput onInput={() => setSelectDueDate(prev => !prev)} />
+                    <Checkbox.HiddenInput onInput={() => canManageBoardContent(role) && setSelectDueDate(prev => !prev)} />
                     <Checkbox.Control>
                         <Checkbox.Indicator />
                     </Checkbox.Control>
@@ -163,7 +165,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                 <DatePicker
                     locale={i18n.language}
                     className={"chakra-ignore"}
-                    disabled={selectDueDate ? false : true}
+                    disabled={(selectDueDate ? false : true) || !canManageBoardContent(role)}
                     onChange={value => setNewTask({ ...newTask, dueDate: value })}
                     value={new Date(newTask?.dueDate ?? Date.now())}
                     minDate={new Date(task?.dueDate ?? Date.now())}
@@ -173,7 +175,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
         </Field>
 
         <Field label={t("fields.labels.assignee")}>
-            {selectedMember == null ? <MemberSelector members={members} onSelect={(member) => { setSelectedMember(member) }}></MemberSelector>
+            {(selectedMember == null) ? (canManageBoardContent(role) && (<MemberSelector members={members?.filter(m => m.role != "Guest")} onSelect={(member) => { setSelectedMember(member) }}></MemberSelector>))
                 :
                 <HStack key={selectedMember.email} gap="4">
                     <Avatar.Root>
@@ -185,28 +187,30 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                             {selectedMember.email}
                         </Text>
                     </Stack>
-                    <CloseButton onClick={() => setSelectedMember(null)} />
+                    {canManageBoardContent(role) && <CloseButton onClick={() => setSelectedMember(null)} />}
                 </HStack>}
         </Field>
 
-        <Field label={t("fields.labels.tags")}>
+        {canManageBoardContent(role) && <Field label={t("fields.labels.tags")}>
             <TagSelector
                 selectedTags={selectedTags}
                 onRemove={tag => handleRemove(tag)}
                 onSelect={tag => setSelectedTags([...selectedTags, tag])}
             />
-        </Field>
+        </Field>}
 
-        <Button disabled={
-            (newTask.title == task.title
-                && newTask.description == task.description
-                && newTask.priority == task.priority
-                && ((selectDueDate && (newTask.dueDate ?? new Date()) == task.dueDate ) || (newTask.dueDate == null && task.dueDate == newTask.dueDate && !selectDueDate)))
+        {canManageBoardContent(role) &&
+            <Button disabled={
+                (newTask.title == task.title
+                    && newTask.description == task.description
+                    && selectedMember?.id == task?.assigneeId
+                    && newTask.priority == task.priority
+                    && ((selectDueDate && (newTask.dueDate ?? new Date()) == task.dueDate) || (newTask.dueDate == null && task.dueDate == newTask.dueDate && !selectDueDate)))
                 && selectedTags.length === task.tagsId.length && arraysEqualUnordered(selectedTags.map(e => e.id), task.tagsId)
-            || newTask.title == ""
-        }
-            onClick={() => handleUpdateTask()} bg="primary"
-        >{t("fields.actions.save")}</Button>
+                || newTask.title == ""
+            }
+                onClick={() => handleUpdateTask()} bg="primary"
+            >{t("fields.actions.save")}</Button>}
 
 
         <Box>
@@ -216,7 +220,7 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
                     <Box key={a.id} className="attachment-tile">
                         <HStack spacing="2" mb={3} p={2}>
                             <Text fontWeight="bold">{a.originalName}</Text>
-                            {a?.createdAt && <Text fontSize="sm" color="gray.500">{new Date(a.createdAt).toLocaleString(i18n.locale, { dateStyle: "short", timeStyle: "short" })}</Text>}
+                            {a?.createdAt && <Text fontSize="sm" color="gray.500">{new Date(a.createdAt + "Z").toLocaleString(i18n.locale, { dateStyle: "short", timeStyle: "short" })}</Text>}
                             <Text fontSize="sm">{(a.sizeBytes / 1024).toFixed(2)} KB</Text>
                             <Button size={"sm"} variant={"subtle"} className="download-file" onClick={() => handleDownload(a.id)}><MdOutlineFileDownload /></Button>
 
@@ -235,14 +239,15 @@ export function ViewTaskDialog({ task, onUpdateTask = () => { } }) {
             </Stack>
             {(canManageBoardContent(role) && attachments.length <= 10) && <FileManager allowedTypes={allowedExtensions} onUpload={handleFileUpload} />}
         </Box>
-        <AlertDialog
-            base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteTask")}</Button>}
-            title={t("common.confirmDelete")}
-            message={t("common.confirmDeleteTask")}
-            onConfirm={() => handleDeleteTask()}
-            confirmMessage={t("fields.actions.delete")}
-            cancelMessage={t("fields.actions.cancel")}
-        />
+        {canManageBoardContent(role) &&
+            <AlertDialog
+                base={<Button mt={6} w={"full"} bg={"danger"}>{t("fields.labels.deleteTask")}</Button>}
+                title={t("common.confirmDelete")}
+                message={t("common.confirmDeleteTask")}
+                onConfirm={() => handleDeleteTask()}
+                confirmMessage={t("fields.actions.delete")}
+                cancelMessage={t("fields.actions.cancel")}
+            />}
     </Stack>
 
 }

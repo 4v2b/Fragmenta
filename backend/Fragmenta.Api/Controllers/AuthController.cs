@@ -9,8 +9,6 @@ using System.Security.Claims;
 
 namespace Fragmenta.Api.Controllers
 {
-    // TODO Make refresh token renew instead of generating one every time
-
     [ApiController]
     [Route("/api")]
     [Produces("application/json")]

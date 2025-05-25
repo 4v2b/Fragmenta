@@ -20,7 +20,6 @@ public class RefreshTokenLookupService : IRefreshTokenLookupService
         _context = context;
     }
     
-    // TODO Review sequence equals with quering the database
     public async Task<UserDto?> GetUserByTokenAsync(string token)
     {
         var hashedToken = _hasher.Hash(token);

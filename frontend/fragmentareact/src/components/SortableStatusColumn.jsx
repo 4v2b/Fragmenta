@@ -161,7 +161,7 @@ export function SortableStatusColumn({ id, status, tasks, isDisabled }) {
 
       {canManageBoardContent(role) && (
         <Box p={3} borderTop="1px solid #ddd">
-          <CreateTaskDialog onAddTask={handleAddTask} />
+          <CreateTaskDialog onAddTask={handleAddTask} disabled={tasks?.length >= status?.maxTasks && status?.maxTasks > 0} />
         </Box>
       )}
     </Box>

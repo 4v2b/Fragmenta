@@ -29,8 +29,7 @@ public class AuthService : IAuthService
     public async Task<AuthResult> AuthorizeAsync(LoginRequest model)
     {
         var key = $"failed_attempts_{model.Email}";
-
-        // Перевірка, чи користувач заблокований
+        
         if (_cache.TryGetValue<(int Attempts, DateTime? LockedUntil)>(key, out var entry))
         {
             if (entry.LockedUntil.HasValue && entry.LockedUntil > DateTime.UtcNow)
@@ -47,11 +46,10 @@ public class AuthService : IAuthService
 
         if (entity != null && _hasher.Verify(model.Password, entity.PasswordHash, entity.PasswordSalt))
         {
-            _cache.Remove(key); // Видаляємо інформацію про спроби при успішному вході
+            _cache.Remove(key);
             return AuthResult.Success(new UserDto { Email = entity.Email, Id = entity.Id });
         }
-
-        // Збільшуємо кількість спроб
+        
         entry = (entry.Attempts + 1, entry.Attempts + 1 >= MaxAttempts ? DateTime.UtcNow.Add(LockoutTime) : null);
         _cache.Set(key, entry, new MemoryCacheEntryOptions
         {

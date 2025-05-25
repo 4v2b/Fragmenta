@@ -19,8 +19,6 @@ namespace Fragmenta.Api.Services
             _logger = logger;
             _context = context;
         }
-
-        // TODO Need two saves???
         
         public async Task<WorkspaceDto?> CreateAsync(string name, long ownerId)
         {

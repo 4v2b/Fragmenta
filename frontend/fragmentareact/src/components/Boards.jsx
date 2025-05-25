@@ -164,12 +164,6 @@ export function Boards({ id }) {
 
                                     {error && <InputField.ErrorText>{t(error)}</InputField.ErrorText>}
                                 </InputField.Root>
-                                <Field label={t("common.guests")}>
-                                    <Autocomplete membersBlacklist={members.filter(m => m.role != "Guest")} addItem={item => !chosenUsers.some(e => e.email == item.email) && setChosenUsers([...chosenUsers, item])} />
-                                    <Wrap>
-                                        {chosenUsers.map(e => <Badge key={e.id} >{e.email}<CloseButton onClick={() => { setChosenUsers(prev => prev.filter(i => i.id != e.id)) }} /></Badge>)}
-                                    </Wrap>
-                                </Field>
                                 <Text fontWeight="medium"> {t("fields.labels.allowedAttachmentTypes")}</Text>
 
                                 <ExtensionSelector types={types} setTypes={setTypes}></ExtensionSelector>

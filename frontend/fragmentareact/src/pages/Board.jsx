@@ -1,6 +1,6 @@
 import { api } from "@/api/fetchClient"
 import { EditableTitle } from "@/components/EditableTitle"
-import { canCreateBoard, canManageBoardContent } from "@/utils/permissions"
+import { canCreateBoard, canEditBoard, canManageBoardContent } from "@/utils/permissions"
 import { useWorkspace } from "@/utils/WorkspaceContext"
 import {
     HStack, Stack, Box, Text, Badge, Flex, Heading, Button,
@@ -62,12 +62,11 @@ export function Board() {
     }, [])
 
     useEffect(() => {
-        console.log("recent boards triggered")
         if (!board?.name) return;
         const recentBoards = JSON.parse(localStorage.getItem("recentBoards") || "[]");
         const boardInfo = { role, boardId, boardName: board.name, workspaceId, openedAt: Date.now() };
-        const updated = [boardInfo, ...recentBoards.filter(b => b.boardId !== boardId)].slice(0, 5);
-        localStorage.setItem("recentBoards", JSON.stringify(updated));
+        const updated = [boardInfo, ...recentBoards.filter(b => b.boardId !== boardId)].slice(0, 3);
+        localStorage.setItem("recentBoards" + userId, JSON.stringify(updated));
     }, [board?.name, role])
 
 
@@ -310,7 +309,7 @@ export function Board() {
                             <EditableTitle
                                 content={board?.name}
                                 onContentEdit={handleTitleChange}
-                                canEdit={canManageBoardContent(role)}
+                                canEdit={canEditBoard(role)}
                                 fontSize="2xl"
                             />
 

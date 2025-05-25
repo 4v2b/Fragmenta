@@ -103,7 +103,6 @@ async function fetchWithAuth(url, options = {}, isBlob = false) {
 
         return await response.json();
     } catch (error) {
-        console.error("API request failed:", error);
         throw error;
     }
 }

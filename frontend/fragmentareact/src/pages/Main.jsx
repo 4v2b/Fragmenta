@@ -18,7 +18,8 @@ import i18n from '@/i18n'
 
 export function Main() {
   const { items } = useOutletContext();
-  const { userName } = useUser()
+  const { userName, userId } = useUser()
+  const [recentBoards, setRecentBoards] = useState([]);
   const { t } = useTranslation();
   const navigate = useNavigate()
 
@@ -39,12 +40,27 @@ export function Main() {
     return greeting;
   };
 
-  const recentBoards = JSON.parse(localStorage.getItem("recentBoards") || "[]");
+useEffect(() => {
+  const validateBoards = async () => {
+    const parsed = JSON.parse(localStorage.getItem("recentBoards" + userId) || "[]");
+    const results = await Promise.allSettled(
+      parsed.map(b => api.get(`/boards/${b.boardId}`, b.workspaceId).then(() => b))
+    );
+
+    const valid = results
+      .filter(r => r.status === "fulfilled")
+      .map(r => r.value);
+    setRecentBoards(valid);
+    localStorage.setItem("recentBoards" + userId, JSON.stringify(valid));
+  };
+
+  validateBoards();
+}, [userId]);
 
   return (
     <div className='main-container'>
 
-      <Stack  m={10} p={8} pb={16} gap={4} spacing={6} overflow={"auto"} bg={"background"} borderRadius={4}>
+      <Stack m={10} p={8} pb={16} gap={4} spacing={6} overflow={"auto"} bg={"background"} borderRadius={4}>
         <Box mb={6}>
           <Heading fontWeight={"semibold"} >
             {getTimeBasedGreeting(t, userName)}
@@ -54,7 +70,7 @@ export function Main() {
         <Box mb={6}>
           <Text fontSize="xl" mb={2}>{t("common.recent")}</Text>
           <Stack align="start" spacing={2}>
-            {recentBoards.map(b => (
+            {recentBoards?.map(b => (
               <HStack _hover={{ shadow: 'sm' }} w={"60%"} cursor={"pointer"} p={4} borderRadius="md" borderWidth="1px" key={b.boardId} onClick={() => navigate(`/workspaces/${b.workspaceId}/boards/${b.boardId}`)} variant="link">
                 <LuClipboardList />{b.boardName}
                 <Text ml={4} fontSize="sm" color="gray.500">

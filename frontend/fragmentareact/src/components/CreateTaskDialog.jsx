@@ -27,7 +27,7 @@ const defaultTaskState = {
 const MAX_CHARACTERS_TITLE = 50
 const MAX_CHARACTERS_DESC = 150
 
-export function CreateTaskDialog({ onAddTask }) {
+export function CreateTaskDialog({ onAddTask, disabled }) {
     const { t, i18n } = useTranslation()
     const { members } = useWorkspace()
     const [error, setError] = useState(false)
@@ -76,7 +76,7 @@ export function CreateTaskDialog({ onAddTask }) {
             if (!dialog.open) resetForm()
         }}>
         <DialogTrigger asChild>
-            <Button className="add-task" bg="primary">{t("fields.labels.addTask")}</Button>
+            <Button disabled={disabled} className="add-task" bg="primary">{t("fields.labels.addTask")}</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>

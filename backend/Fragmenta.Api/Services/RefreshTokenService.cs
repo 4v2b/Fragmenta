@@ -13,11 +13,6 @@ namespace Fragmenta.Api.Services
 {
     public class RefreshTokenService : IRefreshTokenService
     {
-        // 1. User logins into account - give a valid refresh token or generate one
-        // 2. User sends refresh token to renew jwt
-        // 2.1. Refresh token is valid, jwt generated
-        // 2.2. Refresh token is valid, but expired, new token generated
-        // 2.2. Refresh token invalid or revoked, return error, ask for re-login
 
         private readonly ILogger<RefreshTokenService> _logger;
         private readonly IHashingService _hasher;

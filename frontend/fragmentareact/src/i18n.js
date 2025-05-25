@@ -40,6 +40,8 @@ i18n
                         forbiddenFileType: "Extension of file'{{filename}}' is forbidden in this board"
                     },
                     common: {
+                        noTags: "Not found",
+                        createTag: "Create",
                         search: "Search",
                         confirmDelete: "Confirm action",
                         confirmAction: "Confirm action",
@@ -215,6 +217,8 @@ i18n
                     },
                     common: {
                         search: "Пошук",
+                        noTags: "Не знайдено",
+                        createTag: "Створити",
                         confirmDelete: "Підтведити видалення",
                         confirmAction: "Підтведити дію",
                         confirmDeleteAttachment: "Точно бажаєте видалити це вкладення",

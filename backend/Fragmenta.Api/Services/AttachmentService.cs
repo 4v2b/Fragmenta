@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Fragmenta.Api.Dtos;
 
+namespace Fragmenta.Api.Services;
 public class AttachmentService : IAttachmentService
 {
     private readonly ApplicationContext _context;
